@@ -4,120 +4,100 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Inside Imaging - Public</title>
+  <title>Inside Imaging</title>
   <link rel="stylesheet" href="/static/main.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
 </head>
 <body>
-  <div class="wrap">
-    <!-- Loading status and spinner -->
-    <div id="status" class="status"></div>
-    <div id="spinner-overlay" class="spinner-overlay">
-      <div class="spinner"></div>
-    </div>
-
-    <!-- Header with logo and nav -->
-    <header class="header">
-      <div class="logo-wrapper">
+  <div class="page-wrapper">
+    <header class="navbar">
+      <div class="navbar-brand">
         <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
-        <span class="brand">Inside Imaging</span>
+        <span class="brand-name">Inside Imaging</span>
       </div>
-      <nav class="nav">
-        {% if session.get('user_id') %}
-        <a href="{{ url_for('logout') }}">Log out</a>
-        {% endif %}
+      <nav class="nav-links">
+        <a href="#">Dashboard</a>
+        <a href="#">Language Selection</a>
+        <a href="#">Report Status</a>
+        <a href="#">Payment</a>
+        <a href="#">Help</a>
       </nav>
+      <div class="nav-auth">
+        <a href="#" class="login-button">Log In</a>
+        <a href="#" class="signup-button">Sign Up</a>
+      </div>
     </header>
-
-    <div class="layout">
-      <!-- Sidebar for stats -->
-      <aside class="sidebar">
-        <h3>Statistics</h3>
-        <ul class="stats">
-          <li>Total reports: {{ stats.total }}</li>
-          <li>Male patients: {{ stats.male }}</li>
-          <li>Female patients: {{ stats.female }}</li>
-          <li>Age 0–17: {{ stats['0-17'] }}</li>
-          <li>Age 18–30: {{ stats['18-30'] }}</li>
-          <li>Age 31–50: {{ stats['31-50'] }}</li>
-          <li>Age 51–65: {{ stats['51-65'] }}</li>
-          <li>Age 66+: {{ stats['66+'] }}</li>
-        </ul>
-      </aside>
-
-      <!-- Main content -->
-      <main class="main-content">
-        <!-- Upload first -->
-        <h2>Upload a report</h2>
-        <form id="upform" method="post" action="/upload" enctype="multipart/form-data">
-          <label class="visually-hidden" for="file">Choose file</label>
-          <input id="file" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.tif,.tiff,.bmp,.txt" required>
-          <!-- Language selection -->
-          <label class="language-label" for="language">Language:</label>
-          <select id="language" name="language">
-            {% for lang in languages %}
-            <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit">Upload & Convert</button>
-        </form>
-
-        <!-- Paste second -->
-        <h2>Or paste text</h2>
-        <form id="pasteform" method="post" action="/paste">
-          <textarea id="text" name="text" rows="10" placeholder="Paste radiology text here"></textarea>
-          <!-- Language selection for paste -->
-          <label class="language-label" for="language2">Language:</label>
-          <select id="language2" name="language">
-            {% for lang in languages %}
-            <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit">Simplify</button>
-        </form>
-      </main>
-    </div>
+    <main class="content">
+      <h1>Dashboard</h1>
+      <p>Upload, manage, and download your translated radiology reports in one place.</p>
+      <div class="dashboard-grid">
+        <section class="upload-section">
+          <h2>Upload New Report</h2>
+          <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
+            <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.txt" required>
+            <label for="language">Language:</label>
+            <select name="language" id="language">
+              {% for language in languages %}
+              <option value="{{ language }}">{{ language }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit">Upload &amp; Convert</button>
+          </form>
+          <h3>Or paste text</h3>
+          <form action="{{ url_for('upload') }}" method="post" class="paste-form">
+            <textarea name="file_text" rows="4" placeholder="Paste radiology text here"></textarea>
+            <label for="language_text">Language:</label>
+            <select name="language" id="language_text">
+              {% for language in languages %}
+              <option value="{{ language }}">{{ language }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit">Submit Text</button>
+          </form>
+        </section>
+        <section class="reports-section">
+          <h2>Your Reports</h2>
+          <p>No reports found.</p>
+        </section>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-about">
+          <h3>Inside Imaging</h3>
+          <p>Transforming radiology reports.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Language Selection</a></li>
+            <li><a href="#">Report Status</a></li>
+            <li><a href="#">Payment</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#">Twitter</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
+      </div>
+    </footer>
   </div>
-
-  <script>
-    // Helper to compose polite loading message
-    function salutation(sex, name) {
-      const title = sex === 'M' ? 'Mr.' : (sex === 'F' ? 'Ms.' : 'Patient');
-      const who = (name && name.length > 1) ? name : 'Patient';
-      return title + ' ' + who + ', please wait while your report is loading.';
-    }
-    // Show spinner overlay
-    function showSpinner() {
-      document.getElementById('spinner-overlay').style.display = 'flex';
-    }
-    // Hide spinner overlay
-    function hideSpinner() {
-      document.getElementById('spinner-overlay').style.display = 'none';
-    }
-    // Intercept paste form submission to display loading message and spinner
-    const pasteForm = document.getElementById('pasteform');
-    pasteForm.addEventListener('submit', function (e) {
-      const raw = document.getElementById('text').value || '';
-      // Guess name/sex for loading salutation
-      let n = '', s = '';
-      const mName = raw.match(/\bNAME\b[:\s\-–]*([A-Z][A-Za-z' .\-]+)/i);
-      if (mName) n = mName[1].trim();
-      const mSex = raw.match(/\bSEX\b[:\s\-–]*([MF]|Male|Female)/i);
-      if (mSex) {
-        const v = mSex[1].toLowerCase();
-        s = v.startsWith('m') ? 'M' : (v.startsWith('f') ? 'F' : '');
-      }
-      document.getElementById('status').textContent = salutation(s, n);
-      showSpinner();
-    });
-    // Show spinner for uploads when the form is submitted
-    const upForm = document.getElementById('upform');
-    upForm.addEventListener('submit', function () {
-      // Extract current patient name/sex if available (will be empty on index)
-      const n = document.getElementById('pName').textContent || '';
-      const s = document.getElementById('pSex').textContent || '';
-      document.getElementById('status').textContent = salutation(s, n || 'Patient');
-      showSpinner();
-    });
-  </script>
 </body>
 </html>

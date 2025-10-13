@@ -1,199 +1,220 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <title>Inside Imaging - Results</title>
-  <link rel="stylesheet" href="/static/main.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Result - Inside Imaging</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        .diagram-container {
+            position: relative;
+            width: 200px;
+            height: 500px;
+            margin: 1rem auto;
+            background-color: var(--panel-2);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+        .diagram-container .region {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            background-color: var(--panel);
+            opacity: 0.4;
+        }
+        .diagram-container .region.head { top: 0; height: 80px; border-radius: 0 0 40px 40px; }
+        .diagram-container .region.chest { top: 80px; height: 150px; border-radius: 40px; }
+        .diagram-container .region.abdomen { top: 230px; height: 150px; border-radius: 40px; }
+        .diagram-container .region.pelvis { top: 380px; height: 120px; border-radius: 40px 40px 0 0; }
+        .diagram-container .region.highlight {
+            background-color: var(--mint);
+            opacity: 0.6;
+        }
+        .patient-card { margin-bottom: 2rem; }
+        .report-section { margin-top: 1.5rem; }
+    </style>
 </head>
 <body>
-<!-- DEBUG REMOVE LATER --><pre style="white-space:pre-wrap;background:#111;color:#0f0;padding:8px;">{{ S|tojson(indent=2) }}</pre>
-  <div class="wrap">
-    <h1>Inside Imaging</h1>
+<div class="page-wrapper">
+<header class="navbar">
+    <div class="navbar-brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
+        <span class="brand-name">Inside Imaging</span>
+    </div>
+    <nav class="nav-links">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('language') }}">Language Selection</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+    </nav>
+    <div class="nav-auth">
+    {% if session.get('user_id') %}
+        <span class="username">{{ session.get('username') }}</span>
+        <div class="settings-wrapper">
+            <button id="settings-button" class="settings-btn">⚙️</button>
+            <div id="settings-dropdown" class="settings-dropdown">
+                <button id="toggle-dark">Dark Mode</button>
+                <button id="toggle-light">Light Mode</button>
+                <a href="{{ url_for('logout') }}">Log Out</a>
+            </div>
+        </div>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+    {% endif %}
+    </div>
+</header>
 
-    <!-- Patient header -->
+<main class="content">
+    <h1>Report Summary</h1>
+    <!-- Patient information -->
     <div class="patient-card">
-      <div><span class="lbl">Hospital</span><strong>{{ patient.hospital }}</strong></div>
-      <div><span class="lbl">Study</span><strong>{{ patient.study }}</strong></div>
-      <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
-      <div><span class="lbl">Sex</span><strong>{{ patient.sex }}</strong></div>
-      <div><span class="lbl">Age</span><strong>{{ patient.age }}</strong></div>
-      <div><span class="lbl">Date</span><strong>{{ patient.date }}</strong></div>
+        <div><span class="lbl">Hospital</span><strong>{{ patient.hospital }}</strong></div>
+        <div><span class="lbl">Study</span><strong>{{ patient.study }}</strong></div>
+        <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
+        <div><span class="lbl">Sex</span><strong>{{ patient.sex }}</strong></div>
+        <div><span class="lbl">Age</span><strong>{{ patient.age }}</strong></div>
+        <div><span class="lbl">Date</span><strong>{{ patient.date }}</strong></div>
     </div>
 
-    <!-- Interactive diagram for body and organ region (placeholder) -->
-    <h2>Interactive Body Diagram</h2>
-    <!-- The `data-organ` attribute exposes the study/organ name from the
-         backend.  The JavaScript below uses this value to position a
-         coloured highlight over the corresponding body region.  Without
-         this attribute the diagram falls back to a neutral silhouette. -->
-    <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|lower }}"></div>
+    <!-- Body diagram -->
+    <section>
+        <h2>Body Region Highlight</h2>
+        <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|lower }}"></div>
+    </section>
 
-    <!-- Selected language -->
-    <div class="lang">Language: {{ language }}</div>
-
-    {% if language != 'English' %}
+    <!-- Language note -->
+    {% if language != 'en' %}
     <p class="lang-warning">Translation into {{ language }} is not yet supported; displaying English.</p>
     {% endif %}
 
-    <!-- Structured report sections -->
+    <!-- Structured report -->
     <div class="report">
-      <section>
-        <h3>Reason for the Scan</h3>
-        <p>{{ structured.reason }}</p>
-      </section>
-      <section>
-        <h3>What Was Done</h3>
-        <p>{{ structured.technique }}</p>
-      </section>
-      <section class="important-findings">
-        <h3>Important Findings</h3>
-        <p>{{ structured.findings|safe }}</p>
-      </section>
-      <section>
-        <h3>Conclusion</h3>
-        <p>{{ structured.conclusion|safe }}</p>
-      </section>
-      {% if structured.concern %}
-      <section class="warn">
-        <h3>Note of Concern</h3>
-        <p>{{ structured.concern }}</p>
-      </section>
-      {% endif %}
+        <section>
+            <h3>Reason for the Scan</h3>
+            <p>{{ structured.reason }}</p>
+        </section>
+        <section>
+            <h3>Procedure Details</h3>
+            <p>{{ structured.technique }}</p>
+        </section>
+        <section class="important-findings">
+            <h3>Important Findings</h3>
+            <p>{{ structured.findings|safe }}</p>
+        </section>
+        <section>
+            <h3>Conclusion</h3>
+            <p>{{ structured.Conclusion|safe }}</p>
+        </section>
+        {% if structured.concern %}
+        <section class="warn">
+            <h3>Note of Concern</h3>
+            <p>{{ structured.concern }}</p>
+        </section>
+        {% endif %}
     </div>
-
     <details>
-      <summary>Extracted text</summary>
-      <pre>{{ extracted }}</pre>
+        <summary>Extracted text</summary>
+        <pre>{{ extracted }}</pre>
     </details>
+    <p><a href="{{ url_for('index') }}">&larr; Back to Dashboard</a></p>
+</main>
 
-    <p><a href="{{ url_for('index') }}">&larr; Back to Home</a></p>
-  </div>
+<footer class="footer">
+    <div class="footer-columns">
+        <div class="footer-about">
+            <h3>Inside Imaging</h3>
+            <p>Transforming radiology reports into your preferred language with ease.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Navigation</h4>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+                <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+                <li><a href="{{ url_for('payment') }}">Payment</a></li>
+                <li><a href="{{ url_for('help_page') }}">Help</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="#">Documentation</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Support</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">LinkedIn</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+    </div>
+</footer>
+</div>
 
-  <!-- Import map resolves the 'three' specifier to your local file -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "/static/js/three/three.module.js"
-    }
-  }
-  </script>
-
-  <!-- 3D diagram script using local modules -->
-  <script type="module">
-    const container = document.getElementById('diagram-container');
-
-    async function initDiagram() {
-      if (!container) return;
-      try {
-        // Load Three.js and controls from the local import map.  The import
-        // map defined above resolves the specifier "three" to
-        // "/static/js/three/three.module.js".
-        const THREE = await import('three');
-        const { OrbitControls } = await import('/static/js/three/OrbitControls.js');
-
-        // Create the scene and renderer
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(
-          45,
-          container.clientWidth / container.clientHeight,
-          0.1,
-          1000
-        );
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.innerHTML = "";
-        container.appendChild(renderer.domElement);
-
-        // Lighting
-        const dir = new THREE.DirectionalLight(0xffffff, 1.0);
-        dir.position.set(5, 5, 5);
-        scene.add(dir);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-
-        // Base silhouette: a neutral semiâ€‘transparent body.  We use a
-        // slightly translucent material so that organ highlights can be
-        // seen inside the volume.
-        const baseGeom = new THREE.BoxGeometry(1, 2, 0.5);
-        const baseMat = new THREE.MeshStandardMaterial({
-          color: 0x89c2d9,
-          metalness: 0.1,
-          roughness: 0.8,
-          opacity: 0.5,
-          transparent: true,
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var container = document.getElementById('diagram-container');
+        var organ = container.dataset.organ || '';
+        var map = {
+            head: ['brain','head','skull'],
+            chest: ['chest','heart','lung','thorax'],
+            abdomen: ['abdomen','liver','kidney','pancreas','stomach','spleen','gallbladder'],
+            pelvis: ['pelvis','bladder','prostate','ovary','uterus']
+        };
+        var regions = ['head','chest','abdomen','pelvis'];
+        regions.forEach(function(r) {
+            var div = document.createElement('div');
+            div.classList.add('region', r);
+            var keywords = map[r] || [];
+            if (keywords.some(function(k) { return organ.includes(k); })) {
+                div.classList.add('highlight');
+            }
+            container.appendChild(div);
         });
-        const baseMesh = new THREE.Mesh(baseGeom, baseMat);
-        scene.add(baseMesh);
 
-        // Determine which organ to highlight from the data attribute.  This
-        // value comes from the study name (e.g. "CT chest" â†’ "chest") and
-        // is converted to lower case in the template.  We check for
-        // substrings to map the study to a rough anatomical region.
-        const organRaw = (container.dataset.organ || '').toLowerCase();
-        let highlightSpec = null;
-        const regions = [
-          { key: 'brain', position: [0, 1.0, 0], size: [0.5, 0.5, 0.4] },
-          { key: 'head', position: [0, 1.0, 0], size: [0.5, 0.5, 0.4] },
-          { key: 'spine', position: [0, 0.3, 0], size: [0.3, 1.0, 0.3] },
-          { key: 'lung', position: [0, 0.5, 0], size: [0.6, 0.8, 0.4] },
-          { key: 'chest', position: [0, 0.5, 0], size: [0.8, 0.8, 0.5] },
-          { key: 'heart', position: [0, 0.45, 0], size: [0.4, 0.4, 0.3] },
-          { key: 'liver', position: [0.2, 0.2, 0], size: [0.6, 0.4, 0.3] },
-          { key: 'kidney', position: [-0.3, 0.1, 0], size: [0.4, 0.5, 0.3] },
-          { key: 'abdomen', position: [0, 0.1, 0], size: [0.8, 0.6, 0.5] },
-          { key: 'pelvis', position: [0, -0.2, 0], size: [0.7, 0.5, 0.5] },
-        ];
-        for (const region of regions) {
-          if (organRaw.includes(region.key)) {
-            highlightSpec = region;
-            break;
-          }
+        var html = document.documentElement;
+        var saved = localStorage.getItem('theme') || 'dark';
+        if (saved === 'light') {
+            html.classList.add('light');
         }
-        if (highlightSpec) {
-          const { position, size } = highlightSpec;
-          const highlightGeom = new THREE.BoxGeometry(size[0], size[1], size[2]);
-          const highlightMat = new THREE.MeshStandardMaterial({
-            color: 0xff5555,
-            emissive: 0xff4444,
-            opacity: 0.7,
-            transparent: true,
-          });
-          const highlightMesh = new THREE.Mesh(highlightGeom, highlightMat);
-          highlightMesh.position.set(position[0], position[1], position[2]);
-          scene.add(highlightMesh);
+        var settingsButton = document.getElementById('settings-button');
+        var dropdown = document.getElementById('settings-dropdown');
+        if (settingsButton && dropdown) {
+            settingsButton.addEventListener('click', function() {
+                dropdown.classList.toggle('show');
+            });
         }
-
-        // Camera placement
-        camera.position.set(0, 0.8, 4);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.06;
-        // Resize handler
-        function onResize() {
-          const { clientWidth: w, clientHeight: h } = container;
-          renderer.setSize(w, h);
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
+        var toggleDark = document.getElementById('toggle-dark');
+        var toggleLight = document.getElementById('toggle-light');
+        if (toggleDark) {
+            toggleDark.addEventListener('click', function() {
+                html.classList.remove('light');
+                localStorage.setItem('theme','dark');
+            });
         }
-        window.addEventListener('resize', onResize);
-        onResize();
-        // Animation loop
-        (function animate() {
-          controls.update();
-          renderer.render(scene, camera);
-          requestAnimationFrame(animate);
-        })();
-      } catch (e) {
-        container.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 20px;">Interactive 3D diagram failed to load (check local files and import map).</p>';
-        console.error('3D diagram error:', e);
-      }
-    }
-
-    initDiagram();
-  </script>
+        if (toggleLight) {
+            toggleLight.addEventListener('click', function() {
+                html.classList.add('light');
+                localStorage.setItem('theme','light');
+            });
+        }
+        var currentYear = document.getElementById('current-year');
+        if (currentYear) {
+            currentYear.textContent = new Date().getFullYear();
+        }
+    });
+</script>
 </body>
 </html>
-
-
-

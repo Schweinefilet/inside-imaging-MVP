@@ -1,2 +1,15 @@
-
-backend/.env
+# env & secrets
+.env
+**/.env
+.env.local
+.env.*.local
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

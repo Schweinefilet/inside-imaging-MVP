@@ -45,7 +45,7 @@
       const el=document.getElementById('loading-screen');
       if(el){ el.classList.add('hidden'); el.setAttribute('aria-busy','false'); }
     }
-    window.addEventListener('load',()=>setTimeout(hideLoading,150));
+    window.addEventListener('load',()=>setTimeout(hideLoading,10000));
     // auto-show on any form submit
     addEventListener('submit', e => { if(e.target.tagName==='FORM') showLoading('Processing'); }, true);
   </script>

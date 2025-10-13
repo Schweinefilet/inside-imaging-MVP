@@ -1,20 +1,23 @@
-﻿import os, io, logging
+﻿import os
+import io
+import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+from dotenv import load_dotenv
+from flask_cors import CORS
 from src import db
 
-# app.py (top)
-from dotenv import load_dotenv; load_dotenv()
-from flask_cors import CORS
-import os
-CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS","https://schweinefilet.github.io")}})
+# Load environment variables
+load_dotenv()
 
 # --- logging ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 # --- app ---
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS", "https://schweinefilet.github.io")}})
+
 # available languages
 LANGUAGES = ["English", "Kiswahili"]
 # Secret key for session management
@@ -23,16 +26,13 @@ app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
 # Initialize database
 try:
     db.init_db()
-except Exception as e:
+except Exception:
     logging.exception("Database initialization failed")
-
 
 # --- translate wiring ---
 try:
-   
-
     from src.translate import Glossary, build_structured
-except Exception as e:
+except Exception:
     logging.exception("translate import failed")
     Glossary = None
 
@@ -146,66 +146,73 @@ def upload():
         extracted=extracted,
         study=study,
         language=lang,
-  
-    
-@app.route('/language')
+    )
+
+
+@app.route("/language")
 def language():
     """Render the language selection page"""
-    return render_template('language.html')
+    return render_template("language.html")
 
-@app.route('/report_status')
+
+@app.route("/report_status")
 def report_status():
     """Render the report status page"""
-    return render_template('report_status.html')
+    return render_template("report_status.html")
 
-@app.route('/payment')
+
+@app.route("/payment")
 def payment():
     """Render the payment page"""
-    return render_template('payment.html')
+    return render_template("payment.html")
 
-@app.route('/help')
+
+@app.route("/help")
 def help_page():
     """Render the help page"""
-    return render_template('help.html')
+    return render_template("help.html")
 
-@app.route('/login', methods=['GET', 'POST'])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
     """User login route"""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
         user = db.get_user_by_username(username)
-        if user and check_password_hash(user['password_hash'], password):
-            session['username'] = username
-            flash('Logged in successfully.', 'success')
-            return redirect(url_for('index'))
+        if user and check_password_hash(user["password_hash"], password):
+            session["username"] = username
+            flash("Logged in successfully.", "success")
+            return redirect(url_for("index"))
         else:
-            flash('Invalid username or password.', 'error')
-    return render_template('login.html')
+            flash("Invalid username or password.", "error")
+    return render_template("login.html")
 
-@app.route('/signup', methods=['GET', 'POST'])
+
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
     """User signup route"""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
         # Check if user exists
         if db.get_user_by_username(username):
-            flash('Username already exists. Please choose a different one.', 'error')
+            flash("Username already exists. Please choose a different one.", "error")
         else:
             password_hash = generate_password_hash(password)
             db.create_user(username, password_hash)
-            flash('Account created successfully. Please log in.', 'success')
-            return redirect(url_for('login'))
-    return render_template('signup.html')
+            flash("Account created successfully. Please log in.", "success")
+            return redirect(url_for("login"))
+    return render_template("signup.html")
 
-@app.route('/logout')
+
+@app.route("/logout")
 def logout():
     """Log out the current user"""
-    session.pop('username', None)
-    flash('Logged out successfully.', 'success')
-    return redirect(url_for('login'))
-)
+    session.pop("username", None)
+    flash("Logged out successfully.", "success")
+    return redirect(url_for("login"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

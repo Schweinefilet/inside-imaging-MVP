@@ -2,6 +2,12 @@
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 
+# app.py (top)
+from dotenv import load_dotenv; load_dotenv()
+from flask_cors import CORS
+import os
+CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS","https://schweinefilet.github.io")}})
+
 # --- logging ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 

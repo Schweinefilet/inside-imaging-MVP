@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Report Status - Inside Imaging</title>
+    <!-- Global and page-specific styles -->
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link rel="stylesheet" href="/static/report-status.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Navigation Bar -->
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="/static/logo.png" alt="Inside Imaging logo" class="logo">
+                <span class="brand-name">Inside Imaging</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/static/language-selection.html">Language Selection</a>
+                <a href="/static/report-status.html">Report Status</a>
+                <a href="/static/payment.html">Payment</a>
+                <a href="/static/help.html">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="#" class="login-button">Log In</a>
+                <a href="#" class="signup-button">Sign Up</a>
+            </div>
+        </header>
+        <!-- Main Content -->
+        <main class="content">
+            <h1>Report Status</h1>
+            <p class="tagline">Track the progress of your reports and get notified when they’re ready for download.</p>
+            <section class="status-overview">
+                <div class="status-card">
+                    <h3>Pending Reports</h3>
+                    <p class="status-count">0</p>
+                </div>
+                <div class="status-card">
+                    <h3>Processing Reports</h3>
+                    <p class="status-count">0</p>
+                </div>
+                <div class="status-card">
+                    <h3>Completed Reports</h3>
+                    <p class="status-count">0</p>
+                </div>
+            </section>
+            <section class="reports-list">
+                <h2>Your Reports</h2>
+                <p>No reports available yet.</p>
+            </section>
+        </main>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-columns">
+                <div class="footer-about">
+                    <h3>Inside Imaging</h3>
+                    <p>Transforming radiology reports into your preferred language with ease.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="/">Dashboard</a></li>
+                        <li><a href="/static/language-selection.html">Language Selection</a></li>
+                        <li><a href="/static/report-status.html">Report Status</a></li>
+                        <li><a href="/static/payment.html">Payment</a></li>
+                        <li><a href="/static/help.html">Help</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <ul>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">LinkedIn</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© <span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <script>
+      // Set current year in footer
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

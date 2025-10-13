@@ -16,8 +16,15 @@ try:
 except Exception as e:
     logging.exception("translate import failed")
     Glossary = None
+
     def build_structured(report_text: str, glossary=None, language: str = "English"):
-        return {"reason":"","technique":"","findings":(report_text or "").strip(),"conclusion":"","concern":""}
+        return {
+            "reason": "",
+            "technique": "",
+            "findings": (report_text or "").strip(),
+            "conclusion": "",
+            "concern": "",
+        }
 
 # try to load a glossary if you have one; otherwise None is fine
 LAY_GLOSS = None
@@ -30,27 +37,36 @@ except Exception:
     logging.exception("glossary load failed")
     LAY_GLOSS = None
 
+
 @app.route("/", methods=["GET"])
 def index():
-       stats = {
-        "total": 0, "male": 0, "female": 0,
-        "0-17": 0, "18-30": 0, "31-50": 0,
-        "51-65": 0, "66+": 0,
+    stats = {
+        "total": 0,
+        "male": 0,
+        "female": 0,
+        "0-17": 0,
+        "18-30": 0,
+        "31-50": 0,
+        "51-65": 0,
+        "66+": 0,
     }
     return render_template("index.html", stats=stats, languages=LANGUAGES)
- 
 
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "GET":
-                stats = {
-            "total": 0, "male": 0, "female": 0,
-            "0-17": 0, "18-30": 0, "31-50": 0,
-            "51-65": 0, "66+": 0,
+        stats = {
+            "total": 0,
+            "male": 0,
+            "female": 0,
+            "0-17": 0,
+            "18-30": 0,
+            "31-50": 0,
+            "51-65": 0,
+            "66+": 0,
         }
         return render_template("index.html", stats=stats, languages=LANGUAGES)
-
 
     file = request.files.get("file")
     lang = request.form.get("language", "English")
@@ -78,14 +94,40 @@ def upload():
     try:
         logging.info("calling build_structured language=%s", lang)
         S = build_structured(extracted, LAY_GLOSS, language=lang)
-        logging.info("summary_keys=%s", {k: len((S or {}).get(k) or "") for k in ("reason","technique","findings","conclusion","concern")})
+        logging.info(
+            "summary_keys=%s",
+            {k: len((S or {}).get(k) or "") for k in ("reason", "technique", "findings", "conclusion", "concern")},
+        )
     except Exception:
         logging.exception("build_structured failed")
-        S = {"reason":"","technique":"","findings":"","conclusion":"","concern":""}
+        S = {"reason": "", "technique": "", "findings": "", "conclusion": "", "concern": ""}
 
     # minimal study so template renders
     study = {"organ": "Unknown"}
-    return render_template("result.html", S=S, study=study, language=lang)
+
+    # Provide a placeholder patient object so the template never errors.
+    patient = {
+        "hospital": "",
+        "study": study.get("organ", "Unknown"),
+        "name": "",
+        "sex": "",
+        "age": "",
+        "date": "",
+    }
+
+    # Alias the structured summary for the template
+    structured = S
+
+    # Also pass the raw extracted text for the "Extracted text" details section
+    return render_template(
+        "result.html",
+        S=S,
+        structured=structured,
+        patient=patient,
+        extracted=extracted,
+        study=study,
+        language=lang,
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

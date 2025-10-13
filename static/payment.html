@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Payment - Inside Imaging</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link rel="stylesheet" href="/static/payment.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Navigation Bar -->
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="/static/logo.png" alt="Inside Imaging logo" class="logo">
+                <span class="brand-name">Inside Imaging</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/static/language-selection.html">Language Selection</a>
+                <a href="/static/report-status.html">Report Status</a>
+                <a href="/static/payment.html">Payment</a>
+                <a href="/static/help.html">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="#" class="login-button">Log In</a>
+                <a href="#" class="signup-button">Sign Up</a>
+            </div>
+        </header>
+        <!-- Main Content -->
+        <main class="content">
+            <h1>Complete Your Payment</h1>
+            <p class="tagline">Securely process your payment to access your translated radiology report.</p>
+            <div class="payment-grid">
+                <!-- Report Details -->
+                <section class="report-details">
+                    <h2>Your Report Details</h2>
+                    <ul class="details-list">
+                        <li><span class="label">Report Type:</span> <span class="value">CT Scan</span></li>
+                        <li><span class="label">Language:</span> <span class="value">English</span></li>
+                        <li><span class="label">Translation Fee:</span> <span class="value">$24.99</span></li>
+                    </ul>
+                    <div class="payment-summary">
+                        <h3>Payment Summary</h3>
+                        <ul>
+                            <li><span class="label">Translation Service:</span> <span class="value">$24.99</span></li>
+                            <li class="total"><span class="label">Total:</span> <span class="value">$24.99</span></li>
+                        </ul>
+                    </div>
+                </section>
+                <!-- Payment Form -->
+                <section class="payment-form">
+                    <h2>Choose Payment Method</h2>
+                    <form onsubmit="event.preventDefault();">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method" required>
+                            <option value="">Select a payment method</option>
+                            <option value="visa">Visa</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="mpesa">M-Pesa</option>
+                        </select>
+                        <label for="card-number">Card Number</label>
+                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiry">Expiry Date</label>
+                                <input type="text" id="expiry" placeholder="MM/YY" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" placeholder="123" required>
+                            </div>
+                        </div>
+                        <label for="cardholder-name">Cardholder Name</label>
+                        <input type="text" id="cardholder-name" placeholder="John Doe" required>
+                        <button type="submit" class="primary-btn">Complete Payment</button>
+                    </form>
+                    <p class="secure-note">Your payment information is secure and encrypted. We never store your full payment details.</p>
+                </section>
+            </div>
+        </main>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-columns">
+                <div class="footer-about">
+                    <h3>Inside Imaging</h3>
+                    <p>Transforming radiology reports into your preferred language with ease.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="/">Dashboard</a></li>
+                        <li><a href="/static/language-selection.html">Language Selection</a></li>
+                        <li><a href="/static/report-status.html">Report Status</a></li>
+                        <li><a href="/static/payment.html">Payment</a></li>
+                        <li><a href="/static/help.html">Help</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <ul>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">LinkedIn</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© <span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <script>
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

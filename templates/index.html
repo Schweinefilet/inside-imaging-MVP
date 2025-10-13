@@ -16,16 +16,18 @@
         <span class="brand-name">Inside Imaging</span>
       </div>
       <nav class="nav-links">
-        <a href="#">Dashboard</a>
-        <a href="#">Language Selection</a>
-        <a href="#">Report Status</a>
-        <a href="#">Payment</a>
-        <a href="#">Help</a>
-      </nav>
-      <div class="nav-auth">
-        <a href="#" class="login-button">Log In</a>
-        <a href="#" class="signup-button">Sign Up</a>
-      </div>
+              <nav class="nav-links">
+                <a href="{{ url_for('index') }}">Dashboard</a>
+                <a href="{{ url_for('language') }}">Language Selection</a>
+                <a href="{{ url_for('report_status') }}">Report Status</a>
+                <a href="{{ url_for('payment') }}">Payment</a>
+                <a href="{{ url_for('help_page') }}">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+            </div>
+
     </header>
     <main class="content">
       <h1>Dashboard</h1>

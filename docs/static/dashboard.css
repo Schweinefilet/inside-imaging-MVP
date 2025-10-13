@@ -1,0 +1,211 @@
+/* Dashboard landing page styles */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 2rem;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--mint);
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: var(--text);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    color: var(--mint);
+}
+
+.nav-auth {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-auth a {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--mint);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: var(--mint);
+}
+
+.nav-auth .signup-btn {
+    background-color: var(--mint);
+    color: var(--panel);
+}
+
+.nav-auth .signup-btn:hover {
+    background-color: var(--mint-2);
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.content h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    color: var(--mint);
+}
+
+.content p {
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+}
+
+.upload-section,
+.reports-section {
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.upload-section h3,
+.reports-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: var(--mint);
+}
+
+.upload-section form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+}
+
+.upload-section form input[type="file"],
+.upload-section form select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1rem;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+}
+
+.upload-section form button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    background: linear-gradient(180deg, var(--mint-2), var(--mint));
+    color: var(--panel);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+.upload-section form button:hover {
+    filter: saturate(1.05) brightness(1.03);
+}
+
+.reports-section p {
+    color: var(--muted);
+}
+
+.footer {
+    background-color: var(--panel-2);
+    padding: 2rem;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+}
+
+.footer-col h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--mint);
+}
+
+.footer-col p,
+.footer-col a {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.footer-col a {
+    text-decoration: none;
+}
+
+.footer-col a:hover {
+    color: var(--mint);
+}
+
+.footer-bottom {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .navbar {
+        flex-wrap: wrap;
+    }
+    .nav-links {
+        flex-basis: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    .nav-auth {
+        flex-basis: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    .content {
+        padding: 1rem;
+    }
+}

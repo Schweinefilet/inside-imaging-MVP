@@ -7,6 +7,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 
 # --- app ---
 app = Flask(__name__)
+# available languages
+LANGUAGES = ["English", "Kiswahili"]
 
 # --- translate wiring ---
 try:
@@ -30,12 +32,25 @@ except Exception:
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+       stats = {
+        "total": 0, "male": 0, "female": 0,
+        "0-17": 0, "18-30": 0, "31-50": 0,
+        "51-65": 0, "66+": 0,
+    }
+    return render_template("index.html", stats=stats, languages=LANGUAGES)
+ 
+
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "GET":
-        return render_template("index.html")
+                stats = {
+            "total": 0, "male": 0, "female": 0,
+            "0-17": 0, "18-30": 0, "31-50": 0,
+            "51-65": 0, "66+": 0,
+        }
+        return render_template("index.html", stats=stats, languages=LANGUAGES)
+
 
     file = request.files.get("file")
     lang = request.form.get("language", "English")

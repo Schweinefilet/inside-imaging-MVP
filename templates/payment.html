@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Payment - Inside Imaging</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
+                <span class="brand-name">Inside Imaging</span>
+            </div>
+            <nav class="nav-links">
+                <a href="{{ url_for('index') }}">Dashboard</a>
+                <a href="{{ url_for('language') }}">Language Selection</a>
+                <a href="{{ url_for('report_status') }}">Report Status</a>
+                <a href="{{ url_for('payment') }}">Payment</a>
+                <a href="{{ url_for('help_page') }}">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+                <button id="theme-toggle-button" class="theme-toggle">Light Mode</button>
+            </div>
+        </header>
+        <main class="content">
+            <h1>Payment</h1>
+            <p>Enter your payment details to complete your transaction.</p>
+        </main>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var html = document.documentElement;
+        var button = document.getElementById('theme-toggle-button');
+        var saved = localStorage.getItem('theme') || 'dark';
+        if (saved === 'light') {
+            html.classList.add('light');
+            if (button) button.textContent = 'Dark Mode';
+        }
+        if (button) {
+            button.addEventListener('click', function () {
+                var isLight = html.classList.toggle('light');
+                button.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            });
+        }
+    });
+    </script>
+</body>
+</html>

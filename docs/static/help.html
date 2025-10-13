@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Help - Inside Imaging</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link rel="stylesheet" href="/static/help.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Navigation Bar -->
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="/static/logo.png" alt="Inside Imaging logo" class="logo">
+                <span class="brand-name">Inside Imaging</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/static/language-selection.html">Language Selection</a>
+                <a href="/static/report-status.html">Report Status</a>
+                <a href="/static/payment.html">Payment</a>
+                <a href="/static/help.html">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="#" class="login-button">Log In</a>
+                <a href="#" class="signup-button">Sign Up</a>
+            </div>
+        </header>
+        <!-- Main Content -->
+        <main class="content">
+            <h1>How Can We Help You?</h1>
+            <p class="tagline">Find answers to frequently asked questions or reach out to our support team for personalized assistance.</p>
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" placeholder="Search for help topics...">
+                <button class="search-btn">Search</button>
+            </div>
+            <!-- FAQs Section -->
+            <section class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-card">
+                        <h3>What is Inside Imaging?</h3>
+                        <p>Inside Imaging is a secure platform that transforms complex medical imaging reports into simplified language that patients and non-specialists can easily understand. We help bridge the gap between technical medical terminology and everyday language.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How do I upload my radiology report?</h3>
+                        <p>After creating an account and logging in, navigate to the Dashboard page. Click on the "Upload Report" button, select your file, choose the modality type (CT Scan, MRI, X-ray, etc.), and follow the prompts to complete the upload process.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What languages are available for translation?</h3>
+                        <p>We currently offer simplified translations in English, Spanish, French, and Chinese. You can select your preferred language on the Language Selection page after uploading your report.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How much does the service cost?</h3>
+                        <p>Our pricing is based on the type and complexity of the report. After uploading your report, you'll receive a quote before proceeding to payment.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How long does translation take?</h3>
+                        <p>Most translations are completed within 24–48 hours. You can check the status of your report on the Status page. You'll receive a notification when your translated report is ready for download.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Is my medical information secure?</h3>
+                        <p>Yes, we take security and privacy very seriously. All uploads and translations are encrypted and processed following industry‑standard security protocols. We never share your medical information with third parties.</p>
+                    </div>
+                </div>
+            </section>
+            <!-- Contact Support Section -->
+            <section class="contact-support">
+                <h2>Contact Support</h2>
+                <div class="contact-grid">
+                    <form class="support-form" onsubmit="event.preventDefault();">
+                        <h3>Send us a message</h3>
+                        <label for="support-name">Your Name</label>
+                        <input id="support-name" type="text" placeholder="Type here..." required>
+                        <label for="support-email">Email Address</label>
+                        <input id="support-email" type="email" placeholder="Type here..." required>
+                        <label for="support-subject">Subject</label>
+                        <input id="support-subject" type="text" placeholder="Type here..." required>
+                        <label for="support-message">Message</label>
+                        <textarea id="support-message" rows="4" placeholder="Type your message..." required></textarea>
+                        <button type="submit" class="primary-btn">Send Message</button>
+                    </form>
+                    <div class="contact-info">
+                        <h3>Contact Information</h3>
+                        <p>123 Medical Plaza, Suite 456<br>San Francisco, CA 94107</p>
+                        <p>Phone: +1 (800) 555‑7890</p>
+                        <p>Email: support@insideimaging.com</p>
+                        <p><strong>Support Hours</strong><br>Monday – Friday: 9:00 AM – 5:00 PM ET</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-columns">
+                <div class="footer-about">
+                    <h3>Inside Imaging</h3>
+                    <p>Transforming radiology reports into your preferred language with ease.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="/">Dashboard</a></li>
+                        <li><a href="/static/language-selection.html">Language Selection</a></li>
+                        <li><a href="/static/report-status.html">Report Status</a></li>
+                        <li><a href="/static/payment.html">Payment</a></li>
+                        <li><a href="/static/help.html">Help</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <ul>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">LinkedIn</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© <span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <script>
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

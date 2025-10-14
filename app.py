@@ -8,13 +8,16 @@ from src import db
 from dotenv import load_dotenv; load_dotenv()
 from flask_cors import CORS
 import os
-CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS","https://schweinefilet.github.io")}})
+#CORS(, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS","https://schweinefilet.github.io")}})
 
 # --- logging ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 # --- app ---
 app = Flask(__name__)
+# Enable CORS for configured origins
+CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS", "https://schweinefilet.github.io")}})
+
 # available languages
 LANGUAGES = ["English", "Kiswahili"]
 # Secret key for session management
@@ -147,7 +150,7 @@ def upload():
         study=study,
         language=lang,
   
-    
+    )
 @app.route('/language')
 def language():
     """Render the language selection page"""

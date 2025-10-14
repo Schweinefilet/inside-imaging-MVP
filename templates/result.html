@@ -1,220 +1,230 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
-    <title>Result - Inside Imaging</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
-    <style>
-        .diagram-container {
-            position: relative;
-            width: 200px;
-            height: 500px;
-            margin: 1rem auto;
-            background-color: var(--panel-2);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-        }
-        .diagram-container .region {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            background-color: var(--panel);
-            opacity: 0.4;
-        }
-        .diagram-container .region.head { top: 0; height: 80px; border-radius: 0 0 40px 40px; }
-        .diagram-container .region.chest { top: 80px; height: 150px; border-radius: 40px; }
-        .diagram-container .region.abdomen { top: 230px; height: 150px; border-radius: 40px; }
-        .diagram-container .region.pelvis { top: 380px; height: 120px; border-radius: 40px 40px 0 0; }
-        .diagram-container .region.highlight {
-            background-color: var(--mint);
-            opacity: 0.6;
-        }
-        .patient-card { margin-bottom: 2rem; }
-        .report-section { margin-top: 1.5rem; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Result - Inside Imaging</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <style>
+    .diagram-container {
+      position: relative; width: 200px; height: 500px; margin: 1rem auto;
+      background-color: var(--panel-2); border-radius: 10px; box-shadow: var(--shadow);
+    }
+    .diagram-container .region {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 120px; background-color: var(--panel); opacity: .4;
+    }
+    .diagram-container .region.head { top: 0; height: 80px; border-radius: 0 0 40px 40px; }
+    .diagram-container .region.chest { top: 80px; height: 150px; border-radius: 40px; }
+    .diagram-container .region.abdomen { top: 230px; height: 150px; border-radius: 40px; }
+    .diagram-container .region.pelvis { top: 380px; height: 120px; border-radius: 40px 40px 0 0; }
+    .diagram-container .region.highlight { background-color: var(--mint); opacity: .6; }
+    .patient-card { margin-bottom: 2rem; }
+    .stat-badges { display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
+    .badge { border:1px solid var(--border); background:var(--panel); border-radius:10px; padding:.35rem .6rem; font-size:.85rem; }
+    .badge.positive { border-color:#39d98a; }
+    .badge.negative { border-color:#ff6b6b; }
+    .stats-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:.75rem; }
+    .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:.7rem .8rem; }
+    .stat-card .label { color:var(--muted); font-size:.8rem; display:block; }
+    .stat-card .value { font-weight:700; }
+  </style>
 </head>
 <body>
 <div class="page-wrapper">
-<header class="navbar">
+  <header class="navbar">
     <div class="navbar-brand">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
-        <span class="brand-name">Inside Imaging</span>
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
+      <span class="brand-name">Inside Imaging</span>
     </div>
     <nav class="nav-links">
-        <a href="{{ url_for('index') }}">Dashboard</a>
-        <a href="{{ url_for('language') }}">Language Selection</a>
-        <a href="{{ url_for('report_status') }}">Report Status</a>
-        <a href="{{ url_for('payment') }}">Payment</a>
-        <a href="{{ url_for('help_page') }}">Help</a>
+      <a href="{{ url_for('index') }}">Dashboard</a>
+      <a href="{{ url_for('language') }}">Language Selection</a>
+      <a href="{{ url_for('report_status') }}">Report Status</a>
+      <a href="{{ url_for('payment') }}">Payment</a>
+      <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
-    {% if session.get('user_id') %}
+      {% if session.get('username') %}
         <span class="username">{{ session.get('username') }}</span>
         <div class="settings-wrapper">
-            <button id="settings-button" class="settings-btn">⚙️</button>
-            <div id="settings-dropdown" class="settings-dropdown">
-                <button id="toggle-dark">Dark Mode</button>
-                <button id="toggle-light">Light Mode</button>
-                <a href="{{ url_for('logout') }}">Log Out</a>
-            </div>
+          <button id="settings-button" class="settings-btn" type="button">⚙️</button>
+          <div id="settings-dropdown" class="settings-dropdown">
+            <button id="toggle-dark" type="button">Dark Mode</button>
+            <button id="toggle-light" type="button">Light Mode</button>
+            <a href="{{ url_for('logout') }}">Log Out</a>
+          </div>
         </div>
-    {% else %}
+      {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-    {% endif %}
+      {% endif %}
     </div>
-</header>
+  </header>
 
-<main class="content">
+  <main class="content">
     <h1>Report Summary</h1>
+
     <!-- Patient information -->
     <div class="patient-card">
-        <div><span class="lbl">Hospital</span><strong>{{ patient.hospital }}</strong></div>
-        <div><span class="lbl">Study</span><strong>{{ patient.study }}</strong></div>
-        <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
-        <div><span class="lbl">Sex</span><strong>{{ patient.sex }}</strong></div>
-        <div><span class="lbl">Age</span><strong>{{ patient.age }}</strong></div>
-        <div><span class="lbl">Date</span><strong>{{ patient.date }}</strong></div>
+      <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
+      <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
+      <div><span class="lbl">Name</span><strong>{{ patient.name|default('', true) }}</strong></div>
+      <div><span class="lbl">Sex</span><strong>{{ patient.sex|default('', true) }}</strong></div>
+      <div><span class="lbl">Age</span><strong>{{ patient.age|default('', true) }}</strong></div>
+      <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>
     </div>
 
     <!-- Body diagram -->
     <section>
-        <h2>Body Region Highlight</h2>
-        <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|lower }}"></div>
+      <h2>Body Region Highlight</h2>
+      <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
     </section>
 
     <!-- Language note -->
-    {% if language != 'en' %}
-    <p class="lang-warning">Translation into {{ language }} is not yet supported; displaying English.</p>
+    {% if language and language != 'English' %}
+      <p class="lang-warning">Translation into {{ language }} is not yet supported; displaying English.</p>
     {% endif %}
+
+    <!-- Quick stats -->
+    <section class="report-section">
+      <h2>Report Statistics</h2>
+      <div class="stat-badges">
+        <span class="badge">Words: {{ structured.word_count|default(report_stats.words, true) }}</span>
+        <span class="badge">Sentences: {{ structured.sentence_count|default(report_stats.sentences, true) }}</span>
+        <span class="badge positive">Highlighted positive: {{ structured.highlights_positive|default(report_stats.highlights_positive, true) }}</span>
+        <span class="badge negative">Highlighted negative: {{ structured.highlights_negative|default(report_stats.highlights_negative, true) }}</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="label">Comparison</span><span class="value">{{ structured.comparison or 'None' }}</span></div>
+        <div class="stat-card"><span class="label">Oral contrast</span><span class="value">{{ structured.oral_contrast or 'Not stated' }}</span></div>
+      </div>
+    </section>
 
     <!-- Structured report -->
     <div class="report">
-        <section>
-            <h3>Reason for the Scan</h3>
-            <p>{{ structured.reason }}</p>
-        </section>
-        <section>
-            <h3>Procedure Details</h3>
-            <p>{{ structured.technique }}</p>
-        </section>
-        <section class="important-findings">
-            <h3>Important Findings</h3>
-            <p>{{ structured.findings|safe }}</p>
-        </section>
-        <section>
-            <h3>Conclusion</h3>
-            <p>{{ structured.Conclusion|safe }}</p>
-        </section>
-        {% if structured.concern %}
-        <section class="warn">
-            <h3>Note of Concern</h3>
-            <p>{{ structured.concern }}</p>
-        </section>
-        {% endif %}
+      <section>
+        <h3>Reason for the Scan</h3>
+        <p>{{ structured.reason|default('', true) }}</p>
+      </section>
+      <section>
+        <h3>Procedure Details</h3>
+        <p>{{ structured.technique|default('', true) }}</p>
+      </section>
+      <section class="important-findings">
+        <h3>Important Findings</h3>
+        <p>{{ structured.findings|default('', true)|safe }}</p>
+      </section>
+      <section>
+        <h3>Conclusion</h3>
+        <p>{{ structured.conclusion|default('', true)|safe }}</p>
+      </section>
+      {% if structured.concern %}
+      <section class="warn">
+        <h3>Note of Concern</h3>
+        <p>{{ structured.concern }}</p>
+      </section>
+      {% endif %}
     </div>
-    <details>
-        <summary>Extracted text</summary>
-        <pre>{{ extracted }}</pre>
-    </details>
-    <p><a href="{{ url_for('index') }}">&larr; Back to Dashboard</a></p>
-</main>
 
-<footer class="footer">
+    <details>
+      <summary>Extracted text</summary>
+      <pre>{{ extracted }}</pre>
+    </details>
+
+    <p><a href="{{ url_for('index') }}">&larr; Back to Dashboard</a></p>
+  </main>
+
+  <footer class="footer">
     <div class="footer-columns">
-        <div class="footer-about">
-            <h3>Inside Imaging</h3>
-            <p>Transforming radiology reports into your preferred language with ease.</p>
-        </div>
-        <div class="footer-col">
-            <h4>Navigation</h4>
-            <ul>
-                <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-                <li><a href="{{ url_for('language') }}">Language Selection</a></li>
-                <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
-                <li><a href="{{ url_for('payment') }}">Payment</a></li>
-                <li><a href="{{ url_for('help_page') }}">Help</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Resources</h4>
-            <ul>
-                <li><a href="#">Documentation</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Support</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Connect</h4>
-            <ul>
-                <li><a href="#">Twitter</a></li>
-                <li><a href="#">LinkedIn</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </div>
+      <div class="footer-about">
+        <h3>Inside Imaging</h3>
+        <p>Transforming radiology reports into your preferred language with ease.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+          <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+          <li><a href="{{ url_for('payment') }}">Payment</a></li>
+          <li><a href="{{ url_for('help_page') }}">Help</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
     </div>
     <div class="footer-bottom">
-        <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+      <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
     </div>
-</footer>
+  </footer>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var container = document.getElementById('diagram-container');
-        var organ = container.dataset.organ || '';
-        var map = {
-            head: ['brain','head','skull'],
-            chest: ['chest','heart','lung','thorax'],
-            abdomen: ['abdomen','liver','kidney','pancreas','stomach','spleen','gallbladder'],
-            pelvis: ['pelvis','bladder','prostate','ovary','uterus']
-        };
-        var regions = ['head','chest','abdomen','pelvis'];
-        regions.forEach(function(r) {
-            var div = document.createElement('div');
-            div.classList.add('region', r);
-            var keywords = map[r] || [];
-            if (keywords.some(function(k) { return organ.includes(k); })) {
-                div.classList.add('highlight');
-            }
-            container.appendChild(div);
-        });
+  document.addEventListener('DOMContentLoaded', function() {
+    var container = document.getElementById('diagram-container');
+    if (container) {
+      var organ = (container.dataset.organ || '').toLowerCase();
+      var map = {
+        head: ['brain','head','skull'],
+        chest: ['chest','heart','lung','thorax'],
+        abdomen: ['abdomen','liver','kidney','pancreas','stomach','spleen','gallbladder'],
+        pelvis: ['pelvis','bladder','prostate','ovary','uterus']
+      };
+      ['head','chest','abdomen','pelvis'].forEach(function(r) {
+        var div = document.createElement('div');
+        div.classList.add('region', r);
+        var keywords = map[r] || [];
+        if (keywords.some(function(k) { return organ.includes(k); })) div.classList.add('highlight');
+        container.appendChild(div);
+      });
+    }
 
-        var html = document.documentElement;
-        var saved = localStorage.getItem('theme') || 'dark';
-        if (saved === 'light') {
-            html.classList.add('light');
-        }
-        var settingsButton = document.getElementById('settings-button');
-        var dropdown = document.getElementById('settings-dropdown');
-        if (settingsButton && dropdown) {
-            settingsButton.addEventListener('click', function() {
-                dropdown.classList.toggle('show');
-            });
-        }
-        var toggleDark = document.getElementById('toggle-dark');
-        var toggleLight = document.getElementById('toggle-light');
-        if (toggleDark) {
-            toggleDark.addEventListener('click', function() {
-                html.classList.remove('light');
-                localStorage.setItem('theme','dark');
-            });
-        }
-        if (toggleLight) {
-            toggleLight.addEventListener('click', function() {
-                html.classList.add('light');
-                localStorage.setItem('theme','light');
-            });
-        }
-        var currentYear = document.getElementById('current-year');
-        if (currentYear) {
-            currentYear.textContent = new Date().getFullYear();
-        }
-    });
+    var html = document.documentElement;
+    var saved = localStorage.getItem('theme') || 'dark';
+    if (saved === 'light') html.classList.add('light');
+
+    var settingsButton = document.getElementById('settings-button');
+    var dropdown = document.getElementById('settings-dropdown');
+    if (settingsButton && dropdown) {
+      settingsButton.addEventListener('click', function() {
+        dropdown.classList.toggle('show');
+      });
+    }
+    var toggleDark = document.getElementById('toggle-dark');
+    var toggleLight = document.getElementById('toggle-light');
+    if (toggleDark) {
+      toggleDark.addEventListener('click', function() {
+        html.classList.remove('light');
+        localStorage.setItem('theme','dark');
+      });
+    }
+    if (toggleLight) {
+      toggleLight.addEventListener('click', function() {
+        html.classList.add('light');
+        localStorage.setItem('theme','light');
+      });
+    }
+
+    var currentYear = document.getElementById('current-year');
+    if (currentYear) currentYear.textContent = new Date().getFullYear();
+  });
 </script>
 </body>
 </html>

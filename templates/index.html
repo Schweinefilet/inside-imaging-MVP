@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light dark">
   <title>Inside Imaging</title>
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
@@ -15,27 +15,27 @@
         <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
       </div>
       <nav class="nav-links">
-              <nav class="nav-links">
-                <a href="{{ url_for('index') }}">Dashboard</a>
-                <a href="{{ url_for('language') }}">Language Selection</a>
-                <a href="{{ url_for('report_status') }}">Report Status</a>
-                <a href="{{ url_for('payment') }}">Payment</a>
-                <a href="{{ url_for('help_page') }}">Help</a>
-            </nav>
-            <div class="nav-auth">
-                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-            </div>
-
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('language') }}">Language Selection</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+      </div>
     </header>
+
     <main class="content">
       <h1>Dashboard</h1>
       <p>Upload, manage, and download your translated radiology reports in one place.</p>
+
       <div class="dashboard-grid">
         <section class="upload-section">
           <h2>Upload New Report</h2>
           <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
-            <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.txt" required>
+            <input type="file" name="file" accept=".pdf,.txt" required>
             <label for="language">Language:</label>
             <select name="language" id="language">
               {% for language in languages %}
@@ -44,24 +44,15 @@
             </select>
             <button type="submit">Upload &amp; Convert</button>
           </form>
-          <h3>Or paste text</h3>
-          <form action="{{ url_for('upload') }}" method="post" class="paste-form">
-            <textarea name="file_text" rows="4" placeholder="Paste radiology text here"></textarea>
-            <label for="language_text">Language:</label>
-            <select name="language" id="language_text">
-              {% for language in languages %}
-              <option value="{{ language }}">{{ language }}</option>
-              {% endfor %}
-            </select>
-            <button type="submit">Submit Text</button>
-          </form>
         </section>
+
         <section class="reports-section">
           <h2>Your Reports</h2>
           <p>No reports found.</p>
         </section>
       </div>
     </main>
+
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-about">
@@ -71,11 +62,11 @@
         <div class="footer-col">
           <h4>Navigation</h4>
           <ul>
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Language Selection</a></li>
-            <li><a href="#">Report Status</a></li>
-            <li><a href="#">Payment</a></li>
-            <li><a href="#">Help</a></li>
+            <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+            <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+            <li><a href="{{ url_for('payment') }}">Payment</a></li>
+            <li><a href="{{ url_for('help_page') }}">Help</a></li>
           </ul>
         </div>
         <div class="footer-col">

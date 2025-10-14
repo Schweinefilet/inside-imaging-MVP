@@ -7,6 +7,7 @@
   <title>Result - Inside Imaging</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='loader.css') }}">
   <style>
     .diagram-container {
       position: relative; width: 200px; height: 500px; margin: 1rem auto;
@@ -30,6 +31,30 @@
     .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:.7rem .8rem; }
     .stat-card .label { color:var(--muted); font-size:.8rem; display:block; }
     .stat-card .value { font-weight:700; }
+
+    /* list rendering and colors inside simple-output */
+    .simple-output ul { margin: .25rem 0 0; padding-left: 1.1rem; }
+    .simple-output li { margin: .2rem 0; }
+    .simple-output strong.negative { color:#ff6b6b; cursor: help; position: relative; }
+    .simple-output strong.positive { color:#4cc96c; }
+
+    /* Tooltip bubble */
+    .def-tooltip { position: fixed; z-index: 9998; background: var(--panel, #111); color: var(--text, #fff);
+      border:1px solid var(--border,#333); border-radius:10px; padding:.5rem .6rem; box-shadow: var(--shadow, 0 6px 24px rgba(0,0,0,.3));
+      max-width: 260px; font-size:.9rem; line-height:1.2; transform: translate(-50%,-100%); pointer-events: none; }
+    .def-tooltip.hidden { display:none; }
+    .def-tooltip::after { content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
+      width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--panel,#111); }
+
+    /* Organ modal (placeholder, you can replace the content) */
+    .organ-modal { position: fixed; inset: 0; z-index: 9997; display:none; align-items:center; justify-content:center;
+      background: rgba(0,0,0,.45); backdrop-filter: saturate(120%) blur(2px); }
+    .organ-modal.show { display:flex; }
+    .organ-card { background: var(--panel,#111); color: var(--text,#fff); border:1px solid var(--border,#333);
+      border-radius:14px; padding:16px 18px; box-shadow: var(--shadow,0 6px 24px rgba(0,0,0,.3)); width:min(92vw,680px); }
+    .organ-card header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+    .organ-card button { background: transparent; color: inherit; border: 1px solid var(--border,#333); border-radius:8px; padding:.35rem .6rem; cursor:pointer;}
+    .organ-link { text-decoration: underline dotted; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -107,24 +132,24 @@
     <div class="report">
       <section>
         <h3>Reason for the Scan</h3>
-        <p>{{ structured.reason|default('', true) }}</p>
+        <p class="simple-output">{{ structured.reason|default('', true)|safe }}</p>
       </section>
       <section>
         <h3>Procedure Details</h3>
-        <p>{{ structured.technique|default('', true) }}</p>
+        <p class="simple-output">{{ structured.technique|default('', true)|safe }}</p>
       </section>
       <section class="important-findings">
         <h3>Important Findings</h3>
-        <p>{{ structured.findings|default('', true)|safe }}</p>
+        <div class="simple-output">{{ structured.findings|default('', true)|safe }}</div>
       </section>
       <section>
         <h3>Conclusion</h3>
-        <p>{{ structured.conclusion|default('', true)|safe }}</p>
+        <div class="simple-output">{{ structured.conclusion|default('', true)|safe }}</div>
       </section>
       {% if structured.concern %}
       <section class="warn">
         <h3>Note of Concern</h3>
-        <p>{{ structured.concern }}</p>
+        <p class="simple-output">{{ structured.concern|safe }}</p>
       </section>
       {% endif %}
     </div>
@@ -176,6 +201,23 @@
   </footer>
 </div>
 
+<!-- Tooltip element -->
+<div id="def-tooltip" class="def-tooltip hidden" role="tooltip" aria-hidden="true"></div>
+
+<!-- Organ modal placeholder -->
+<div id="organ-modal" class="organ-modal" aria-hidden="true">
+  <div class="organ-card" role="dialog" aria-modal="true" aria-labelledby="organ-title">
+    <header>
+      <h3 id="organ-title">Organ</h3>
+      <button type="button" id="organ-close">Close</button>
+    </header>
+    <div id="organ-content">
+      <!-- You can swap this with an image <img id="organ-image" src="" alt=""> -->
+      <p>Viewer placeholder for <strong id="organ-name"></strong>.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var container = document.getElementById('diagram-container');
@@ -224,7 +266,66 @@
 
     var currentYear = document.getElementById('current-year');
     if (currentYear) currentYear.textContent = new Date().getFullYear();
+
+    // -------- Tooltip for red highlights --------
+    var tooltip = document.getElementById('def-tooltip');
+    function showTip(text, x, y) {
+      tooltip.textContent = text;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+      tooltip.classList.remove('hidden');
+      tooltip.setAttribute('aria-hidden','false');
+    }
+    function hideTip() {
+      tooltip.classList.add('hidden');
+      tooltip.setAttribute('aria-hidden','true');
+    }
+    document.body.addEventListener('mousemove', function(e){
+      if (!tooltip.classList.contains('hidden')) {
+        tooltip.style.left = e.clientX + 'px';
+        tooltip.style.top = (e.clientY - 14) + 'px';
+      }
+    }, {passive: true});
+    document.addEventListener('mouseover', function(e){
+      var target = e.target.closest('.simple-output strong.negative');
+      if (target) {
+        var def = target.getAttribute('data-def') || 'An abnormal finding.';
+        var rect = target.getBoundingClientRect();
+        showTip(def, rect.left + (rect.width/2), rect.top - 6);
+      }
+    }, {passive: true});
+    document.addEventListener('mouseout', function(e){
+      var target = e.target.closest('.simple-output strong.negative');
+      if (target) hideTip();
+    }, {passive: true});
+
+    // -------- Organ click handler (placeholder viewer) --------
+    var organModal = document.getElementById('organ-modal');
+    var organClose = document.getElementById('organ-close');
+    var organName = document.getElementById('organ-name');
+    function openOrgan(org) {
+      organName.textContent = org;
+      organModal.classList.add('show');
+      organModal.setAttribute('aria-hidden','false');
+      // Dispatch event so you can attach your own image logic elsewhere
+      window.dispatchEvent(new CustomEvent('organ:open', { detail: { organ: org } }));
+    }
+    function closeOrgan() {
+      organModal.classList.remove('show');
+      organModal.setAttribute('aria-hidden','true');
+    }
+    organClose.addEventListener('click', closeOrgan);
+    organModal.addEventListener('click', function(e){ if(e.target === organModal) closeOrgan(); });
+
+    document.addEventListener('click', function(e){
+      var o = e.target.closest('.organ-link');
+      if (o) {
+        var key = o.getAttribute('data-organ') || o.textContent.trim().toLowerCase();
+        openOrgan(key);
+      }
+    });
   });
 </script>
+<script src="{{ url_for('static', filename='loader.js') }}"></script>
 </body>
 </html>

@@ -137,6 +137,10 @@ def upload():
 
     structured = S
 
+    # persist for later pages like /payment
+    session["structured"] = structured
+    session["language"] = lang
+
     return render_template(
         "result.html",
         S=S,
@@ -160,7 +164,12 @@ def report_status():
 
 @app.route("/payment")
 def payment():
-    return render_template("payment.html")
+    # supply context expected by template
+    structured = session.get("structured")
+    if not isinstance(structured, dict):
+        structured = {"report_type": "CT Scan", "price": "24.99"}
+    lang = session.get("language", "English")
+    return render_template("payment.html", structured=structured, language=lang)
 
 
 @app.route("/help")

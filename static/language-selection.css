@@ -1,4 +1,9 @@
 /* Language selection page styles */
+.navbar-brand img {
+  height: 100px;   /* pick your size */
+  width: auto;
+}
+
 .language-selection-page {
   max-width: 1200px;
   margin: 0 auto;

@@ -1,5 +1,6 @@
 ﻿import os
 import io
+import re
 import logging
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -92,9 +93,13 @@ def upload():
 
     file = request.files.get("file")
     lang = request.form.get("language", "English")
+    file_text = request.form.get("file_text", "")
 
     extracted = ""
-    if file and file.filename:
+    # Prefer pasted text if provided
+    if file_text and file_text.strip():
+        extracted = file_text.strip()
+    elif file and file.filename:
         fname = secure_filename(file.filename)
         data = file.read()
         try:
@@ -124,18 +129,27 @@ def upload():
         logging.exception("build_structured failed")
         S = {"reason": "", "technique": "", "findings": "", "conclusion": "", "concern": ""}
 
-    study = {"organ": "Unknown"}
-
+    # Patient and study from structured metadata
     patient = {
-        "hospital": "",
-        "study": study.get("organ", "Unknown"),
-        "name": "",
-        "sex": "",
-        "age": "",
-        "date": "",
+        "hospital": S.get("hospital", ""),
+        "study": S.get("study", "Unknown"),
+        "name": S.get("name", ""),
+        "sex": S.get("sex", ""),
+        "age": S.get("age", ""),
+        "date": S.get("date", ""),
     }
+    study = {"organ": patient.get("study") or "Unknown"}
 
     structured = S
+
+    # Simple report stats for UI
+    high_html = (S.get("findings", "") or "") + (S.get("conclusion", "") or "")
+    report_stats = {
+        "words": len((extracted or "").split()),
+        "sentences": len(re.findall(r"[.!?]+", extracted or "")),
+        "highlights_positive": high_html.count('class="positive"'),
+        "highlights_negative": high_html.count('class="negative"'),
+    }
 
     # persist for later pages like /payment
     session["structured"] = structured
@@ -149,6 +163,7 @@ def upload():
         extracted=extracted,
         study=study,
         language=lang,
+        report_stats=report_stats,
     )
 
 

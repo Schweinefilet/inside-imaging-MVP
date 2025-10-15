@@ -1,4 +1,10 @@
 /* Dashboard landing page styles */
+
+.navbar-brand img {
+  height: 100px;   /* pick your size */
+  width: auto;
+}
+
 .page-wrapper {
     display: flex;
     flex-direction: column;
@@ -32,10 +38,22 @@
     color: var(--text);
     font-size: 0.9rem;
     text-decoration: none;
+
+    /* boxes */
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel-2);
+    transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, color .15s ease;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links a:focus {
     color: var(--mint);
+    border-color: var(--mint);
+    box-shadow: 0 0 0 2px var(--mint-2);
+    outline: 0;
 }
 
 .nav-auth {
@@ -63,9 +81,9 @@
 
 .content {
     flex: 1;
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 1rem;
+    max-width: none;
+    margin: 0;
 }
 
 .content h2 {
@@ -82,7 +100,7 @@
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
     gap: 2rem;
     width: 100%;
 }
@@ -188,7 +206,8 @@
     padding-top: 1rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
+    .navbar-brand img { height: 24px; }
     .dashboard-grid {
         grid-template-columns: 1fr;
     }

@@ -1,0 +1,115 @@
+<!-- templates/base.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>{% block title %}Inside Imaging{% endblock %}</title>
+
+  <!-- Early theme init to avoid FOUC -->
+  <script>
+    (function () {
+      var html = document.documentElement;
+      var saved = localStorage.getItem('theme');
+      if (!saved) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          html.classList.add('light');
+        }
+      } else if (saved === 'light') {
+        html.classList.add('light');
+      }
+    })();
+  </script>
+
+  <style>
+    :root { --bg:#0b0c10; --fg:#e5e7eb; --accent:#60a5fa; }
+    html.light { --bg:#ffffff; --fg:#111827; --accent:#0fb989; }
+
+    #loading-screen{
+      position:fixed;inset:0;display:grid;place-items:center;
+      background: radial-gradient(1200px 800px at 50% 50%, #111827 0%, var(--bg) 60%);
+      color:var(--fg);z-index:9999;opacity:1;transition:opacity .28s ease
+    }
+    html.light #loading-screen{
+      background: radial-gradient(1200px 800px at 50% 50%, #eef2f7 0%, var(--bg) 60%);
+    }
+    #loading-screen.hidden{opacity:0;pointer-events:none}
+    .loader{display:grid;gap:18px;place-items:center}
+    .ring{
+      width:96px;height:96px;border-radius:50%;background:
+      conic-gradient(from 0deg, transparent 0 12%, var(--accent) 12% 42%, transparent 42% 100%);
+      -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 10px),#000 calc(100% - 10px));
+      mask:radial-gradient(farthest-side,transparent calc(100% - 10px),#000 calc(100% - 10px));
+      animation:spin 1.1s linear infinite;filter:drop-shadow(0 0 24px color-mix(in oklab, var(--accent) 50%, transparent))
+    }
+    .dots{
+      margin:0;font:600 16px ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      letter-spacing:.3px;display:inline-flex;align-items:baseline;color:var(--fg)
+    }
+    .dot{display:inline-block;width:.6ch;text-align:center;animation:blink 1s infinite}
+    .dot:nth-child(1){animation-delay:0s}.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes blink{0%,20%{opacity:0}50%{opacity:1}100%{opacity:0}}
+
+    /* Compact fixed toggle button available on all pages */
+    .theme-toggle{
+      position:fixed;top:12px;right:12px;z-index:10000;
+      padding:8px 10px;border:1px solid color-mix(in oklab, var(--accent) 40%, #000);
+      border-radius:10px;background:color-mix(in oklab, var(--bg) 85%, var(--accent) 15%);
+      color:var(--fg);font:600 12px/1 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15)
+    }
+    .theme-toggle:focus{outline:2px solid var(--accent);outline-offset:2px}
+  </style>
+</head>
+<body>
+  <!-- theme toggle -->
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Toggle color theme">Light Mode</button>
+
+  <!-- loader overlay available on every page -->
+  <div id="loading-screen" aria-live="polite" aria-busy="true">
+    <div class="loader">
+      <div class="ring" aria-hidden="true"></div>
+      <p class="dots" id="loading-text">Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>
+    </div>
+  </div>
+
+  <!-- page content -->
+  <main id="app">{% block content %}{% endblock %}</main>
+
+  <script>
+    // Theme toggle behavior
+    (function(){
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      var isLight = html.classList.contains('light');
+      if (btn) {
+        btn.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+        btn.setAttribute('aria-pressed', String(isLight));
+        btn.addEventListener('click', function(){
+          var nowLight = html.classList.toggle('light');
+          localStorage.setItem('theme', nowLight ? 'light' : 'dark');
+          btn.textContent = nowLight ? 'Dark Mode' : 'Light Mode';
+          btn.setAttribute('aria-pressed', String(nowLight));
+        });
+      }
+    })();
+
+    // Loading overlay controls
+    function showLoading(text){
+      const el=document.getElementById('loading-screen');
+      const txt=document.getElementById('loading-text');
+      if(text && txt) txt.firstChild.nodeValue=text;
+      if(el){ el.classList.remove('hidden'); el.setAttribute('aria-busy','true'); }
+    }
+    function hideLoading(){
+      const el=document.getElementById('loading-screen');
+      if(el){ el.classList.add('hidden'); el.setAttribute('aria-busy','false'); }
+    }
+    window.addEventListener('load',()=>setTimeout(hideLoading,10000));
+    // auto-show on any form submit
+    addEventListener('submit', e => { if(e.target.tagName==='FORM') showLoading('Processing'); }, true);
+  </script>
+</body>
+</html>

@@ -311,10 +311,41 @@ a:hover { text-decoration: underline; }
 /* Flash messages */
 .flash{ list-style:none; padding:0; margin:10px 0; }
 .flash li{
-  background:var(--panel-2);
+  background: var(--panel-2);
   padding:8px 12px;
   border-left:4px solid #ffbe33;
   border-radius:8px;
   margin-bottom:6px;
   color:var(--text);
+}
+
+
+/* Light theme variables */
+:root.light, [data-theme='light'] {
+  --bg: #f8f9fa;
+  --panel: #ffffff;
+  --panel-2: #eef2f7;
+  --text: #1f2937;
+  --muted: #4b5563;
+  --border: #d7dde5;
+  --mint: #0fb989;
+  --mint-2: #28d8a3;
+  --shadow: 0 4px 10px rgba(0,0,0,.08);
+}
+
+/* Light theme background override */
+html.light body::before,
+[data-theme='light'] body::before {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 25% 30%, color-mix(in oklab, var(--mint) 18%, white) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, color-mix(in oklab, var(--mint-2) 16%, white) 0%, transparent 55%),
+    linear-gradient(180deg, #f9fbfd 0%, #eef3f8 100%);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+}
+
+/* Light theme selection contrast */
+html.light ::selection,
+[data-theme='light'] ::selection {
+  background: color-mix(in oklab, var(--mint) 25%, #00000010);
 }

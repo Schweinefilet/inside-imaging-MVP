@@ -1,9 +1,10 @@
 ﻿import os
 import io
 import re
+import json
 import logging
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -105,8 +106,15 @@ def upload():
         try:
             if fname.lower().endswith(".pdf"):
                 try:
-                    from pdfminer.high_level import extract_text
-                    extracted = extract_text(io.BytesIO(data)) or ""
+                    from pdfminer_high_level import extract_text  # type: ignore
+                except Exception:
+                    # keep backward compat if module name differs
+                    try:
+                        from pdfminer.high_level import extract_text  # type: ignore
+                    except Exception:
+                        extract_text = None
+                try:
+                    extracted = extract_text(io.BytesIO(data)) if extract_text else ""
                 except Exception:
                     logging.exception("pdfminer failed; extracted empty")
             else:
@@ -151,8 +159,9 @@ def upload():
         "highlights_negative": high_html.count('class="negative"'),
     }
 
-    # persist for later pages like /payment
+    # persist for later pages like /payment and PDF download
     session["structured"] = structured
+    session["patient"] = patient
     session["language"] = lang
 
     return render_template(
@@ -165,6 +174,50 @@ def upload():
         language=lang,
         report_stats=report_stats,
     )
+
+
+@app.post("/download-pdf")
+def download_pdf():
+    """
+    Generate a PDF of the report with logo top-left.
+    Expects POST with hidden fields 'structured' and 'patient' (JSON),
+    or falls back to session values.
+    """
+    # Prefer form payload so the user can download without relying on session
+    try:
+        structured = request.form.get("structured")
+        patient = request.form.get("patient")
+        if structured:
+            structured = json.loads(structured)
+        else:
+            structured = session.get("structured", {})
+        if patient:
+            patient = json.loads(patient)
+        else:
+            patient = session.get("patient", {})
+    except Exception:
+        logging.exception("Failed to parse form JSON; falling back to session")
+        structured = session.get("structured", {})
+        patient = session.get("patient", {})
+
+    # Render HTML to be converted
+    html_str = render_template("pdf_report.html", structured=structured or {}, patient=patient or {})
+
+    # Try WeasyPrint first
+    try:
+        from weasyprint import HTML  # type: ignore
+        pdf_bytes = HTML(string=html_str, base_url=request.url_root).write_pdf()
+        resp = make_response(pdf_bytes)
+        resp.headers["Content-Type"] = "application/pdf"
+        resp.headers["Content-Disposition"] = 'attachment; filename="inside-imaging-report.pdf"'
+        return resp
+    except Exception:
+        logging.exception("WeasyPrint PDF render failed; returning HTML fallback")
+        # Fallback: return HTML download so user still gets a file
+        resp = make_response(html_str)
+        resp.headers["Content-Type"] = "text/html; charset=utf-8"
+        resp.headers["Content-Disposition"] = 'attachment; filename="inside-imaging-report.html"'
+        return resp
 
 
 @app.route("/language")

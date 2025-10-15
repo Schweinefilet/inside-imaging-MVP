@@ -350,24 +350,88 @@ html.light ::selection,
   background: color-mix(in oklab, var(--mint) 25%, #00000010);
 }
 
-/* ---- Slider toggle for theme ---- */
-.theme-switch{display:inline-flex;align-items:center;gap:.5rem;margin-right:.5rem}
-.theme-icon{font-size:1rem;line-height:1}
-.theme-switch-text{font-size:.9rem;color:var(--muted)}
-.theme-switch-input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+/* Keep login/signup from stretching with the taller slider */
+.navbar .nav-auth {
+  display: flex;
+  align-items: center;      /* key fix */
+  gap: .75rem;
+}
+.navbar .nav-auth > * {
+  flex: 0 0 auto;           /* prevent flex-grow */
+}
+
+/* Compact auth buttons */
+.navbar .login-button,
+.navbar .signup-button {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  padding: .45rem .8rem;
+}
+
+/* ---- Theme slider with label below (FINAL) ---- */
+.theme-switch {
+  display: inline-flex;
+  flex-direction: column;   /* label below */
+  align-items: center;
+  gap: .25rem;
+  margin-right: .5rem;
+
+  /* sizes and fine nudges */
+  --track-w: 46px;
+  --track-h: 26px;
+  --pad: 1px;
+  --knob: 22px;
+  --travel: calc(var(--track-w) - var(--knob) - (var(--pad) * 2));
+  --x-nudge-checked: -2px;  /* 1px left in light mode */
+  --y-nudge-checked: 0px;  /* 1px up in light mode */
+}
+.theme-row { display:flex; align-items:center; gap:.5rem; }
+.theme-icon { font-size:1rem; line-height:1; }
+.theme-switch-text { font-size:.9rem; line-height:1; color:var(--muted); }
+
+.theme-switch-input {
+  position: absolute; opacity: 0; width: 1px; height: 1px; overflow: hidden;
+}
+
 .theme-switch-track{
-  width:46px;height:26px;border-radius:999px;
-  background:var(--panel-2);border:1px solid var(--border);
-  position:relative;transition:background .2s,border-color .2s
+  position: relative;
+  box-sizing: border-box;
+  width: var(--track-w);
+  height: var(--track-h);
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  transition: background .22s ease, border-color .22s ease;
 }
+
 .theme-switch-track::after{
-  content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
-  background:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .2s
+  content:"";
+  position:absolute;
+  width: var(--knob);
+  height: var(--knob);
+  border-radius:50%;
+  left: var(--pad);
+  top: 50%;
+  transform: translate(var(--x, 0), -50%);  /* centered vertically */
+  background: var(--text);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), background-color .22s ease, box-shadow .22s ease;
 }
+
 .theme-switch-input:checked + .theme-switch-track{
-  background:color-mix(in oklab, var(--mint) 35%, var(--panel-2));border-color:var(--mint)
+  --x: calc(var(--travel) + var(--x-nudge-checked));
+  background: color-mix(in oklab, var(--mint) 35%, var(--panel-2));
+  border-color: var(--mint);
 }
-.theme-switch-input:checked + .theme-switch-track::after{transform:translateX(20px)}
+.theme-switch-input:checked + .theme-switch-track::after{
+  transform: translate(calc(var(--travel) + var(--x-nudge-checked)), calc(-50% + var(--y-nudge-checked)));
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .theme-switch-track, .theme-switch-track::after{ transition: none; }
+}
 
 /* ---- Simple-output lists and highlight colors sitewide ---- */
 .simple-output ul{ margin:.25rem 0 0; padding-left:1.1rem; }
@@ -377,3 +441,36 @@ html.light ::selection,
 
 /* ---- Clickable organ terms ---- */
 .organ-link{ text-decoration: underline dotted; cursor: pointer; }
+
+/* Lock navbar layout across pages: [logo] [centered nav] [auth/theme] */
+.navbar{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 24px;
+  padding: 10px 16px;        /* keep if you want uniform padding */
+}
+.navbar-brand{ justify-self: start; }
+.nav-auth{ justify-self: end; display: flex; align-items: center; gap: .75rem; }
+.navbar *{ min-width: 0; }   /* prevent overflow pushing layout */
+
+/* Center the nav links in the middle column */
+.nav-links{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  white-space: nowrap;
+  margin: 0;                 /* kill stray margins */
+}
+
+/* Optional: make link pills consistent across pages */
+.nav-links a{
+  display: inline-flex;
+  align-items: center;
+  padding: .45rem .9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  text-decoration: none;
+}

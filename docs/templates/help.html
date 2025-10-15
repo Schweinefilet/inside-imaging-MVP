@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark">
     <title>Help - Inside Imaging</title>
 
-    <!-- Pre-paint theme snippet to avoid flash -->
+    <!-- Pre-paint: prevent flash on load -->
     <script>
     (function(){
       try {
@@ -21,6 +21,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='help.css') }}">
+
+
 </head>
 <body>
 <div class="page-wrapper">
@@ -36,8 +38,18 @@
             <a href="{{ url_for('help_page') }}">Help</a>
         </nav>
         <div class="nav-auth">
-            <!-- New theme toggle button -->
-            <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" title="Toggle theme">🌙</button>
+            <!-- Slider toggle (replaces the old button) -->
+            <label class="theme-switch" aria-label="Toggle theme">
+                <span class="theme-row">
+                    <span class="theme-icon" aria-hidden="true">🌙</span>
+                    <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+                    <span class="theme-switch-track" aria-hidden="true"></span>
+                    <span class="theme-icon" aria-hidden="true">☀️</span>
+                </span>
+                <span id="theme-label" class="theme-switch-text">Dark mode</span>
+            </label>
+
+
 
             {% if session.get('user_id') %}
             <span class="username">{{ session.get('username') }}</span>
@@ -68,7 +80,7 @@
             <div class="faq-grid">
                 <div class="faq-card">
                     <h3>What is Inside Imaging?</h3>
-                    <p>Inside Imaging is a secure platform that transforms complex medical imaging reports into simplified language that patients and non specialists can easily understand.</p>
+                    <p>Inside Imaging is a secure platform that transforms complex medical imaging reports into simplified language that patients and non-specialists can easily understand.</p>
                 </div>
                 <div class="faq-card">
                     <h3>How do I upload my radiology report?</h3>
@@ -88,7 +100,7 @@
                 </div>
                 <div class="faq-card">
                     <h3>Is my medical information secure?</h3>
-                    <p>Yes, all uploads and translations are encrypted and processed following industry standard security protocols. We never share your medical information with third parties.</p>
+                    <p>Yes, all uploads and translations are encrypted and processed following industry-standard security protocols. We never share your medical information with third parties.</p>
                 </div>
             </div>
         </section>
@@ -110,7 +122,7 @@
                 <div class="contact-info">
                     <h3>Contact Information</h3>
                     <p>123 Medical Plaza, Suite 456<br>San Francisco, CA 94107</p>
-                    <p>Phone: +1 (800) 555 7890</p>
+                    <p>Phone: +1 (800) 555-7890</p>
                     <p>Email: support@insideimaging.com</p>
                     <p><strong>Support Hours</strong><br>Monday – Friday: 9:00 AM – 5:00 PM ET</p>
                 </div>
@@ -157,16 +169,16 @@
     </footer>
 </div>
 
-<!-- Theme toggle script -->
+<!-- Theme logic for the slider -->
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var html = document.documentElement;
     var saved = localStorage.getItem('theme') || 'dark';
-    if (saved === 'light') {
-        html.classList.add('light');
-    }
+    if (saved === 'light') html.classList.add('light');
+
+    // Keep your settings dropdown logic
     var settingsButton = document.getElementById('settings-button');
     var dropdown = document.getElementById('settings-dropdown');
     if (settingsButton && dropdown) {
@@ -176,22 +188,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     var toggleDark = document.getElementById('toggle-dark');
     var toggleLight = document.getElementById('toggle-light');
-    if (toggleDark) {
-        toggleDark.addEventListener('click', function() {
-            html.classList.remove('light');
-            localStorage.setItem('theme', 'dark');
-        });
-    }
-    if (toggleLight) {
-        toggleLight.addEventListener('click', function() {
-            html.classList.add('light');
-            localStorage.setItem('theme', 'light');
-        });
-    }
+    if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
+    if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
+
     var currentYear = document.getElementById('current-year');
-    if (currentYear) {
-        currentYear.textContent = new Date().getFullYear();
-    }
+    if (currentYear) currentYear.textContent = new Date().getFullYear();
 });
 </script>
 </body>

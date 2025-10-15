@@ -349,3 +349,25 @@ html.light ::selection,
 [data-theme='light'] ::selection {
   background: color-mix(in oklab, var(--mint) 25%, #00000010);
 }
+/* Buttons: theme toggle */
+.theme-toggle{
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .4rem .6rem;
+  cursor: pointer;
+}
+.theme-toggle:focus-visible{
+  outline: 3px solid color-mix(in oklab, var(--mint) 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* Simple-output lists and highlight colors sitewide */
+.simple-output ul{ margin:.25rem 0 0; padding-left:1.1rem; }
+.simple-output li{ margin:.2rem 0; }
+.simple-output strong.negative{ color:#ff6b6b; }
+.simple-output strong.positive{ color:#4cc96c; }
+
+/* Clickable organ terms */
+.organ-link{ text-decoration: underline dotted; cursor: pointer; }

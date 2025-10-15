@@ -92,6 +92,14 @@
   <main class="content">
     <h1>Report Summary</h1>
 
+    <section class="report-actions" style="margin:1rem 0;">
+      <form method="post" action="{{ url_for('download_pdf') }}">
+        <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
+        <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
+        <button type="submit" class="btn" data-show-loader>Download PDF</button>
+      </form>
+    </section>
+
     <!-- Patient information -->
     <div class="patient-card">
       <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>

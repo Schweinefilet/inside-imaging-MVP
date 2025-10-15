@@ -12,7 +12,7 @@
   document.getElementById('f').onsubmit = async e => {
     e.preventDefault();
     const body = new URLSearchParams(new FormData(e.target));
-    const r = await fetch('https://YOUR-BACKEND.example.com/api/summarize', { method:'POST', body });
+    const r = await fetch('https://inside-imaging-mvp.onrender.com', { method:'POST', body });
     document.getElementById('out').textContent = await r.text();
   };
   </script>

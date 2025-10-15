@@ -61,11 +61,53 @@
       cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15)
     }
     .theme-toggle:focus{outline:2px solid var(--accent);outline-offset:2px}
+    /* fixed slider container (replaces .theme-toggle button) */
+    .fixed-switch{
+      position:fixed; top:12px; right:12px; z-index:10000;
+      display:inline-flex; flex-direction:column; align-items:center; gap:.25rem;
+      padding:6px 8px; border:1px solid color-mix(in oklab, var(--accent) 40%, #000);
+      border-radius:10px; background:color-mix(in oklab, var(--bg) 85%, var(--accent) 15%);
+      box-shadow:0 2px 10px rgba(0,0,0,.15)
+    }
+    .theme-row{display:flex;align-items:center;gap:.5rem}
+    .theme-icon{font-size:1rem;line-height:1}
+    .theme-switch-text{font:600 .9rem/1 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--fg)}
+
+    /* core switch */
+    .theme-switch-input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+    .theme-switch-track{
+     position:relative; box-sizing:border-box; width:46px; height:26px; border-radius:999px;
+      background: var(--panel-2, #262f3b);
+      border:1px solid color-mix(in oklab, var(--accent) 35%, #000);
+      transition: background .22s ease, border-color .22s ease;
+    }
+    html.light .theme-switch-track{
+      background: color-mix(in oklab, var(--accent) 25%, #dff4ec);
+      border-color: var(--accent);
+    }
+    .theme-switch-track::after{
+      content:""; position:absolute; width:22px; height:22px; border-radius:50%;
+      left:2px; top:50%; transform: translate(0,-50%);
+      background: var(--fg); box-shadow:0 1px 2px rgba(0,0,0,.3);
+      transition: transform .22s cubic-bezier(.2,.8,.2,1);
+    }
+    .theme-switch-input:checked + .theme-switch-track::after{
+     transform: translate(19px,-50%); /* 1px left nudge at light mode */
+    }
   </style>
 </head>
 <body>
-  <!-- theme toggle -->
-  <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Toggle color theme">Light Mode</button>
+  <!-- theme switcher -->
+  <label class="theme-switch fixed-switch" aria-label="Toggle theme">
+    <span class="theme-row">
+      <span class="theme-icon" aria-hidden="true">🌙</span>
+      <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+      <span class="theme-switch-track" aria-hidden="true"></span>
+      <span class="theme-icon" aria-hidden="true">☀️</span>
+    </span>
+    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+  </label>
+
 
   <!-- loader overlay available on every page -->
   <div id="loading-screen" aria-live="polite" aria-busy="true">

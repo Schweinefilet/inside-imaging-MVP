@@ -22,15 +22,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='help.css') }}">
 
-    <!-- Slider toggle styles (you can move these to main.css) -->
-    <style>
-      .theme-switch{display:inline-flex;align-items:center;gap:.5rem;margin-right:.5rem}
-      .theme-switch-input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
-      .theme-switch-track{width:46px;height:26px;border-radius:999px;background:var(--panel-2);border:1px solid var(--border);position:relative;transition:background .2s,border-color .2s}
-      .theme-switch-track::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .2s}
-      .theme-switch-input:checked + .theme-switch-track{background:color-mix(in oklab, var(--mint) 35%, var(--panel-2));border-color:var(--mint)}
-      .theme-switch-input:checked + .theme-switch-track::after{transform:translateX(20px)}
-    </style>
+
 </head>
 <body>
 <div class="page-wrapper">
@@ -48,9 +40,16 @@
         <div class="nav-auth">
             <!-- Slider toggle (replaces the old button) -->
             <label class="theme-switch" aria-label="Toggle theme">
-              <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-              <span class="theme-switch-track" aria-hidden="true"></span>
+                <span class="theme-row">
+                    <span class="theme-icon" aria-hidden="true">🌙</span>
+                    <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+                    <span class="theme-switch-track" aria-hidden="true"></span>
+                    <span class="theme-icon" aria-hidden="true">☀️</span>
+                </span>
+                <span id="theme-label" class="theme-switch-text">Dark mode</span>
             </label>
+
+
 
             {% if session.get('user_id') %}
             <span class="username">{{ session.get('username') }}</span>

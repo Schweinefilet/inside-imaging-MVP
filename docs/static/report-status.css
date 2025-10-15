@@ -1,4 +1,8 @@
 /* Styles for Report Status page */
+.navbar-brand img {
+  height: 100px;   /* pick your size */
+  width: auto;
+}
 
 .status-overview {
   display: flex;

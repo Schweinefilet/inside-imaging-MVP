@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Language Selection - Inside Imaging</title>
+  <link rel="stylesheet" href="/static/main.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="stylesheet" href="/static/language-selection.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="navbar">
+      <div class="navbar-brand">
+        <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
+      </div>
+      <nav class="nav-links">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('language') }}">Language Selection</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        <button id="theme-toggle-button" class="theme-toggle">Light Mode</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <h1>Language Selection</h1>
+      <p>Select your preferred language for translation.</p>
+
+      <section class="language-selection-page">
+        <section class="hero">
+          <h2>Select Your Translation Language</h2>
+          <p>Choose the language you prefer for your radiology report translation. Our system will convert medical terminology into clear, understandable language in your selected language.</p>
+        </section>
+
+        <section class="translation-options">
+          <h3>Translation Language Options</h3>
+          <p>Please select your preferred language from the options below. This will be used to translate your radiology report.</p>
+          <div class="info-note">
+            <span>ℹ</span>
+            <p>Your report will be translated while maintaining medical accuracy and clarity.</p>
+          </div>
+
+          <label for="language-select"><strong>Select Language</strong></label>
+          <select id="language-select">
+            <option disabled selected>Please select a language</option>
+            <option>English</option>
+            <option>Spanish</option>
+            <option>French</option>
+            <option>Chinese</option>
+          </select>
+
+          <div class="language-details">
+            <div class="language-card">
+              <div class="icon-placeholder"></div>
+              <div>
+                <h4>English</h4>
+                <p>Clear translations with everyday terminology to help you understand your results.</p>
+              </div>
+            </div>
+            <div class="language-card">
+              <div class="icon-placeholder"></div>
+              <div>
+                <h4>Spanish</h4>
+                <p>Traducciones claras que hacen que los términos médicos sean comprensibles en español.</p>
+              </div>
+            </div>
+            <div class="language-card">
+              <div class="icon-placeholder"></div>
+              <div>
+                <h4>French</h4>
+                <p>Traductions claires qui rendent les termes médicaux compréhensibles en français.</p>
+              </div>
+            </div>
+            <div class="language-card">
+              <div class="icon-placeholder"></div>
+              <div>
+                <h4>Chinese</h4>
+                <p>准确的中文翻译，使您能够理解医学报告中的专业术语。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="options-buttons">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="#" class="btn btn-primary">Confirm Language Selection</a>
+          </div>
+        </section>
+
+        <section class="translation-sample">
+          <h3>Translation Sample</h3>
+          <p>Below is an example of how medical terminology is translated into plain language in your selected language.</p>
+          <div class="sample-original">
+            <strong>Original Radiology Text:</strong>
+            <p>"Posterior-anterior and lateral views of the chest demonstrate no focal consolidation, pneumothorax, or pleural effusion. The cardiac silhouette is normal in size. The mediastinum and hilar contours are unremarkable."</p>
+          </div>
+          <div class="sample-translated">
+            <strong>Translated Plain Language:</strong>
+            <p>"Front and side views of your chest X-ray show no signs of lung infection, collapsed lung, or fluid around your lungs. Your heart appears normal in size. The central chest structures and areas where major blood vessels enter the lungs look normal as well."</p>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var html = document.documentElement;
+      var button = document.getElementById('theme-toggle-button');
+      var saved = localStorage.getItem('theme') || 'dark';
+      if (saved === 'light') {
+        html.classList.add('light');
+        if (button) button.textContent = 'Dark Mode';
+      }
+      if (button) {
+        button.addEventListener('click', function () {
+          var isLight = html.classList.toggle('light');
+          button.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+          localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

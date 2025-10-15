@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Report Status - Inside Imaging</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='report-status.css') }}">
+</head>
+<body>
+<div class="page-wrapper">
+<header class="navbar">
+    <div class="navbar-brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
+    </div>
+    <nav class="nav-links">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('language') }}">Language Selection</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+    </nav>
+    <div class="nav-auth">
+    {% if session.get('user_id') %}
+        <span class="username">{{ session.get('username') }}</span>
+        <div class="settings-wrapper">
+            <button id="settings-button" class="settings-btn">⚙️</button>
+            <div id="settings-dropdown" class="settings-dropdown">
+                <button id="toggle-dark">Dark Mode</button>
+                <button id="toggle-light">Light Mode</button>
+                <a href="{{ url_for('logout') }}">Log Out</a>
+            </div>
+        </div>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+    {% endif %}
+    </div>
+</header>
+
+<main class="content">
+    <h1>Report Status</h1>
+    <p class="tagline">Track the progress of your reports and get notified when they're ready for download.</p>
+
+    <section class="status-overview">
+        <div class="status-card">
+            <h3>Pending Reports</h3>
+            <p class="status-count">0</p>
+        </div>
+        <div class="status-card">
+            <h3>Processing Reports</h3>
+            <p class="status-count">0</p>
+        </div>
+        <div class="status-card">
+            <h3>Completed Reports</h3>
+            <p class="status-count">0</p>
+        </div>
+    </section>
+
+    <section class="reports-list">
+        <h2>Your Reports</h2>
+        <p>No reports available yet.</p>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer-columns">
+        <div class="footer-about">
+            <h3>Inside Imaging</h3>
+            <p>Transforming radiology reports into your preferred language with ease.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Navigation</h4>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+                <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+                <li><a href="{{ url_for('payment') }}">Payment</a></li>
+                <li><a href="{{ url_for('help_page') }}">Help</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="#">Documentation</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Support</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">LinkedIn</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+    </div>
+</footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var html = document.documentElement;
+    var saved = localStorage.getItem('theme') || 'dark';
+    if (saved === 'light') {
+        html.classList.add('light');
+    }
+    var settingsButton = document.getElementById('settings-button');
+    var dropdown = document.getElementById('settings-dropdown');
+    if (settingsButton && dropdown) {
+        settingsButton.addEventListener('click', function() {
+            dropdown.classList.toggle('show');
+        });
+    }
+    var toggleDark = document.getElementById('toggle-dark');
+    var toggleLight = document.getElementById('toggle-light');
+    if (toggleDark) {
+        toggleDark.addEventListener('click', function() {
+            html.classList.remove('light');
+            localStorage.setItem('theme', 'dark');
+        });
+    }
+    if (toggleLight) {
+        toggleLight.addEventListener('click', function() {
+            html.classList.add('light');
+            localStorage.setItem('theme', 'light');
+        });
+    }
+    var currentYear = document.getElementById('current-year');
+    if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+    }
+});
+</script>
+</body>
+</html>

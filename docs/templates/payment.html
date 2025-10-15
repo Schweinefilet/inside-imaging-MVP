@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Payment - Inside Imaging</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='payment.css') }}">
+</head>
+<body>
+<div class="page-wrapper">
+  <header class="navbar">
+    <div class="navbar-brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
+    </div>
+    <nav class="nav-links">
+      <a href="{{ url_for('index') }}">Dashboard</a>
+      <a href="{{ url_for('language') }}">Language Selection</a>
+      <a href="{{ url_for('report_status') }}">Report Status</a>
+      <a href="{{ url_for('payment') }}">Payment</a>
+      <a href="{{ url_for('help_page') }}">Help</a>
+    </nav>
+    <div class="nav-auth">
+      {% if session.get('username') %}
+        <span class="username">{{ session.get('username') }}</span>
+        <div class="settings-wrapper">
+          <button id="settings-button" class="settings-btn" type="button">⚙️</button>
+          <div id="settings-dropdown" class="settings-dropdown">
+            <button id="toggle-dark" type="button">Dark Mode</button>
+            <button id="toggle-light" type="button">Light Mode</button>
+            <a href="{{ url_for('logout') }}">Log Out</a>
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="content">
+    <h1>Complete Your Payment</h1>
+    <p class="tagline">Securely process your payment to access your translated radiology report.</p>
+
+    <div class="payment-grid">
+      <section class="report-details">
+        <h2>Your Report Details</h2>
+        <ul class="details-list">
+          <li><span class="label">Report Type:</span> <span class="value">{{ structured.get('report_type', 'CT Scan') }}</span></li>
+          <li><span class="label">Language:</span> <span class="value">{{ language|default('English') }}</span></li>
+          <li><span class="label">Translation Fee:</span> <span class="value">${{ structured.get('price', '24.99') }}</span></li>
+        </ul>
+
+        <div class="payment-summary">
+          <h3>Payment Summary</h3>
+          <ul>
+            <li><span class="label">Translation Service:</span> <span class="value">${{ structured.get('price', '24.99') }}</span></li>
+            <li class="total"><span class="label">Total:</span> <span class="value">${{ structured.get('price', '24.99') }}</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="payment-form">
+        <h2>Choose Payment Method</h2>
+        <form onsubmit="event.preventDefault();">
+          <label for="payment-method">Payment Method</label>
+          <select id="payment-method" required>
+            <option value="">Select a payment method</option>
+            <option value="visa">Visa</option>
+            <option value="paypal">PayPal</option>
+            <option value="mpesa">M-Pesa</option>
+          </select>
+
+          <label for="card-number">Card Number</label>
+          <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="expiry">Expiry Date</label>
+              <input type="text" id="expiry" placeholder="MM/YY" required>
+            </div>
+            <div class="form-group">
+              <label for="cvv">CVV</label>
+              <input type="text" id="cvv" placeholder="123" required>
+            </div>
+          </div>
+
+          <label for="cardholder-name">Cardholder Name</label>
+          <input type="text" id="cardholder-name" placeholder="John Doe" required>
+
+          <button type="submit" class="primary-btn">Complete Payment</button>
+        </form>
+        <p class="secure-note">Your payment information is secure and encrypted. We never store your full payment details.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-columns">
+      <div class="footer-about">
+        <h3>Inside Imaging</h3>
+        <p>Transforming radiology reports into your preferred language with ease.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+          <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+          <li><a href="{{ url_for('payment') }}">Payment</a></li>
+          <li><a href="{{ url_for('help_page') }}">Help</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var html = document.documentElement;
+  var saved = localStorage.getItem('theme') || 'dark';
+  if (saved === 'light') {
+    html.classList.add('light');
+  }
+
+  var settingsButton = document.getElementById('settings-button');
+  var dropdown = document.getElementById('settings-dropdown');
+  if (settingsButton && dropdown) {
+    settingsButton.addEventListener('click', function () {
+      dropdown.classList.toggle('show');
+    });
+  }
+
+  var toggleDark = document.getElementById('toggle-dark');
+  var toggleLight = document.getElementById('toggle-light');
+  if (toggleDark) {
+    toggleDark.addEventListener('click', function () {
+      html.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    });
+  }
+  if (toggleLight) {
+    toggleLight.addEventListener('click', function () {
+      html.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    });
+  }
+
+  var currentYear = document.getElementById('current-year');
+  if (currentYear) {
+    currentYear.textContent = new Date().getFullYear();
+  }
+});
+</script>
+</body>
+</html>

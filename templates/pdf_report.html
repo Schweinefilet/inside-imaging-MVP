@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Inside Imaging Report</title>
+  <style>
+    @page { size: A4; margin: 24mm 18mm; }
+    body { font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial; color:#111; }
+    header { position: relative; margin-bottom: 14mm; }
+    header img { position:absolute; top:0; left:0; height:24px; }
+    header h1 { margin:0 0 0 34mm; font-size:20px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .cell { flex: 1 1 180px; }
+    h2 { font-size:14px; margin:10px 0 4px; }
+    .simple-output ul { margin:.2rem 0 0; padding-left:1.1rem; }
+    .simple-output li { margin:.15rem 0; }
+    .simple-output strong.negative { color:#c21d1d; }
+    .simple-output strong.positive { color:#188a3b; }
+    .meta { font-size:12px; color:#444; }
+    hr { border:0; border-top:1px solid #ddd; margin:10mm 0 6mm; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging">
+    <h1>Inside Imaging — Patient Report</h1>
+  </header>
+
+  <section class="meta">
+    <div class="row">
+      <div class="cell"><strong>Hospital:</strong> {{ patient.hospital or '' }}</div>
+      <div class="cell"><strong>Study:</strong> {{ patient.study or '' }}</div>
+      <div class="cell"><strong>Name:</strong> {{ patient.name or '' }}</div>
+      <div class="cell"><strong>Sex:</strong> {{ patient.sex or '' }}</div>
+      <div class="cell"><strong>Age:</strong> {{ patient.age or '' }}</div>
+      <div class="cell"><strong>Date:</strong> {{ patient.date or '' }}</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <section>
+    <h2>Reason for the Scan</h2>
+    <div class="simple-output">{{ structured.reason|safe }}</div>
+  </section>
+
+  <section>
+    <h2>Procedure Details</h2>
+    <div class="simple-output">{{ structured.technique|safe }}</div>
+  </section>
+
+  {% if structured.concern %}
+  <section>
+    <h2>Concern</h2>
+    <div class="simple-output">{{ structured.concern|safe }}</div>
+  </section>
+  {% endif %}
+
+  <section>
+    <h2>Findings</h2>
+    <div class="simple-output">{{ structured.findings|safe }}</div>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <div class="simple-output">{{ structured.conclusion|safe }}</div>
+  </section>
+</body>
+</html>

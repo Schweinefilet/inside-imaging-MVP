@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <title>Help - Inside Imaging</title>
+
+    <!-- Pre-paint theme snippet to avoid flash -->
+    <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch(e){}
+    })();
+    </script>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='help.css') }}">
@@ -23,6 +36,9 @@
             <a href="{{ url_for('help_page') }}">Help</a>
         </nav>
         <div class="nav-auth">
+            <!-- New theme toggle button -->
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" title="Toggle theme">🌙</button>
+
             {% if session.get('user_id') %}
             <span class="username">{{ session.get('username') }}</span>
             <div class="settings-wrapper">
@@ -52,7 +68,7 @@
             <div class="faq-grid">
                 <div class="faq-card">
                     <h3>What is Inside Imaging?</h3>
-                    <p>Inside Imaging is a secure platform that transforms complex medical imaging reports into simplified language that patients and non‑specialists can easily understand.</p>
+                    <p>Inside Imaging is a secure platform that transforms complex medical imaging reports into simplified language that patients and non specialists can easily understand.</p>
                 </div>
                 <div class="faq-card">
                     <h3>How do I upload my radiology report?</h3>
@@ -72,7 +88,7 @@
                 </div>
                 <div class="faq-card">
                     <h3>Is my medical information secure?</h3>
-                    <p>Yes, all uploads and translations are encrypted and processed following industry‑standard security protocols. We never share your medical information with third parties.</p>
+                    <p>Yes, all uploads and translations are encrypted and processed following industry standard security protocols. We never share your medical information with third parties.</p>
                 </div>
             </div>
         </section>
@@ -94,7 +110,7 @@
                 <div class="contact-info">
                     <h3>Contact Information</h3>
                     <p>123 Medical Plaza, Suite 456<br>San Francisco, CA 94107</p>
-                    <p>Phone: +1 (800) 555‑7890</p>
+                    <p>Phone: +1 (800) 555 7890</p>
                     <p>Email: support@insideimaging.com</p>
                     <p><strong>Support Hours</strong><br>Monday – Friday: 9:00 AM – 5:00 PM ET</p>
                 </div>
@@ -140,6 +156,9 @@
         </div>
     </footer>
 </div>
+
+<!-- Theme toggle script -->
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -349,25 +349,31 @@ html.light ::selection,
 [data-theme='light'] ::selection {
   background: color-mix(in oklab, var(--mint) 25%, #00000010);
 }
-/* Buttons: theme toggle */
-.theme-toggle{
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: .4rem .6rem;
-  cursor: pointer;
-}
-.theme-toggle:focus-visible{
-  outline: 3px solid color-mix(in oklab, var(--mint) 45%, transparent);
-  outline-offset: 2px;
-}
 
-/* Simple-output lists and highlight colors sitewide */
+/* ---- Slider toggle for theme ---- */
+.theme-switch{display:inline-flex;align-items:center;gap:.5rem;margin-right:.5rem}
+.theme-icon{font-size:1rem;line-height:1}
+.theme-switch-text{font-size:.9rem;color:var(--muted)}
+.theme-switch-input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+.theme-switch-track{
+  width:46px;height:26px;border-radius:999px;
+  background:var(--panel-2);border:1px solid var(--border);
+  position:relative;transition:background .2s,border-color .2s
+}
+.theme-switch-track::after{
+  content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+  background:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .2s
+}
+.theme-switch-input:checked + .theme-switch-track{
+  background:color-mix(in oklab, var(--mint) 35%, var(--panel-2));border-color:var(--mint)
+}
+.theme-switch-input:checked + .theme-switch-track::after{transform:translateX(20px)}
+
+/* ---- Simple-output lists and highlight colors sitewide ---- */
 .simple-output ul{ margin:.25rem 0 0; padding-left:1.1rem; }
 .simple-output li{ margin:.2rem 0; }
 .simple-output strong.negative{ color:#ff6b6b; }
 .simple-output strong.positive{ color:#4cc96c; }
 
-/* Clickable organ terms */
+/* ---- Clickable organ terms ---- */
 .organ-link{ text-decoration: underline dotted; cursor: pointer; }

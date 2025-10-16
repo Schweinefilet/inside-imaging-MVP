@@ -51,6 +51,9 @@
     .simple-output strong.negative { color:#ff6b6b; cursor: help; position: relative; }
     .simple-output strong.positive { color:#4cc96c; }
 
+    /* Any defined term gets tooltip styling */
+    .simple-output [data-def] { text-decoration: underline dotted; cursor: help; }
+
     /* Tooltip bubble */
     .def-tooltip { position: fixed; z-index: 9998; background: var(--panel, #111); color: var(--text, #fff);
       border:1px solid var(--border,#333); border-radius:10px; padding:.5rem .6rem; box-shadow: var(--shadow, 0 6px 24px rgba(0,0,0,.3));
@@ -59,7 +62,7 @@
     .def-tooltip::after { content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
       width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--panel,#111); }
 
-    /* Organ modal (placeholder, you can replace the content) */
+    /* Organ modal (placeholder) */
     .organ-modal { position: fixed; inset: 0; z-index: 9997; display:none; align-items:center; justify-content:center;
       background: rgba(0,0,0,.45); backdrop-filter: saturate(120%) blur(2px); }
     .organ-modal.show { display:flex; }
@@ -68,6 +71,80 @@
     .organ-card header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
     .organ-card button { background: transparent; color: inherit; border: 1px solid var(--border,#333); border-radius:8px; padding:.35rem .6rem; cursor:pointer;}
     .organ-link { text-decoration: underline dotted; cursor: pointer; }
+
+    /* Slider styles copied to match payment page behavior exactly */
+    .theme-switch{
+      display:inline-grid;
+      grid-template-rows:auto auto;
+      gap:6px;
+      user-select:none;
+      cursor:pointer;
+    }
+    .theme-row{
+      display:grid;
+      grid-template-columns:auto auto auto;
+      align-items:center;
+      gap:8px 10px;
+      min-height:28px;            /* ensure row can hold the track */
+    }
+    .theme-icon{ font-size:18px; line-height:1; }
+
+    /* hide native checkbox but keep focusability */
+    .theme-switch-input{
+      position:absolute;
+      opacity:0;
+      width:1px;
+      height:1px;
+    }
+
+    /* track + thumb */
+    .theme-switch-track{
+      position:relative;
+      display:inline-block;
+      width:56px;
+      height:28px;
+      border-radius:999px;
+      background:var(--panel);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      vertical-align:middle;
+    }
+    .theme-switch-track::after{
+      content:"";
+      position:absolute;
+      left:2px;
+      top:50%;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:var(--bg,#fff);
+      box-shadow:0 2px 6px rgba(0,0,0,.25);
+      transform:translate(0,-50%);                 /* always vertically centered */
+      transition:transform .2s ease;
+    }
+    /* checked state: move right, still centered */
+    .theme-switch-input:checked + .theme-switch-track::after{
+      transform:translate(28px,-50%);
+    }
+
+    /* label under the slider */
+    .theme-switch-text{
+      text-align:center;
+      font-size:.9rem;
+      color:var(--muted);
+    }
+
+    /* icon emphasis by state */
+    .theme-row .theme-icon:first-of-type{ opacity:1; }
+    .theme-row .theme-icon:last-of-type{ opacity:.5; }
+    .light .theme-row .theme-icon:first-of-type{ opacity:.5; }
+    .light .theme-row .theme-icon:last-of-type{ opacity:1; }
+
+    /* keyboard focus ring on the track via input focus */
+    .theme-switch-input:focus-visible + .theme-switch-track{
+      outline:2px solid var(--mint);
+      outline-offset:2px;
+    }
   </style>
 </head>
 <body>
@@ -85,25 +162,20 @@
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
-      <!-- Theme slider with icons and live label -->
+      <!-- Slider markup mirrored from payment page -->
       <label class="theme-switch" aria-label="Toggle theme">
-        <span class="theme-icon" aria-hidden="true">🌙</span>
-        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-        <span class="theme-switch-track" aria-hidden="true"></span>
+        <span class="theme-row">
+          <span class="theme-icon" aria-hidden="true">🌙</span>
+          <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+          <span class="theme-switch-track" aria-hidden="true"></span>
+          <span class="theme-icon" aria-hidden="true">☀️</span>
+        </span>
         <span id="theme-label" class="theme-switch-text">Dark mode</span>
-        <span class="theme-icon" aria-hidden="true">☀️</span>
       </label>
 
       {% if session.get('username') %}
         <span class="username">{{ session.get('username') }}</span>
-        <div class="settings-wrapper">
-          <button id="settings-button" class="settings-btn" type="button">⚙️</button>
-          <div id="settings-dropdown" class="settings-dropdown">
-            <button id="toggle-dark" type="button">Dark Mode</button>
-            <button id="toggle-light" type="button">Light Mode</button>
-            <a href="{{ url_for('logout') }}">Log Out</a>
-          </div>
-        </div>
+        <a href="{{ url_for('logout') }}" class="login-button">Log Out</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
@@ -250,6 +322,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Diagram highlight
     var container = document.getElementById('diagram-container');
     if (container) {
       var organ = (container.dataset.organ || '').toLowerCase();
@@ -268,36 +341,79 @@
       });
     }
 
-    var html = document.documentElement;
-    var saved = localStorage.getItem('theme') || 'dark';
-    if (saved === 'light') html.classList.add('light');
-
-    var settingsButton = document.getElementById('settings-button');
-    var dropdown = document.getElementById('settings-dropdown');
-    if (settingsButton && dropdown) {
-      settingsButton.addEventListener('click', function() {
-        dropdown.classList.toggle('show');
-      });
-    }
-    var toggleDark = document.getElementById('toggle-dark');
-    var toggleLight = document.getElementById('toggle-light');
-    if (toggleDark) {
-      toggleDark.addEventListener('click', function() {
-        html.classList.remove('light');
-        localStorage.setItem('theme','dark');
-      });
-    }
-    if (toggleLight) {
-      toggleLight.addEventListener('click', function() {
-        html.classList.add('light');
-        localStorage.setItem('theme','light');
-      });
-    }
-
+    // Footer year
     var currentYear = document.getElementById('current-year');
     if (currentYear) currentYear.textContent = new Date().getFullYear();
 
-    // -------- Tooltip for red highlights --------
+    // Client-side term definitions
+    var TERM_DEFS = {
+      "interhemispheric fissure": "deep groove between the two brain halves",
+      "cortical sulcation": "normal folds and grooves on the brain surface",
+      "grey-white matter differentiation": "normal contrast between outer (grey) and inner (white) layers",
+      "cerebral ventricles": "fluid spaces inside the brain",
+      "ventricles": "fluid spaces inside the brain",
+      "basal cisterns": "fluid spaces at the base of the brain",
+      "posterior fossa": "back lower part of the skull that holds cerebellum and brainstem",
+      "brain stem": "part that connects the brain to the spinal cord",
+      "brainstem": "part that connects the brain to the spinal cord",
+      "sella": "small bone pocket under the brain that holds the pituitary",
+      "pituitary": "small hormone gland under the brain",
+      "orbits": "eye sockets",
+      "paranasal sinuses": "air pockets in the face",
+      "sinuses": "air pockets in the face",
+      "dural venous sinuses": "large veins that drain blood from the brain",
+      "flow voids": "MRI signs of fast-moving blood",
+      "craniocervical junction": "where the skull meets the neck",
+      "intracranial space-occupying lesion": "a mass inside the skull",
+      "space-occupying lesion": "a mass inside the skull"
+    };
+
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    function annotateSimpleOutputTerms() {
+      var roots = document.querySelectorAll('.simple-output');
+      if (!roots.length) return;
+
+      var terms = Object.keys(TERM_DEFS);
+      if (!terms.length) return;
+
+      var pattern = '\\b(' + terms.map(escapeRegExp).join('|') + ')\\b';
+      var rxCheck = new RegExp(pattern, 'i');
+      var rxAll   = new RegExp(pattern, 'gi');
+
+      roots.forEach(function(root){
+        var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+          acceptNode: function(node){
+            if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
+            rxCheck.lastIndex = 0;
+            if (!rxCheck.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+            if (node.parentElement && node.parentElement.closest('[data-def]')) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+        var toWrap = [];
+        while (walker.nextNode()) toWrap.push(walker.currentNode);
+
+        toWrap.forEach(function(textNode){
+          var text = textNode.nodeValue;
+          var frag = document.createDocumentFragment();
+          var last = 0;
+          text.replace(rxAll, function(match, _g1, offset){
+            if (offset > last) frag.appendChild(document.createTextNode(text.slice(last, offset)));
+            var span = document.createElement('span');
+            span.textContent = match;
+            span.setAttribute('data-def', TERM_DEFS[match.toLowerCase()] || 'Definition not available.');
+            frag.appendChild(span);
+            last = offset + match.length;
+            return match;
+          });
+          if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+          if (textNode.parentNode) textNode.parentNode.replaceChild(frag, textNode);
+        });
+      });
+    }
+
+    // Tooltip for defined terms
     var tooltip = document.getElementById('def-tooltip');
     function showTip(text, x, y) {
       tooltip.textContent = text;
@@ -316,20 +432,24 @@
         tooltip.style.top = (e.clientY - 14) + 'px';
       }
     }, {passive: true});
+
     document.addEventListener('mouseover', function(e){
-      var target = e.target.closest('.simple-output strong.negative');
+      var target = e.target.closest('.simple-output [data-def]');
       if (target) {
-        var def = target.getAttribute('data-def') || 'An abnormal finding.';
+        var def = target.getAttribute('data-def') || 'Definition not available.';
         var rect = target.getBoundingClientRect();
         showTip(def, rect.left + (rect.width/2), rect.top - 6);
       }
     }, {passive: true});
+
     document.addEventListener('mouseout', function(e){
-      var target = e.target.closest('.simple-output strong.negative');
+      var target = e.target.closest('.simple-output [data-def]');
       if (target) hideTip();
     }, {passive: true});
 
-    // -------- Organ click handler (placeholder viewer) --------
+    annotateSimpleOutputTerms();
+
+    // Organ click handler
     var organModal = document.getElementById('organ-modal');
     var organClose = document.getElementById('organ-close');
     var organName = document.getElementById('organ-name');

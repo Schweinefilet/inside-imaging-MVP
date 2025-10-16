@@ -193,11 +193,6 @@ def upload():
 
 @app.route("/download-pdf", methods=["GET", "POST"])
 def download_pdf():
-    """
-    Generate a PDF of the report with logo top-left.
-    Uses templates/pdf_report.html. Accepts POST with hidden JSON fields
-    or falls back to session for GET.
-    """
     try:
         if request.method == "POST":
             structured_raw = request.form.get("structured")
@@ -207,22 +202,32 @@ def download_pdf():
         else:
             structured = session.get("structured", {}) or {}
             patient = session.get("patient", {}) or {}
-    except Exception:
-        logging.exception("Failed to parse form JSON; falling back to session")
-        structured = session.get("structured", {}) or {}
-        patient = session.get("patient", {}) or {}
+    except Exception as e:
+        logging.exception("Failed to parse form JSON")
+        return jsonify({"error": "bad form JSON", "detail": str(e)}), 400
 
     html_str = render_template("pdf_report.html", structured=structured, patient=patient)
 
+    # hard fail if PDF fails. no HTML fallback.
     try:
         return _pdf_response_from_html(html_str, filename="inside-imaging-report.pdf", inline=False)
-    except Exception:
+    except Exception as e:
         logging.exception("WeasyPrint PDF render failed")
-        # Keep a graceful fallback to aid debugging
-        resp = make_response(html_str)
-        resp.headers["Content-Type"] = "text/html; charset=utf-8"
-        resp.headers["Content-Disposition"] = 'attachment; filename="inside-imaging-report.html"'
-        return resp
+        return jsonify({"error": "pdf_failed", "detail": str(e)}), 500
+
+@app.get("/pdf-smoke")
+def pdf_smoke():
+    test_html = """
+    <!doctype html><meta charset="utf-8">
+    <style>@page{size:A4;margin:20mm} body{font-family:Arial}</style>
+    <h1>WeasyPrint OK</h1><p>Static image test below.</p>
+    <img src="/static/logo.png" alt="logo" height="24">
+    """
+    try:
+        return _pdf_response_from_html(test_html, filename="smoke.pdf", inline=True)
+    except Exception as e:
+        logging.exception("Smoke failed")
+        return jsonify({"error": "smoke_failed", "detail": str(e)}), 500
 
 
 @app.get("/report/preview")

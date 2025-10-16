@@ -12,7 +12,7 @@
         '<div class="loader-spin" aria-hidden="true"></div>' +
         '<div class="loader-col">' +
           '<div class="loader-text">Working on your report…</div>' +
-          '<div class="loader-sub">This can take about 10 seconds</div>' +
+          '<div class="loader-sub">This can take about 30 seconds</div>' +
         '</div>' +
       '</div>';
     document.body.appendChild(el);

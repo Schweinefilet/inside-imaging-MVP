@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Result - Inside Imaging</title>
+
+  <!-- Pre-paint theme snippet to avoid flash -->
+  <script>
+  (function(){
+    try {
+      var t = localStorage.getItem('theme');
+      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      var useLight = t ? (t === 'light') : preferLight;
+      if (useLight) document.documentElement.classList.add('light');
+    } catch(e){}
+  })();
+  </script>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='loader.css') }}">
@@ -72,6 +85,15 @@
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
+      <!-- Theme slider with icons and live label -->
+      <label class="theme-switch" aria-label="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+        <span class="theme-switch-track" aria-hidden="true"></span>
+        <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        <span class="theme-icon" aria-hidden="true">☀️</span>
+      </label>
+
       {% if session.get('username') %}
         <span class="username">{{ session.get('username') }}</span>
         <div class="settings-wrapper">
@@ -91,14 +113,6 @@
 
   <main class="content">
     <h1>Report Summary</h1>
-
-    <section class="report-actions" style="margin:1rem 0;">
-      <form method="post" action="{{ url_for('download_pdf') }}">
-        <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
-        <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
-        <button type="submit" class="btn" data-show-loader>Download PDF</button>
-      </form>
-    </section>
 
     <!-- Patient information -->
     <div class="patient-card">
@@ -134,6 +148,15 @@
         <div class="stat-card"><span class="label">Comparison</span><span class="value">{{ structured.comparison or 'None' }}</span></div>
         <div class="stat-card"><span class="label">Oral contrast</span><span class="value">{{ structured.oral_contrast or 'Not stated' }}</span></div>
       </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="report-actions" style="margin:1rem 0;">
+      <form method="post" action="{{ url_for('download_pdf') }}">
+        <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
+        <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
+        <button type="submit" class="btn" data-show-loader>Download PDF</button>
+      </form>
     </section>
 
     <!-- Structured report -->
@@ -220,7 +243,6 @@
       <button type="button" id="organ-close">Close</button>
     </header>
     <div id="organ-content">
-      <!-- You can swap this with an image <img id="organ-image" src="" alt=""> -->
       <p>Viewer placeholder for <strong id="organ-name"></strong>.</p>
     </div>
   </div>
@@ -315,14 +337,13 @@
       organName.textContent = org;
       organModal.classList.add('show');
       organModal.setAttribute('aria-hidden','false');
-      // Dispatch event so you can attach your own image logic elsewhere
       window.dispatchEvent(new CustomEvent('organ:open', { detail: { organ: org } }));
     }
     function closeOrgan() {
       organModal.classList.remove('show');
       organModal.setAttribute('aria-hidden','true');
     }
-    organClose.addEventListener('click', closeOrgan);
+    if (organClose) organClose.addEventListener('click', closeOrgan);
     organModal.addEventListener('click', function(e){ if(e.target === organModal) closeOrgan(); });
 
     document.addEventListener('click', function(e){
@@ -334,6 +355,7 @@
     });
   });
 </script>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 <script src="{{ url_for('static', filename='loader.js') }}"></script>
 </body>
 </html>

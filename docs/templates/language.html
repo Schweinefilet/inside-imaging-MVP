@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Language Selection - Inside Imaging</title>
+
+  <!-- Pre-paint: prevent theme flash -->
+  <script>
+    (function(){
+      try{
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      }catch(e){}
+    })();
+  </script>
+
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/language-selection.css">
@@ -23,9 +36,19 @@
         <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
       <div class="nav-auth">
+        <!-- Theme slider -->
+        <label class="theme-switch" aria-label="Toggle theme">
+          <span class="theme-row">
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+            <span class="theme-switch-track" aria-hidden="true"></span>
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+          </span>
+          <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        </label>
+
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-        <button id="theme-toggle-button" class="theme-toggle">Light Mode</button>
       </div>
     </header>
 
@@ -109,23 +132,7 @@
     </main>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var html = document.documentElement;
-      var button = document.getElementById('theme-toggle-button');
-      var saved = localStorage.getItem('theme') || 'dark';
-      if (saved === 'light') {
-        html.classList.add('light');
-        if (button) button.textContent = 'Dark Mode';
-      }
-      if (button) {
-        button.addEventListener('click', function () {
-          var isLight = html.classList.toggle('light');
-          button.textContent = isLight ? 'Dark Mode' : 'Light Mode';
-          localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        });
-      }
-    });
-  </script>
+  <!-- Theme logic -->
+  <script src="/static/theme.js"></script>
 </body>
 </html>

@@ -1,16 +1,27 @@
-﻿import os
+﻿# app.py
+import os
 import io
 import re
 import json
 import logging
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    make_response,
+    jsonify,
+)
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from dotenv import load_dotenv
 from flask_cors import CORS
 
+# local db
 from src import db
 
 load_dotenv()
@@ -36,10 +47,10 @@ except Exception:
 
 # --- translate wiring ---
 try:
-    from src.translate import Glossary, build_structured
+    from src.translate import Glossary, build_structured  # type: ignore
 except Exception:
     logging.exception("translate import failed")
-    Glossary = None
+    Glossary = None  # type: ignore
 
     def build_structured(report_text: str, glossary=None, language: str = "English"):
         return {
@@ -61,42 +72,56 @@ except Exception:
     logging.exception("glossary load failed")
     LAY_GLOSS = None
 
+# PDF engine
+try:
+    from weasyprint import HTML  # type: ignore
+except Exception:
+    HTML = None  # type: ignore
+
+
+def _extract_text_from_pdf_bytes(data: bytes) -> str:
+    """Robust PDF text extraction using pdfminer.six."""
+    try:
+        from pdfminer.high_level import extract_text  # type: ignore
+    except Exception:
+        logging.exception("pdfminer.six not available")
+        return ""
+    try:
+        return extract_text(io.BytesIO(data)) or ""
+    except Exception:
+        logging.exception("pdfminer extract_text failed")
+        return ""
+
+
+def _pdf_response_from_html(html_str: str, *, filename="inside-imaging-report.pdf", inline: bool = False):
+    if not HTML:
+        raise RuntimeError("WeasyPrint is not installed or failed to import")
+    # host_url lets WeasyPrint resolve /static and relative asset URLs
+    pdf_bytes = HTML(string=html_str, base_url=request.host_url).write_pdf()
+    resp = make_response(pdf_bytes)
+    resp.headers["Content-Type"] = "application/pdf"
+    disp = "inline" if inline else "attachment"
+    resp.headers["Content-Disposition"] = f'{disp}; filename="{filename}"'
+    return resp
+
 
 @app.route("/", methods=["GET"])
 def index():
-    stats = {
-        "total": 0,
-        "male": 0,
-        "female": 0,
-        "0-17": 0,
-        "18-30": 0,
-        "31-50": 0,
-        "51-65": 0,
-        "66+": 0,
-    }
+    stats = {"total": 0, "male": 0, "female": 0, "0-17": 0, "18-30": 0, "31-50": 0, "51-65": 0, "66+": 0}
     return render_template("index.html", stats=stats, languages=LANGUAGES)
 
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "GET":
-        stats = {
-            "total": 0,
-            "male": 0,
-            "female": 0,
-            "0-17": 0,
-            "18-30": 0,
-            "31-50": 0,
-            "51-65": 0,
-            "66+": 0,
-        }
+        stats = {"total": 0, "male": 0, "female": 0, "0-17": 0, "18-30": 0, "31-50": 0, "51-65": 0, "66+": 0}
         return render_template("index.html", stats=stats, languages=LANGUAGES)
 
     file = request.files.get("file")
     lang = request.form.get("language", "English")
     file_text = request.form.get("file_text", "")
-
     extracted = ""
+
     # Prefer pasted text if provided
     if file_text and file_text.strip():
         extracted = file_text.strip()
@@ -105,18 +130,7 @@ def upload():
         data = file.read()
         try:
             if fname.lower().endswith(".pdf"):
-                try:
-                    from pdfminer_high_level import extract_text  # type: ignore
-                except Exception:
-                    # keep backward compat if module name differs
-                    try:
-                        from pdfminer.high_level import extract_text  # type: ignore
-                    except Exception:
-                        extract_text = None
-                try:
-                    extracted = extract_text(io.BytesIO(data)) if extract_text else ""
-                except Exception:
-                    logging.exception("pdfminer failed; extracted empty")
+                extracted = _extract_text_from_pdf_bytes(data)
             else:
                 try:
                     extracted = data.decode("utf-8", "ignore")
@@ -126,9 +140,11 @@ def upload():
             logging.exception("file handling failed; extracted empty")
 
     logging.info("len(extracted)=%s", len(extracted or ""))
+
+    # Build structured summary
     try:
         logging.info("calling build_structured language=%s", lang)
-        S = build_structured(extracted, LAY_GLOSS, language=lang)
+        S = build_structured(extracted, LAY_GLOSS, language=lang) or {}
         logging.info(
             "summary_keys=%s",
             {k: len((S or {}).get(k) or "") for k in ("reason", "technique", "findings", "conclusion", "concern")},
@@ -147,7 +163,6 @@ def upload():
         "date": S.get("date", ""),
     }
     study = {"organ": patient.get("study") or "Unknown"}
-
     structured = S
 
     # Simple report stats for UI
@@ -166,7 +181,7 @@ def upload():
 
     return render_template(
         "result.html",
-        S=S,
+        S=structured,
         structured=structured,
         patient=patient,
         extracted=extracted,
@@ -176,48 +191,51 @@ def upload():
     )
 
 
-@app.post("/download-pdf")
+@app.route("/download-pdf", methods=["GET", "POST"])
 def download_pdf():
-    """
-    Generate a PDF of the report with logo top-left.
-    Expects POST with hidden fields 'structured' and 'patient' (JSON),
-    or falls back to session values.
-    """
-    # Prefer form payload so the user can download without relying on session
     try:
-        structured = request.form.get("structured")
-        patient = request.form.get("patient")
-        if structured:
-            structured = json.loads(structured)
+        if request.method == "POST":
+            structured_raw = request.form.get("structured")
+            patient_raw = request.form.get("patient")
+            structured = json.loads(structured_raw) if structured_raw else session.get("structured", {}) or {}
+            patient = json.loads(patient_raw) if patient_raw else session.get("patient", {}) or {}
         else:
-            structured = session.get("structured", {})
-        if patient:
-            patient = json.loads(patient)
-        else:
-            patient = session.get("patient", {})
-    except Exception:
-        logging.exception("Failed to parse form JSON; falling back to session")
-        structured = session.get("structured", {})
-        patient = session.get("patient", {})
+            structured = session.get("structured", {}) or {}
+            patient = session.get("patient", {}) or {}
+    except Exception as e:
+        logging.exception("Failed to parse form JSON")
+        return jsonify({"error": "bad form JSON", "detail": str(e)}), 400
 
-    # Render HTML to be converted
-    html_str = render_template("pdf_report.html", structured=structured or {}, patient=patient or {})
+    html_str = render_template("pdf_report.html", structured=structured, patient=patient)
 
-    # Try WeasyPrint first
+    # hard fail if PDF fails. no HTML fallback.
     try:
-        from weasyprint import HTML  # type: ignore
-        pdf_bytes = HTML(string=html_str, base_url=request.url_root).write_pdf()
-        resp = make_response(pdf_bytes)
-        resp.headers["Content-Type"] = "application/pdf"
-        resp.headers["Content-Disposition"] = 'attachment; filename="inside-imaging-report.pdf"'
-        return resp
-    except Exception:
-        logging.exception("WeasyPrint PDF render failed; returning HTML fallback")
-        # Fallback: return HTML download so user still gets a file
-        resp = make_response(html_str)
-        resp.headers["Content-Type"] = "text/html; charset=utf-8"
-        resp.headers["Content-Disposition"] = 'attachment; filename="inside-imaging-report.html"'
-        return resp
+        return _pdf_response_from_html(html_str, filename="inside-imaging-report.pdf", inline=False)
+    except Exception as e:
+        logging.exception("WeasyPrint PDF render failed")
+        return jsonify({"error": "pdf_failed", "detail": str(e)}), 500
+
+@app.get("/pdf-smoke")
+def pdf_smoke():
+    test_html = """
+    <!doctype html><meta charset="utf-8">
+    <style>@page{size:A4;margin:20mm} body{font-family:Arial}</style>
+    <h1>WeasyPrint OK</h1><p>Static image test below.</p>
+    <img src="/static/logo.png" alt="logo" height="24">
+    """
+    try:
+        return _pdf_response_from_html(test_html, filename="smoke.pdf", inline=True)
+    except Exception as e:
+        logging.exception("Smoke failed")
+        return jsonify({"error": "smoke_failed", "detail": str(e)}), 500
+
+
+@app.get("/report/preview")
+def report_preview():
+    """Quick HTML preview of the PDF template with session data."""
+    structured = session.get("structured", {}) or {}
+    patient = session.get("patient", {}) or {}
+    return render_template("pdf_report.html", structured=structured, patient=patient)
 
 
 @app.route("/language")
@@ -282,4 +300,5 @@ def logout():
 
 
 if __name__ == "__main__":
+    # Use app.run only for local dev. For prod use a WSGI server.
     app.run(debug=True)

@@ -23,6 +23,18 @@
         <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
       <div class="nav-auth">
+
+<!-- Slider toggle (replaces the old button) -->
+<label class="theme-switch" aria-label="Toggle theme">
+    <span class="theme-row">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+        <span class="theme-switch-track" aria-hidden="true"></span>
+        <span class="theme-icon" aria-hidden="true">☀️</span>
+    </span>
+    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+</label>
+
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
       </div>
@@ -92,6 +104,28 @@
       </div>
     </footer>
   </div>
+
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var html = document.documentElement;
+    var saved = localStorage.getItem('theme') || 'dark';
+    if (saved === 'light') html.classList.add('light');
+
+    var settingsButton = document.getElementById('settings-button');
+    var dropdown = document.getElementById('settings-dropdown');
+    if (settingsButton && dropdown) {
+        settingsButton.addEventListener('click', function() {
+            dropdown.classList.toggle('show');
+        });
+    }
+    var toggleDark = document.getElementById('toggle-dark');
+    var toggleLight = document.getElementById('toggle-light');
+    if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
+    if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
+});
+</script>
 
   <script src="/static/loader.js"></script>
 </body>

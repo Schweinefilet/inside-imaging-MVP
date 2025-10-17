@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
-      - 'docs/**'     # avoid infinite loop when we commit docs
+      - 'docs/**'   # avoid loop
 
 permissions:
   contents: write
@@ -18,19 +18,50 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Rebuild docs folder from repo root
+      - name: Rebuild docs folder from repo root (safe whitelist)
+        shell: bash
         run: |
+          set -euo pipefail
           rm -rf docs
           mkdir -p docs
           rsync -a --delete \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'docs/**' \
-            . docs/
-          # Disable Jekyll if you have directories starting with "_"
+            --exclude '.git/***' \
+            --exclude '.github/***' \
+            --exclude 'docs/***' \
+            --exclude 'tests/***' \
+            --exclude 'node_modules/***' \
+            --exclude '__pycache__/***' \
+            --include '*/' \
+            --include 'index.html' \
+            --include '404.html' \
+            --include 'assets/***' \
+            --include '*.html' \
+            --include '*.css' \
+            --include '*.js' \
+            --include '*.mjs' \
+            --include '*.json' \
+            --include '*.map' \
+            --include '*.png' --include '*.jpg' --include '*.jpeg' --include '*.gif' --include '*.svg' --include '*.webp' \
+            --include '*.ico' \
+            --include '*.pdf' \
+            --exclude '*' \
+            ./ docs/
+          # Disable Jekyll
           touch docs/.nojekyll
 
+      - name: Guard: no unsafe files landed in docs
+        shell: bash
+        run: |
+          set -e
+          if find docs -type f \( -name "*.py" -o -name "test_*" -o -name ".env" -o -name ".env.*" -o -name "Dockerfile" \) | grep -q .; then
+            echo "Unsafe files detected in docs/"; 
+            find docs -type f \( -name "*.py" -o -name "test_*" -o -name ".env" -o -name ".env.*" -o -name "Dockerfile" \) -print
+            exit 1
+          fi
+          test -f docs/index.html || { echo "docs/index.html missing"; exit 1; }
+
       - name: Commit changes if any
+        shell: bash
         run: |
           if ! git diff --quiet -- docs; then
             git config user.name "github-actions[bot]"

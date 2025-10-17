@@ -47,6 +47,14 @@
       --link:#1d4ed8;
     }
 
+    /* Body silhouette */
+    .body-svg{display:block;margin:1rem auto;width:100%;height:100%}
+    .body-base *{fill:var(--panel-2)}              /* solid silhouette underneath */
+    .body-outline *{fill:none;stroke:var(--border);stroke-width:1.4}  /* lines only */
+    .region-band{fill:var(--panel);opacity:.35;transition:opacity .2s}
+    .region-band.highlight{fill:var(--mint);opacity:.55}
+
+
     /* Base: keep your CSS backgrounds; only remove default margins to kill seam */
     html, body { margin:0; color:var(--text); }
     a{ color:var(--link); }
@@ -72,15 +80,6 @@
       position:relative; width:200px; height:500px; margin:1rem auto;
       background-color:var(--panel-2); border-radius:10px; box-shadow:var(--shadow);
     }
-    .diagram-container .region{
-      position:absolute; left:50%; transform:translateX(-50%);
-      width:120px; background-color:var(--panel); opacity:.4;
-    }
-    .diagram-container .region.head{ top:0; height:80px; border-radius:0 0 40px 40px; }
-    .diagram-container .region.chest{ top:80px; height:150px; border-radius:40px; }
-    .diagram-container .region.abdomen{ top:230px; height:150px; border-radius:40px; }
-    .diagram-container .region.pelvis{ top:380px; height:120px; border-radius:40px 40px 0 0; }
-    .diagram-container .region.highlight{ background-color:var(--mint); opacity:.6; }
 
     .patient-card{ margin-bottom:2rem; }
     .stat-badges{ display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
@@ -324,25 +323,84 @@
       });
     }
 
-    /* Diagram highlight */
+    /* Diagram highlight: SVG silhouette + clipped bands */
     var container = document.getElementById('diagram-container');
-    if(container){
-      var organ = (container.dataset.organ || '').toLowerCase();
-      var map = {
-        head:['brain','head','skull'],
-        chest:['chest','heart','lung','thorax'],
-        abdomen:['abdomen','liver','kidney','pancreas','stomach','spleen','gallbladder'],
-        pelvis:['pelvis','bladder','prostate','ovary','uterus']
-      };
-      ['head','chest','abdomen','pelvis'].forEach(function(r){
-        var div = document.createElement('div');
-        div.classList.add('region', r);
-        var keywords = map[r] || [];
-        if(keywords.some(function(k){ return organ.includes(k); })) div.classList.add('highlight');
-        container.appendChild(div);
-      });
+    function buildBodySVG(el){
+      el.innerHTML = `
+      <svg class="body-svg" viewBox="0 0 200 500" role="img" aria-labelledby="bodyTitle">
+        <title id="bodyTitle">Body region diagram</title>
+        <defs>
+          <!-- Clip includes head + torso + two legs; excludes arms -->
+          <clipPath id="bodyClip" clipPathUnits="userSpaceOnUse">
+            <circle cx="100" cy="58" r="36"/>
+            <rect  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
+            <rect  x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
+            <rect  x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
+          </clipPath>
+        </defs>
+
+        <!-- solid silhouette under bands -->
+        <g class="body-base" aria-hidden="true">
+          <circle cx="100" cy="58" r="36"/>
+          <rect  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
+          <rect  x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
+          <rect  x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
+        </g>
+
+        <!-- highlight bands -->
+        <rect class="region-band head"    x="0" y="0"   width="200" height="110" clip-path="url(#bodyClip)"/>
+        <rect class="region-band chest"   x="0" y="110" width="200" height="110" clip-path="url(#bodyClip)"/>
+        <rect class="region-band abdomen" x="0" y="220" width="200" height="110" clip-path="url(#bodyClip)"/>
+        <rect class="region-band pelvis"  x="0" y="330" width="200" height="170" clip-path="url(#bodyClip)"/>
+
+        <!-- outline on top: thicker arms, squared legs -->
+        <g class="body-outline" aria-hidden="true">
+          <circle cx="100" cy="58" r="36"/>
+          <rect  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
+          <rect  x="38"  y="120" width="26" height="140" rx="13" ry="13"/>  <!-- left arm -->
+          <rect  x="136" y="120" width="26" height="140" rx="13" ry="13"/>  <!-- right arm -->
+          <rect  x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>   <!-- left leg -->
+          <rect  x="102" y="290" width="32" height="164" rx="6"  ry="6"/>   <!-- right leg -->
+        </g>
+      </svg>`;
     }
 
+    if(container){
+      buildBodySVG(container);
+      // Robust region picker: supports "AP", "A/P", "CAP", full words, organs
+      var text = (container.dataset.organ || '').toLowerCase();
+
+      function hits(rx){ return (text.match(rx) || []).length; }
+
+      var scores = {
+        head:    hits(/\b(brain|head|skull)\b/g),
+        chest:   hits(/\b(chest|thorax|lung|heart)\b/g) + hits(/\bcap\b|chest\s*abd(?:omen)?\s*pelvis/g),
+        abdomen: hits(/\b(abdomen|abdominal|liver|kidney|renal|pancreas|stomach|spleen|gallbladder)\b/g)
+                + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g),
+        pelvis:  hits(/\b(pelvis|pelvic|bladder|prostate|ovary|uterus)\b/g)
+                + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g)
+      };
+
+      var max = Math.max(scores.head, scores.chest, scores.abdomen, scores.pelvis);
+
+      // If "AP" or "abdomen pelvis", light both
+      var ap = /\ba\/p\b|\babd(?:omen)?\s*pelvis\b/.test(text);
+      var cap = /\bcap\b|chest\s*abd(?:omen)?\s*pelvis/.test(text);
+
+      ['head','chest','abdomen','pelvis'].forEach(function(r){
+        var node = container.querySelector('.region-band.'+r);
+        if(!node) return;
+        var on = ap ? (r==='abdomen' || r==='pelvis')
+              : cap ? (r==='chest' || r==='abdomen' || r==='pelvis')
+              : scores[r] === max && max > 0;
+        if(on) node.classList.add('highlight');
+      });
+
+      // Fallback if nothing matched
+      if(!container.querySelector('.region-band.highlight')){
+        container.querySelector('.region-band.chest')?.classList.add('highlight');
+      }
+    }
     /* Footer year */
     var currentYear = document.getElementById('current-year');
     if(currentYear) currentYear.textContent = new Date().getFullYear();

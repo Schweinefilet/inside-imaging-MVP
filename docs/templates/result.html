@@ -6,147 +6,141 @@
   <meta name="color-scheme" content="light dark">
   <title>Result - Inside Imaging</title>
 
-  <!-- Pre-paint theme snippet to avoid flash -->
+  <!-- Pre-paint theme to avoid flash -->
   <script>
   (function(){
-    try {
+    try{
       var t = localStorage.getItem('theme');
       var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
       var useLight = t ? (t === 'light') : preferLight;
-      if (useLight) document.documentElement.classList.add('light');
-    } catch(e){}
+      if(useLight) document.documentElement.classList.add('light');
+    }catch(e){}
   })();
   </script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='loader.css') }}">
+
   <style>
-    .diagram-container {
-      position: relative; width: 200px; height: 500px; margin: 1rem auto;
-      background-color: var(--panel-2); border-radius: 10px; box-shadow: var(--shadow);
+    /* Theme tokens */
+    :root{
+      --bg:#0b0c0f;
+      --text:#f5f6f8;
+      --panel:#151821;
+      --panel-2:#0f1117;
+      --border:#2a2f3a;
+      --muted:#9aa3b2;
+      --mint:#22c55e;
+      --shadow:0 6px 24px rgba(0,0,0,.3);
+      --link:#93c5fd;
     }
-    .diagram-container .region {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      width: 120px; background-color: var(--panel); opacity: .4;
+    .light{
+      --bg:#ffffff;
+      --text:#0a0a0b;
+      --panel:#f6f7f9;
+      --panel-2:#ffffff;
+      --border:#d0d7de;
+      --muted:#495057;
+      --mint:#22c55e;
+      --shadow:0 2px 8px rgba(0,0,0,.08);
+      --link:#1d4ed8;
     }
-    .diagram-container .region.head { top: 0; height: 80px; border-radius: 0 0 40px 40px; }
-    .diagram-container .region.chest { top: 80px; height: 150px; border-radius: 40px; }
-    .diagram-container .region.abdomen { top: 230px; height: 150px; border-radius: 40px; }
-    .diagram-container .region.pelvis { top: 380px; height: 120px; border-radius: 40px 40px 0 0; }
-    .diagram-container .region.highlight { background-color: var(--mint); opacity: .6; }
-    .patient-card { margin-bottom: 2rem; }
-    .stat-badges { display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
-    .badge { border:1px solid var(--border); background:var(--panel); border-radius:10px; padding:.35rem .6rem; font-size:.85rem; }
-    .badge.positive { border-color:#39d98a; }
-    .badge.negative { border-color:#ff6b6b; }
-    .stats-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:.75rem; }
-    .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:.7rem .8rem; }
-    .stat-card .label { color:var(--muted); font-size:.8rem; display:block; }
-    .stat-card .value { font-weight:700; }
 
-    /* list rendering and colors inside simple-output */
-    .simple-output ul { margin: .25rem 0 0; padding-left: 1.1rem; }
-    .simple-output li { margin: .2rem 0; }
-    .simple-output strong.negative { color:#ff6b6b; cursor: help; position: relative; }
-    .simple-output strong.positive { color:#4cc96c; }
+    /* Base: keep your CSS backgrounds; only remove default margins to kill seam */
+    html, body { margin:0; color:var(--text); }
+    a{ color:var(--link); }
 
-    /* Any defined term gets tooltip styling */
-    .simple-output [data-def] { text-decoration: underline dotted; cursor: help; }
+    /* Avoid top margin collapse that looks like a seam under the navbar */
+    .content > :first-child { margin-top: 0; }
 
-    /* Tooltip bubble */
-    .def-tooltip { position: fixed; z-index: 9998; background: var(--panel, #111); color: var(--text, #fff);
-      border:1px solid var(--border,#333); border-radius:10px; padding:.5rem .6rem; box-shadow: var(--shadow, 0 6px 24px rgba(0,0,0,.3));
-      max-width: 260px; font-size:.9rem; line-height:1.2; transform: translate(-50%,-100%); pointer-events: none; }
-    .def-tooltip.hidden { display:none; }
-    .def-tooltip::after { content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
-      width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--panel,#111); }
+    /* Light-mode readability without touching layout or backgrounds */
+    .light .report,
+    .light .report *:not(strong.negative):not(strong.positive),
+    .light .patient-card,
+    .light .patient-card *,
+    .light details,
+    .light details *,
+    .light pre,
+    .light code { color: var(--text) !important; }
 
-    /* Organ modal (placeholder) */
-    .organ-modal { position: fixed; inset: 0; z-index: 9997; display:none; align-items:center; justify-content:center;
-      background: rgba(0,0,0,.45); backdrop-filter: saturate(120%) blur(2px); }
-    .organ-modal.show { display:flex; }
-    .organ-card { background: var(--panel,#111); color: var(--text,#fff); border:1px solid var(--border,#333);
-      border-radius:14px; padding:16px 18px; box-shadow: var(--shadow,0 6px 24px rgba(0,0,0,.3)); width:min(92vw,680px); }
-    .organ-card header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
-    .organ-card button { background: transparent; color: inherit; border: 1px solid var(--border,#333); border-radius:8px; padding:.35rem .6rem; cursor:pointer;}
-    .organ-link { text-decoration: underline dotted; cursor: pointer; }
+    .light .simple-output strong.negative { color:#b91c1c !important; }
+    .light .simple-output strong.positive { color:#166534 !important; }
 
-    /* Slider styles copied to match payment page behavior exactly */
-    .theme-switch{
-      display:inline-grid;
-      grid-template-rows:auto auto;
-      gap:6px;
-      user-select:none;
-      cursor:pointer;
+    /* Components */
+    .diagram-container{
+      position:relative; width:200px; height:500px; margin:1rem auto;
+      background-color:var(--panel-2); border-radius:10px; box-shadow:var(--shadow);
     }
-    .theme-row{
-      display:grid;
-      grid-template-columns:auto auto auto;
-      align-items:center;
-      gap:8px 10px;
-      min-height:28px;            /* ensure row can hold the track */
+    .diagram-container .region{
+      position:absolute; left:50%; transform:translateX(-50%);
+      width:120px; background-color:var(--panel); opacity:.4;
     }
+    .diagram-container .region.head{ top:0; height:80px; border-radius:0 0 40px 40px; }
+    .diagram-container .region.chest{ top:80px; height:150px; border-radius:40px; }
+    .diagram-container .region.abdomen{ top:230px; height:150px; border-radius:40px; }
+    .diagram-container .region.pelvis{ top:380px; height:120px; border-radius:40px 40px 0 0; }
+    .diagram-container .region.highlight{ background-color:var(--mint); opacity:.6; }
+
+    .patient-card{ margin-bottom:2rem; }
+    .stat-badges{ display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
+    .badge{ border:1px solid var(--border); background:var(--panel); border-radius:10px; padding:.35rem .6rem; font-size:.85rem; }
+    .stats-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.75rem; }
+    .stat-card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:.7rem .8rem; }
+    .stat-card .label{ color:var(--muted); font-size:.8rem; display:block; }
+    .stat-card .value{ font-weight:700; }
+
+    .simple-output ul{ margin:.25rem 0 0; padding-left:1.1rem; }
+    .simple-output li{ margin:.2rem 0; }
+    .simple-output strong.negative{ color:#ff6b6b; cursor:help; position:relative; }
+    .simple-output strong.positive{ color:#4cc96c; }
+    .simple-output [data-def]{ text-decoration:underline dotted; cursor:help; }
+
+    /* Tooltip */
+    .def-tooltip{
+      position:fixed; z-index:9998; background:var(--panel); color:var(--text);
+      border:1px solid var(--border); border-radius:10px; padding:.5rem .6rem; box-shadow:var(--shadow);
+      max-width:260px; font-size:.9rem; line-height:1.2; transform:translate(-50%,-100%); pointer-events:none;
+    }
+    .def-tooltip.hidden{ display:none; }
+    .def-tooltip::after{
+      content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
+      width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--panel);
+    }
+
+    /* Modal */
+    .organ-modal{ position:fixed; inset:0; z-index:9997; display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.45); backdrop-filter:saturate(120%) blur(2px); }
+    .organ-modal.show{ display:flex; }
+    .organ-card{ background:var(--panel); color:var(--text); border:1px solid var(--border);
+      border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); width:min(92vw,680px); }
+    .organ-card header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+    .organ-card button{ background:transparent; color:inherit; border:1px solid var(--border); border-radius:8px; padding:.35rem .6rem; cursor:pointer; }
+    .organ-link{ text-decoration:underline dotted; cursor:pointer; }
+
+    /* Theme switch */
+    .theme-switch{ display:inline-grid; grid-template-rows:auto auto; gap:6px; user-select:none; cursor:pointer; }
+    .theme-row{ display:grid; grid-template-columns:auto auto auto; align-items:center; gap:8px 10px; min-height:28px; }
     .theme-icon{ font-size:18px; line-height:1; }
-
-    /* hide native checkbox but keep focusability */
-    .theme-switch-input{
-      position:absolute;
-      opacity:0;
-      width:1px;
-      height:1px;
-    }
-
-    /* track + thumb */
+    .theme-switch-input{ position:absolute; opacity:0; width:1px; height:1px; }
     .theme-switch-track{
-      position:relative;
-      display:inline-block;
-      width:56px;
-      height:28px;
-      border-radius:999px;
-      background:var(--panel);
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      vertical-align:middle;
+      position:relative; display:inline-block; width:56px; height:28px; border-radius:999px;
+      background:var(--panel); border:1px solid var(--border); box-shadow:var(--shadow); vertical-align:middle;
     }
     .theme-switch-track::after{
-      content:"";
-      position:absolute;
-      left:2px;
-      top:50%;
-      width:24px;
-      height:24px;
-      border-radius:50%;
-      background:var(--bg,#fff);
-      box-shadow:0 2px 6px rgba(0,0,0,.25);
-      transform:translate(0,-50%);                 /* always vertically centered */
-      transition:transform .2s ease;
+      content:""; position:absolute; left:2px; top:50%; width:24px; height:24px; border-radius:50%;
+      background:var(--bg); box-shadow:0 2px 6px rgba(0,0,0,.25); transform:translate(0,-50%); transition:transform .2s ease;
     }
-    /* checked state: move right, still centered */
-    .theme-switch-input:checked + .theme-switch-track::after{
-      transform:translate(28px,-50%);
-    }
-
-    /* label under the slider */
-    .theme-switch-text{
-      text-align:center;
-      font-size:.9rem;
-      color:var(--muted);
-    }
-
-    /* icon emphasis by state */
+    .theme-switch-input:checked + .theme-switch-track::after{ transform:translate(28px,-50%); }
+    .theme-switch-text{ text-align:center; font-size:.9rem; color:var(--muted); }
     .theme-row .theme-icon:first-of-type{ opacity:1; }
     .theme-row .theme-icon:last-of-type{ opacity:.5; }
     .light .theme-row .theme-icon:first-of-type{ opacity:.5; }
     .light .theme-row .theme-icon:last-of-type{ opacity:1; }
-
-    /* keyboard focus ring on the track via input focus */
-    .theme-switch-input:focus-visible + .theme-switch-track{
-      outline:2px solid var(--mint);
-      outline-offset:2px;
-    }
+    .theme-switch-input:focus-visible + .theme-switch-track{ outline:2px solid var(--mint); outline-offset:2px; }
   </style>
 </head>
+
 <body>
 <div class="page-wrapper">
   <header class="navbar">
@@ -162,7 +156,6 @@
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
-      <!-- Slider markup mirrored from payment page -->
       <label class="theme-switch" aria-label="Toggle theme">
         <span class="theme-row">
           <span class="theme-icon" aria-hidden="true">🌙</span>
@@ -186,7 +179,6 @@
   <main class="content">
     <h1>Report Summary</h1>
 
-    <!-- Patient information -->
     <div class="patient-card">
       <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
       <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
@@ -196,18 +188,15 @@
       <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>
     </div>
 
-    <!-- Body diagram -->
     <section>
       <h2>Body Region Highlight</h2>
       <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
     </section>
 
-    <!-- Language note -->
     {% if language and language != 'English' %}
-      <p class="lang-warning">Translation into {{ language }} is not yet supported; displaying English.</p>
+      <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
     {% endif %}
 
-    <!-- Quick stats -->
     <section class="report-section">
       <h2>Report Statistics</h2>
       <div class="stat-badges">
@@ -222,16 +211,14 @@
       </div>
     </section>
 
-    <!-- Actions -->
     <section class="report-actions" style="margin:1rem 0;">
       <form method="post" action="{{ url_for('download_pdf') }}">
         <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
         <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
-        <button type="submit" class="btn" data-show-loader>Download PDF</button>
+        <button type="submit" class="btn">Download PDF</button>
       </form>
     </section>
 
-    <!-- Structured report -->
     <div class="report">
       <section>
         <h3>Reason for the Scan</h3>
@@ -304,10 +291,8 @@
   </footer>
 </div>
 
-<!-- Tooltip element -->
 <div id="def-tooltip" class="def-tooltip hidden" role="tooltip" aria-hidden="true"></div>
 
-<!-- Organ modal placeholder -->
 <div id="organ-modal" class="organ-modal" aria-hidden="true">
   <div class="organ-card" role="dialog" aria-modal="true" aria-labelledby="organ-title">
     <header>
@@ -321,85 +306,96 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Diagram highlight
+  document.addEventListener('DOMContentLoaded', function(){
+    /* Theme toggle that switches class and persists */
+    var toggle = document.getElementById('theme-toggle');
+    var label = document.getElementById('theme-label');
+    var isLight = document.documentElement.classList.contains('light');
+    if(toggle && label){
+      toggle.checked = isLight;
+      label.textContent = isLight ? 'Light mode' : 'Dark mode';
+      toggle.setAttribute('aria-checked', String(isLight));
+      toggle.addEventListener('change', function(){
+        var nowLight = toggle.checked;
+        document.documentElement.classList.toggle('light', nowLight);
+        localStorage.setItem('theme', nowLight ? 'light' : 'dark');
+        label.textContent = nowLight ? 'Light mode' : 'Dark mode';
+        toggle.setAttribute('aria-checked', String(nowLight));
+      });
+    }
+
+    /* Diagram highlight */
     var container = document.getElementById('diagram-container');
-    if (container) {
+    if(container){
       var organ = (container.dataset.organ || '').toLowerCase();
       var map = {
-        head: ['brain','head','skull'],
-        chest: ['chest','heart','lung','thorax'],
-        abdomen: ['abdomen','liver','kidney','pancreas','stomach','spleen','gallbladder'],
-        pelvis: ['pelvis','bladder','prostate','ovary','uterus']
+        head:['brain','head','skull'],
+        chest:['chest','heart','lung','thorax'],
+        abdomen:['abdomen','liver','kidney','pancreas','stomach','spleen','gallbladder'],
+        pelvis:['pelvis','bladder','prostate','ovary','uterus']
       };
-      ['head','chest','abdomen','pelvis'].forEach(function(r) {
+      ['head','chest','abdomen','pelvis'].forEach(function(r){
         var div = document.createElement('div');
         div.classList.add('region', r);
         var keywords = map[r] || [];
-        if (keywords.some(function(k) { return organ.includes(k); })) div.classList.add('highlight');
+        if(keywords.some(function(k){ return organ.includes(k); })) div.classList.add('highlight');
         container.appendChild(div);
       });
     }
 
-    // Footer year
+    /* Footer year */
     var currentYear = document.getElementById('current-year');
-    if (currentYear) currentYear.textContent = new Date().getFullYear();
+    if(currentYear) currentYear.textContent = new Date().getFullYear();
 
-    // Client-side term definitions
+    /* Term definitions */
     var TERM_DEFS = {
-      "interhemispheric fissure": "deep groove between the two brain halves",
-      "cortical sulcation": "normal folds and grooves on the brain surface",
-      "grey-white matter differentiation": "normal contrast between outer (grey) and inner (white) layers",
-      "cerebral ventricles": "fluid spaces inside the brain",
-      "ventricles": "fluid spaces inside the brain",
-      "basal cisterns": "fluid spaces at the base of the brain",
-      "posterior fossa": "back lower part of the skull that holds cerebellum and brainstem",
-      "brain stem": "part that connects the brain to the spinal cord",
-      "brainstem": "part that connects the brain to the spinal cord",
-      "sella": "small bone pocket under the brain that holds the pituitary",
-      "pituitary": "small hormone gland under the brain",
-      "orbits": "eye sockets",
-      "paranasal sinuses": "air pockets in the face",
-      "sinuses": "air pockets in the face",
-      "dural venous sinuses": "large veins that drain blood from the brain",
-      "flow voids": "MRI signs of fast-moving blood",
-      "craniocervical junction": "where the skull meets the neck",
-      "intracranial space-occupying lesion": "a mass inside the skull",
-      "space-occupying lesion": "a mass inside the skull"
+      "interhemispheric fissure":"deep groove between the two brain halves",
+      "cortical sulcation":"normal folds and grooves on the brain surface",
+      "grey-white matter differentiation":"normal contrast between outer (grey) and inner (white) layers",
+      "cerebral ventricles":"fluid spaces inside the brain",
+      "ventricles":"fluid spaces inside the brain",
+      "basal cisterns":"fluid spaces at the base of the brain",
+      "posterior fossa":"back lower part of the skull that holds cerebellum and brainstem",
+      "brain stem":"part that connects the brain to the spinal cord",
+      "brainstem":"part that connects the brain to the spinal cord",
+      "sella":"small bone pocket under the brain that holds the pituitary",
+      "pituitary":"small hormone gland under the brain",
+      "orbits":"eye sockets",
+      "paranasal sinuses":"air pockets in the face",
+      "sinuses":"air pockets in the face",
+      "dural venous sinuses":"large veins that drain blood from the brain",
+      "flow voids":"MRI signs of fast-moving blood",
+      "craniocervical junction":"where the skull meets the neck",
+      "intracranial space-occupying lesion":"a mass inside the skull",
+      "space-occupying lesion":"a mass inside the skull"
     };
-
-    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-    function annotateSimpleOutputTerms() {
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function annotateSimpleOutputTerms(){
       var roots = document.querySelectorAll('.simple-output');
-      if (!roots.length) return;
-
+      if(!roots.length) return;
       var terms = Object.keys(TERM_DEFS);
-      if (!terms.length) return;
-
+      if(!terms.length) return;
       var pattern = '\\b(' + terms.map(escapeRegExp).join('|') + ')\\b';
-      var rxCheck = new RegExp(pattern, 'i');
-      var rxAll   = new RegExp(pattern, 'gi');
-
+      var rxCheck = new RegExp(pattern,'i');
+      var rxAll = new RegExp(pattern,'gi');
       roots.forEach(function(root){
         var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-          acceptNode: function(node){
-            if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
+          acceptNode:function(node){
+            if(!node.nodeValue) return NodeFilter.FILTER_REJECT;
             rxCheck.lastIndex = 0;
-            if (!rxCheck.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
-            if (node.parentElement && node.parentElement.closest('[data-def]')) return NodeFilter.FILTER_REJECT;
+            if(!rxCheck.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+            if(node.parentElement && node.parentElement.closest('[data-def]')) return NodeFilter.FILTER_REJECT;
             return NodeFilter.FILTER_ACCEPT;
           }
         });
         var toWrap = [];
-        while (walker.nextNode()) toWrap.push(walker.currentNode);
-
+        while(walker.nextNode()) toWrap.push(walker.currentNode);
         toWrap.forEach(function(textNode){
           var text = textNode.nodeValue;
           var frag = document.createDocumentFragment();
           var last = 0;
           text.replace(rxAll, function(match, _g1, offset){
-            if (offset > last) frag.appendChild(document.createTextNode(text.slice(last, offset)));
+            if(offset > last) frag.appendChild(document.createTextNode(text.slice(last, offset)));
             var span = document.createElement('span');
             span.textContent = match;
             span.setAttribute('data-def', TERM_DEFS[match.toLowerCase()] || 'Definition not available.');
@@ -407,74 +403,72 @@
             last = offset + match.length;
             return match;
           });
-          if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
-          if (textNode.parentNode) textNode.parentNode.replaceChild(frag, textNode);
+          if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+          if(textNode.parentNode) textNode.parentNode.replaceChild(frag, textNode);
         });
       });
     }
 
-    // Tooltip for defined terms
+    /* Tooltip */
     var tooltip = document.getElementById('def-tooltip');
-    function showTip(text, x, y) {
+    function showTip(text, x, y){
       tooltip.textContent = text;
       tooltip.style.left = x + 'px';
       tooltip.style.top = y + 'px';
       tooltip.classList.remove('hidden');
       tooltip.setAttribute('aria-hidden','false');
     }
-    function hideTip() {
+    function hideTip(){
       tooltip.classList.add('hidden');
       tooltip.setAttribute('aria-hidden','true');
     }
     document.body.addEventListener('mousemove', function(e){
-      if (!tooltip.classList.contains('hidden')) {
+      if(!tooltip.classList.contains('hidden')){
         tooltip.style.left = e.clientX + 'px';
         tooltip.style.top = (e.clientY - 14) + 'px';
       }
-    }, {passive: true});
-
+    }, {passive:true});
     document.addEventListener('mouseover', function(e){
       var target = e.target.closest('.simple-output [data-def]');
-      if (target) {
+      if(target){
         var def = target.getAttribute('data-def') || 'Definition not available.';
         var rect = target.getBoundingClientRect();
         showTip(def, rect.left + (rect.width/2), rect.top - 6);
       }
-    }, {passive: true});
-
+    }, {passive:true});
     document.addEventListener('mouseout', function(e){
       var target = e.target.closest('.simple-output [data-def]');
-      if (target) hideTip();
-    }, {passive: true});
+      if(target) hideTip();
+    }, {passive:true});
 
     annotateSimpleOutputTerms();
 
-    // Organ click handler
+    /* Modal controls */
     var organModal = document.getElementById('organ-modal');
     var organClose = document.getElementById('organ-close');
     var organName = document.getElementById('organ-name');
-    function openOrgan(org) {
+    function openOrgan(org){
       organName.textContent = org;
       organModal.classList.add('show');
       organModal.setAttribute('aria-hidden','false');
-      window.dispatchEvent(new CustomEvent('organ:open', { detail: { organ: org } }));
+      window.dispatchEvent(new CustomEvent('organ:open', { detail:{ organ:org } }));
     }
-    function closeOrgan() {
+    function closeOrgan(){
       organModal.classList.remove('show');
       organModal.setAttribute('aria-hidden','true');
     }
-    if (organClose) organClose.addEventListener('click', closeOrgan);
+    if(organClose) organClose.addEventListener('click', closeOrgan);
     organModal.addEventListener('click', function(e){ if(e.target === organModal) closeOrgan(); });
-
     document.addEventListener('click', function(e){
       var o = e.target.closest('.organ-link');
-      if (o) {
+      if(o){
         var key = o.getAttribute('data-organ') || o.textContent.trim().toLowerCase();
         openOrgan(key);
       }
     });
   });
 </script>
+
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 <script src="{{ url_for('static', filename='loader.js') }}"></script>
 </body>

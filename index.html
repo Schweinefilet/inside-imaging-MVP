@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Inside Imaging</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/inside-imaging-MVP/">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    h1 { margin: 0 0 16px; font-size: 22px; }
+    .row { margin: 12px 0; }
+    textarea { width: 100%; min-height: 180px; }
+    input, select, button, textarea { font: inherit; padding: 8px; }
+    button { cursor: pointer; }
+    #status { font-size: 14px; }
+    #out { white-space: pre-wrap; border: 1px solid #ccc; padding: 12px; min-height: 80px; }
+  </style>
+</head>
+<body>
+  <h1>Inside Imaging</h1>
+
+  <div class="row" id="status">API: <span id="apiStatus">checking…</span></div>
+
+  <form id="form" class="row">
+    <label for="report">Radiology report</label>
+    <textarea id="report" placeholder="Paste the report text"></textarea>
+
+    <div class="row">
+      <label for="lang">Output language</label>
+      <select id="lang">
+        <option value="en">English</option>
+        <option value="sw">Kiswahili</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <button type="submit">Summarize</button>
+      <button type="button" id="pingBtn">Ping API</button>
+      <span id="reqStatus"></span>
+    </div>
+  </form>
+
+  <div id="out" class="row" aria-live="polite"></div>
+
+  <script>
+    const API_BASE = "https://inside-imaging-mvp.onrender.com";
+
+    async function ping() {
+      setText("apiStatus", "checking…");
+      try {
+        const r = await fetch(API_BASE + "/health", { method: "GET" });
+        setText("apiStatus", r.ok ? "online" : "error " + r.status);
+      } catch (e) {
+        setText("apiStatus", "offline");
+      }
+    }
+
+    function setText(id, txt) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = txt;
+    }
+
+    function show(obj) {
+      const out = document.getElementById("out");
+      try {
+        out.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+      } catch {
+        out.textContent = String(obj);
+      }
+    }
+
+    document.getElementById("pingBtn").addEventListener("click", ping);
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setText("reqStatus", "sending…");
+      show("");
+      const text = document.getElementById("report").value.trim();
+      const lang = document.getElementById("lang").value;
+      if (!text) { setText("reqStatus", "enter text"); return; }
+
+      try {
+        const r = await fetch(API_BASE + "/api/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, lang })
+        });
+        const bodyText = await r.text();
+        let data;
+        try { data = JSON.parse(bodyText); } catch { data = bodyText; }
+        show(data);
+        setText("reqStatus", r.ok ? "done" : "error " + r.status);
+      } catch (err) {
+        setText("reqStatus", "network error");
+        show(String(err));
+      }
+    });
+
+    ping();
+  </script>
+</body>
+</html>

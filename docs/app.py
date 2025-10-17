@@ -234,9 +234,6 @@ def pdf_smoke():
         logging.exception("Smoke failed")
         return jsonify({"error": "smoke_failed", "detail": str(e)}), 500
 
-@app.get("/health")
-def health():
-    return "ok", 200
 
 @app.get("/report/preview")
 def report_preview():

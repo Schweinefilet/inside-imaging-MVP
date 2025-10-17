@@ -280,23 +280,24 @@ def _tidy_phrases(s: str) -> str:
     return out
 
 def _dedupe_redundant_noun_phrase(s: str) -> str:
-    """
-    Collapse '... X ... may be a X' → '... X ... is indeterminate'
-    while keeping proper spacing.
-    """
-    def repl(m: re.Match) -> str:
-        # Preserve capitalization of first letter in the replaced fragment
-        prev = m.group(1)
-        return (" is indeterminate" if prev.endswith(" ") else " is indeterminate")
+    """Within each sentence, replace 'may/might be a(n) X' with 'is indeterminate'
+    only when X already appears earlier in that same sentence."""
+    nouns = ["mass", "lesion", "tumor", "tumour", "cyst", "nodule", "polyp"]
+    out_sents: List[str] = []
+    for sent in _split_sentences(s or ""):
+        t = sent
+        for n in nouns:
+            # if noun appears earlier in the sentence
+            if re.search(rf"(?i)\b{re.escape(n)}\b", t):
+                # replace trailing hedge about same noun
+                t = re.sub(
+                    rf"(?i)\b(?:may|might)\s+be\s+a?n?\s+{re.escape(n)}\b",
+                    "is indeterminate",
+                    t,
+                )
+        out_sents.append(t)
+    return " ".join(out_sents)
 
-    # Ensure we capture and keep a space before the replacement
-    pattern = re.compile(
-        r"(?i)([A-Za-z\s]*\b[a-z][a-z\- ]{2,}\b)(?:(?!\.).)*?\bmay\s+be\s+a\s+\1\b"
-    )
-    out = pattern.sub(lambda m: m.group(1).rstrip() + " is indeterminate", s)
-    # Clean any doubled spaces
-    out = re.sub(r"\s{2,}", " ", out).strip()
-    return out
 
 def _strip_signatures(s: str) -> str:
     s = re.sub(r"(?im)^\s*(dr\.?.*|consultant\s*radiologist.*|radiologist.*|dictated\s+by.*)\s*$","",s or "")
@@ -630,15 +631,25 @@ def _infer_reason(text: str, seed: str) -> str:
     src = seed or ""
     if not src or src.strip().lower() == "not provided.":
         m = re.search(r"(?im)^\s*(indication|reason|history)\s*:\s*(.+)$", text or "")
-        if m: src = m.group(2).strip()
-    low = (text or "").lower()
-    region = "head" if any(w in low for w in ["head","skull","brain"]) else ("neck" if "neck" in low else "area")
-    s = _simplify(src, None); s = re.sub(r"\b\?\s*", "possible ", s)
-    want_lymph = bool(re.search(r"\blymphoma\b", s, flags=re.I))
-    want_mass = bool(re.search(r"\bmass\b|\badenopathy\b", s, flags=re.I))
-    p1 = "The scan was done to check for a mass and swollen nodes." if want_mass else f"The scan was done to look for a problem in the {region}."
-    p2 = "Doctors wanted to see if there were signs of lymphoma." if want_lymph else "The goal was to find a simple cause for the symptoms."
+        if m:
+            src = m.group(2).strip()
+
+    low_all = (text or "").lower() + " " + (src or "").lower()
+
+    region = "head" if any(w in low_all for w in ["head","skull","brain"]) else \
+             "neck" if "neck" in low_all else \
+             "abdomen" if any(w in low_all for w in ["abdomen","abdominal","belly","pancreas","pancreatic","biliary","liver","hepatic","gallbladder"]) else \
+             "area"
+
+    has_mass = bool(re.search(r"\b(mass|lesion|tumou?r|nodule|cyst)\b", low_all))
+    has_nodes = bool(re.search(r"\b(adenopathy|lymph\s*node|lymphaden)\b", low_all))
+
+    p1 = "The scan was done to check for a mass." if has_mass else f"The scan was done to look for a problem in the {region}."
+    if has_nodes:
+        p1 = p1.rstrip(".") + " and swollen lymph nodes."
+    p2 = "The goal was to find a simple cause for the symptoms."
     return f"{p1} {p2}"
+
 
 # ---------- dedupe and pruning ----------
 def _drop_heading_labels_line(s: str) -> str:
@@ -735,7 +746,9 @@ def build_structured(
     concern = ""
     for kw in ["obstruction","compression","invasion","perforation","ischemia"]:
         if re.search(rf"(?i)\b{kw}\b", cleaned):
-            concern = f"The findings include {kw}. Discuss next steps with your clinician."; break
+            concern = f"The findings include {kw}. Discuss next steps with your clinician."
+            break
+    # no else/fallback here
 
     # LLM attempt, gated + PHI-redacted
     llm = _summarize_with_openai(_redact_phi(cleaned), language)

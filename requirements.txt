@@ -28,3 +28,4 @@ cssselect2>=0.8.0
 Pyphen>=0.9.1
 Pillow>=9.1.0
 fonttools>=4.0.0
+openai

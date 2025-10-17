@@ -5,6 +5,9 @@ import re
 import json
 import logging
 
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=".env", override=True)
+
 from flask import (
     Flask,
     render_template,
@@ -18,16 +21,17 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from dotenv import load_dotenv
 from flask_cors import CORS
 
 # local db
 from src import db
 
-load_dotenv()
-
 # --- logging ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+k = os.getenv("OPENAI_API_KEY", "")
+logging.info("OPENAI_API_KEY loaded=%s len=%d", "yes" if bool(k) else "no", len(k))
+logging.info("INSIDEIMAGING_ALLOW_LLM=%r", os.getenv("INSIDEIMAGING_ALLOW_LLM"))
+logging.info("OPENAI_MODEL=%r", os.getenv("OPENAI_MODEL"))
 
 # --- app ---
 app = Flask(__name__)
@@ -170,8 +174,8 @@ def upload():
     report_stats = {
         "words": len((extracted or "").split()),
         "sentences": len(re.findall(r"[.!?]+", extracted or "")),
-        "highlights_positive": high_html.count('class="positive"'),
-        "highlights_negative": high_html.count('class="negative"'),
+        "highlights_positive": high_html.count('class="ii-pos"'),
+        "highlights_negative": high_html.count('class="ii-neg"'),
     }
 
     # persist for later pages like /payment and PDF download
@@ -214,6 +218,7 @@ def download_pdf():
     except Exception as e:
         logging.exception("WeasyPrint PDF render failed")
         return jsonify({"error": "pdf_failed", "detail": str(e)}), 500
+
 
 @app.get("/pdf-smoke")
 def pdf_smoke():

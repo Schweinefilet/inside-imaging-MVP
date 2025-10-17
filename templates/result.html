@@ -326,50 +326,57 @@
     /* Diagram highlight: SVG silhouette + clipped bands */
     var container = document.getElementById('diagram-container');
     function buildBodySVG(el){
-      el.innerHTML = `
-      <svg class="body-svg" viewBox="0 0 200 500" role="img" aria-labelledby="bodyTitle">
-        <title id="bodyTitle">Body region diagram</title>
-        <defs>
-          <!-- Clip includes head + torso + two legs; excludes arms -->
-          <clipPath id="bodyClip" clipPathUnits="userSpaceOnUse">
-            <circle cx="100" cy="58" r="36"/>
-            <rect  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
-            <rect  x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
-            <rect  x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
-          </clipPath>
-        </defs>
+    el.innerHTML = `
+    <svg class="body-svg" viewBox="0 0 200 500" role="img" aria-labelledby="bodyTitle">
+      <title id="bodyTitle">Body region diagram</title>
 
-        <!-- solid silhouette under bands -->
-        <g class="body-base" aria-hidden="true">
-          <circle cx="100" cy="58" r="36"/>
-          <rect  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
-          <rect  x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
-          <rect  x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
-        </g>
+      <defs>
+        <!-- primitives -->
+        <circle id="h"  cx="100" cy="58"  r="36"/>
+        <rect   id="t"  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
+        <rect   id="ll" x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
+        <rect   id="rl" x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
 
-        <!-- highlight bands -->
-        <rect class="region-band head"    x="0" y="0"   width="200" height="110" clip-path="url(#bodyClip)"/>
-        <rect class="region-band chest"   x="0" y="110" width="200" height="110" clip-path="url(#bodyClip)"/>
-        <rect class="region-band abdomen" x="0" y="220" width="200" height="110" clip-path="url(#bodyClip)"/>
-        <rect class="region-band pelvis"  x="0" y="330" width="200" height="170" clip-path="url(#bodyClip)"/>
+        <!-- region clips -->
+        <clipPath id="clipHead"><use href="#h"/></clipPath>
+        <clipPath id="clipTorso"><use href="#t"/></clipPath>
+        <clipPath id="clipPelvis"><use href="#ll"/><use href="#rl"/></clipPath>
+      </defs>
 
-        <!-- outline on top: thicker arms, squared legs -->
-        <g class="body-outline" aria-hidden="true">
-          <circle cx="100" cy="58" r="36"/>
-          <rect  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
-          <rect  x="38"  y="120" width="26" height="140" rx="13" ry="13"/>  <!-- left arm -->
-          <rect  x="136" y="120" width="26" height="140" rx="13" ry="13"/>  <!-- right arm -->
-          <rect  x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>   <!-- left leg -->
-          <rect  x="102" y="290" width="32" height="164" rx="6"  ry="6"/>   <!-- right leg -->
-        </g>
-      </svg>`;
+      <!-- solid silhouette under bands -->
+      <g class="body-base" aria-hidden="true">
+        <use href="#h"/><use href="#t"/><use href="#ll"/><use href="#rl"/>
+      </g>
+
+      <!-- bands, each clipped to its region -->
+      <g clip-path="url(#clipHead)">
+        <rect class="region-band head" x="0" y="0" width="200" height="500"/>
+      </g>
+      <g clip-path="url(#clipTorso)">
+        <!-- full torso (for single “body” highlight) -->
+        <rect class="region-band torso"   x="0" y="0"   width="200" height="500"/>
+        <!-- keep granular bands for CAP/AP -->
+        <rect class="region-band chest"   x="0" y="90" width="220" height="135"/>
+        <rect class="region-band abdomen" x="0" y="240" width="200" height="110"/>
+      </g>
+      <g clip-path="url(#clipPelvis)">
+        <rect class="region-band pelvis" x="0" y="0" width="200" height="500"/>
+      </g>
+
+      <!-- outline on top -->
+      <g class="body-outline" aria-hidden="true">
+        <use href="#h"/><use href="#t"/>
+        <rect x="38" y="120" width="26" height="140" rx="13" ry="13"/>
+        <rect x="136" y="120" width="26" height="140" rx="13" ry="13"/>
+        <use href="#ll"/><use href="#rl"/>
+      </g>
+    </svg>`;
     }
 
     if(container){
       buildBodySVG(container);
       // Robust region picker: supports "AP", "A/P", "CAP", full words, organs
       var text = (container.dataset.organ || '').toLowerCase();
-
       function hits(rx){ return (text.match(rx) || []).length; }
 
       var scores = {
@@ -381,24 +388,26 @@
                 + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g)
       };
 
+      var ap  = /\ba\/p\b|\babd(?:omen)?\s*pelvis\b/.test(text);
+      var cap = /\bcap\b|chest\s*abd(?:omen)?\s*pelvis/.test(text);
       var max = Math.max(scores.head, scores.chest, scores.abdomen, scores.pelvis);
 
-      // If "AP" or "abdomen pelvis", light both
-      var ap = /\ba\/p\b|\babd(?:omen)?\s*pelvis\b/.test(text);
-      var cap = /\bcap\b|chest\s*abd(?:omen)?\s*pelvis/.test(text);
-
-      ['head','chest','abdomen','pelvis'].forEach(function(r){
-        var node = container.querySelector('.region-band.'+r);
-        if(!node) return;
-        var on = ap ? (r==='abdomen' || r==='pelvis')
-              : cap ? (r==='chest' || r==='abdomen' || r==='pelvis')
-              : scores[r] === max && max > 0;
-        if(on) node.classList.add('highlight');
-      });
-
-      // Fallback if nothing matched
-      if(!container.querySelector('.region-band.highlight')){
-        container.querySelector('.region-band.chest')?.classList.add('highlight');
+      // If exactly one of chest/abdomen is referenced (not CAP/AP), fill full torso
+      var torsoSingle = !ap && !cap && (Boolean(scores.chest) !== Boolean(scores.abdomen));
+      if(torsoSingle){
+        container.querySelector('.region-band.torso')?.classList.add('highlight');
+      } else {
+        ['head','chest','abdomen','pelvis'].forEach(function(r){
+          var node = container.querySelector('.region-band.'+r);
+          if(!node) return;
+          var on = ap ? (r==='abdomen' || r==='pelvis')
+                : cap ? (r==='chest' || r==='abdomen' || r==='pelvis')
+                : scores[r] === max && max > 0;
+          if(on) node.classList.add('highlight');
+        });
+        if(!container.querySelector('.region-band.highlight')){
+          container.querySelector('.region-band.chest')?.classList.add('highlight');
+        }
       }
     }
     /* Footer year */

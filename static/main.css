@@ -474,3 +474,33 @@ html.light ::selection,
   background: var(--panel);
   text-decoration: none;
 }
+
+/* === Theme slider EXACT override === */
+.theme-switch{
+  --track-w: 44px;
+  --track-h: 24px;
+  --pad: 3px;
+  --knob: 18px;
+  --travel: calc(var(--track-w) - var(--knob) - (var(--pad) * 2));
+  --x-nudge-checked: 0px;
+  --y-nudge-checked: 0px;
+}
+
+/* Unchecked (dark mode label) */
+.theme-switch-track{
+  background: #e5e7eb;         /* light gray track */
+  border: 1px solid #d1d5db;    /* subtle border */
+}
+.theme-switch-track::after{
+  background: #111827;          /* dark knob */
+}
+
+/* Checked = LIGHT mode */
+.theme-switch-input:checked + .theme-switch-track{
+  background: #1f7a69;          /* mint track */
+  border-color: #1f7a69;
+}
+.theme-switch-input:checked + .theme-switch-track::after{
+  background: #f3f4f6;          /* white knob */
+}
+

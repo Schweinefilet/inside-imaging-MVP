@@ -1,0 +1,46 @@
+      - name: Audit unwanted files in docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Allowed: index.html 404.html .nojekyll static/** assets/** favicon.ico robots.txt sitemap.xml manifest.json"
+          echo "Unwanted files:"
+          find docs -type f \
+            ! -path 'docs/static/*' \
+            ! -path 'docs/assets/*' \
+            ! -name 'index.html' \
+            ! -name '404.html' \
+            ! -name '.nojekyll' \
+            ! -name 'favicon.ico' \
+            ! -name 'robots.txt' \
+            ! -name 'sitemap.xml' \
+            ! -name 'manifest.json' -print || true
+
+      - name: Delete unwanted files from docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t BAD < <(find docs -type f \
+            ! -path 'docs/static/*' \
+            ! -path 'docs/assets/*' \
+            ! -name 'index.html' \
+            ! -name '404.html' \
+            ! -name '.nojekyll' \
+            ! -name 'favicon.ico' \
+            ! -name 'robots.txt' \
+            ! -name 'sitemap.xml' \
+            ! -name 'manifest.json')
+          if ((${#BAD[@]})); then
+            printf 'Removing %d files\n' "${#BAD[@]}"
+            git rm -r "${BAD[@]}"
+          else
+            echo "Nothing to remove."
+          fi
+
+      - name: Block server templates leaking into docs
+        shell: bash
+        run: |
+          set -e
+          if grep -R -nE '{{|{%' docs; then
+            echo "Jinja found in docs. Remove templating from Pages HTML."
+            exit 1
+          fi

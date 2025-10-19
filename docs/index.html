@@ -2,101 +2,131 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Inside Imaging</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/inside-imaging-MVP/">
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; margin: 24px; line-height: 1.4; }
-    h1 { margin: 0 0 16px; font-size: 22px; }
-    .row { margin: 12px 0; }
-    textarea { width: 100%; min-height: 180px; }
-    input, select, button, textarea { font: inherit; padding: 8px; }
-    button { cursor: pointer; }
-    #status { font-size: 14px; }
-    #out { white-space: pre-wrap; border: 1px solid #ccc; padding: 12px; min-height: 80px; }
-  </style>
+  <meta name="color-scheme" content="light dark">
+  <title>Inside Imaging</title>
+  <link rel="stylesheet" href="/static/main.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="stylesheet" href="/static/loader.css">
 </head>
 <body>
-  <h1>Inside Imaging</h1>
+  <div class="page-wrapper">
+    <header class="navbar">
+      <div class="navbar-brand">
+        <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
+      </div>
+      <nav class="nav-links">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('language') }}">Language Selection</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+      </nav>
+      <div class="nav-auth">
 
-  <div class="row" id="status">API: <span id="apiStatus">checking…</span></div>
+<!-- Slider toggle (replaces the old button) -->
+<label class="theme-switch" aria-label="Toggle theme">
+    <span class="theme-row">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+        <span class="theme-switch-track" aria-hidden="true"></span>
+        <span class="theme-icon" aria-hidden="true">☀️</span>
+    </span>
+    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+</label>
 
-  <form id="form" class="row">
-    <label for="report">Radiology report</label>
-    <textarea id="report" placeholder="Paste the report text"></textarea>
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+      </div>
+    </header>
 
-    <div class="row">
-      <label for="lang">Output language</label>
-      <select id="lang">
-        <option value="en">English</option>
-        <option value="sw">Kiswahili</option>
-      </select>
-    </div>
+    <main class="content">
+      <h1>Dashboard</h1>
+      <p>Upload, manage, and download your translated radiology reports in one place.</p>
 
-    <div class="row">
-      <button type="submit">Summarize</button>
-      <button type="button" id="pingBtn">Ping API</button>
-      <span id="reqStatus"></span>
-    </div>
-  </form>
+      <div class="dashboard-grid">
+        <section class="upload-section">
+          <h2>Upload New Report</h2>
+          <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
+            <input type="file" name="file" accept=".pdf,.txt" required>
+            <label for="language">Language:</label>
+            <select name="language" id="language">
+              {% for language in languages %}
+              <option value="{{ language }}">{{ language }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit">Upload &amp; Convert</button>
+          </form>
+        </section>
 
-  <div id="out" class="row" aria-live="polite"></div>
+        <section class="reports-section">
+          <h2>Your Reports</h2>
+          <p>No reports found.</p>
+        </section>
+      </div>
+    </main>
 
-  <script>
-    const API_BASE = "https://inside-imaging-mvp.onrender.com";
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-about">
+          <h3>Inside Imaging</h3>
+          <p>Transforming radiology reports.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+            <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+            <li><a href="{{ url_for('payment') }}">Payment</a></li>
+            <li><a href="{{ url_for('help_page') }}">Help</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#">Twitter</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
 
-    async function ping() {
-      setText("apiStatus", "checking…");
-      try {
-        const r = await fetch(API_BASE + "/health", { method: "GET" });
-        setText("apiStatus", r.ok ? "online" : "error " + r.status);
-      } catch (e) {
-        setText("apiStatus", "offline");
-      }
-    }
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
 
-    function setText(id, txt) {
-      const el = document.getElementById(id);
-      if (el) el.textContent = txt;
-    }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var html = document.documentElement;
+    var saved = localStorage.getItem('theme') || 'dark';
+    if (saved === 'light') html.classList.add('light');
 
-    function show(obj) {
-      const out = document.getElementById("out");
-      try {
-        out.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
-      } catch {
-        out.textContent = String(obj);
-      }
-    }
-
-    document.getElementById("pingBtn").addEventListener("click", ping);
-
-    document.getElementById("form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      setText("reqStatus", "sending…");
-      show("");
-      const text = document.getElementById("report").value.trim();
-      const lang = document.getElementById("lang").value;
-      if (!text) { setText("reqStatus", "enter text"); return; }
-
-      try {
-        const r = await fetch(API_BASE + "/api/summarize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, lang })
+    var settingsButton = document.getElementById('settings-button');
+    var dropdown = document.getElementById('settings-dropdown');
+    if (settingsButton && dropdown) {
+        settingsButton.addEventListener('click', function() {
+            dropdown.classList.toggle('show');
         });
-        const bodyText = await r.text();
-        let data;
-        try { data = JSON.parse(bodyText); } catch { data = bodyText; }
-        show(data);
-        setText("reqStatus", r.ok ? "done" : "error " + r.status);
-      } catch (err) {
-        setText("reqStatus", "network error");
-        show(String(err));
-      }
-    });
+    }
+    var toggleDark = document.getElementById('toggle-dark');
+    var toggleLight = document.getElementById('toggle-light');
+    if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
+    if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
+});
+</script>
 
-    ping();
-  </script>
+  <script src="/static/loader.js"></script>
 </body>
 </html>

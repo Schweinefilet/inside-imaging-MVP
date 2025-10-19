@@ -1,142 +1,131 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
-    <title>Report Status - Inside Imaging</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='report-status.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Report Status - Inside Imaging</title>
+
+  <!-- Pre-paint: identical to working pages -->
+  <script>
+  (function(){
+    try {
+      var t = localStorage.getItem('theme');
+      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      var useLight = t ? (t === 'light') : preferLight;
+      if (useLight) document.documentElement.classList.add('light');
+    } catch(e){}
+  })();
+  </script>
+
+  <link rel="stylesheet" href="/static/main.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="stylesheet" href="/static/report-status.css">
 </head>
 <body>
-<div class="page-wrapper">
-<header class="navbar">
-    <div class="navbar-brand">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
-    </div>
-    <nav class="nav-links">
-        <a href="{{ url_for('index') }}">Dashboard</a>
-        <a href="{{ url_for('language') }}">Language Selection</a>
-        <a href="{{ url_for('report_status') }}">Report Status</a>
-        <a href="{{ url_for('payment') }}">Payment</a>
-        <a href="{{ url_for('help_page') }}">Help</a>
-    </nav>
-    <div class="nav-auth">
-    {% if session.get('user_id') %}
-        <span class="username">{{ session.get('username') }}</span>
-        <div class="settings-wrapper">
-            <button id="settings-button" class="settings-btn">⚙️</button>
-            <div id="settings-dropdown" class="settings-dropdown">
-                <button id="toggle-dark">Dark Mode</button>
-                <button id="toggle-light">Light Mode</button>
-                <a href="{{ url_for('logout') }}">Log Out</a>
-            </div>
-        </div>
-    {% else %}
-        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-    {% endif %}
-    </div>
-</header>
+  <div class="page-wrapper">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <div class="navbar-brand">
+        <img src="/static/logo.png" alt="Inside Imaging logo" class="logo">
+      </div>
 
-<main class="content">
-    <h1>Report Status</h1>
-    <p class="tagline">Track the progress of your reports and get notified when they're ready for download.</p>
+      <nav class="nav-links">
+        <a href="/">Dashboard</a>
+        <a href="/static/language-selection.html">Language Selection</a>
+        <a href="/static/report-status.html">Report Status</a>
+        <a href="/static/payment.html">Payment</a>
+        <a href="/static/help.html">Help</a>
+      </nav>
 
-    <section class="status-overview">
-        <div class="status-card">
-            <h3>Pending Reports</h3>
-            <p class="status-count">0</p>
-        </div>
-        <div class="status-card">
-            <h3>Processing Reports</h3>
-            <p class="status-count">0</p>
-        </div>
-        <div class="status-card">
-            <h3>Completed Reports</h3>
-            <p class="status-count">0</p>
-        </div>
-    </section>
+      <div class="nav-auth">
+        <!-- Exact slider UI -->
+        <label class="theme-switch" aria-label="Toggle theme">
+          <span class="theme-row">
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+            <span class="theme-switch-track" aria-hidden="true"></span>
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+          </span>
+          <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        </label>
 
-    <section class="reports-list">
+        <a href="#" class="login-button">Log In</a>
+        <a href="#" class="signup-button">Sign Up</a>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content">
+      <h1>Report Status</h1>
+      <p class="tagline">Track the progress of your reports and get notified when they’re ready for download.</p>
+
+      <section class="status-overview">
+        <div class="status-card">
+          <h3>Pending Reports</h3>
+          <p class="status-count">0</p>
+        </div>
+        <div class="status-card">
+          <h3>Processing Reports</h3>
+          <p class="status-count">0</p>
+        </div>
+        <div class="status-card">
+          <h3>Completed Reports</h3>
+          <p class="status-count">0</p>
+        </div>
+      </section>
+
+      <section class="reports-list">
         <h2>Your Reports</h2>
         <p>No reports available yet.</p>
-    </section>
-</main>
+      </section>
+    </main>
 
-<footer class="footer">
-    <div class="footer-columns">
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-columns">
         <div class="footer-about">
-            <h3>Inside Imaging</h3>
-            <p>Transforming radiology reports into your preferred language with ease.</p>
+          <h3>Inside Imaging</h3>
+          <p>Transforming radiology reports into your preferred language with ease.</p>
         </div>
         <div class="footer-col">
-            <h4>Navigation</h4>
-            <ul>
-                <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-                <li><a href="{{ url_for('language') }}">Language Selection</a></li>
-                <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
-                <li><a href="{{ url_for('payment') }}">Payment</a></li>
-                <li><a href="{{ url_for('help_page') }}">Help</a></li>
-            </ul>
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/static/language-selection.html">Language Selection</a></li>
+            <li><a href="/static/report-status.html">Report Status</a></li>
+            <li><a href="/static/payment.html">Payment</a></li>
+            <li><a href="/static/help.html">Help</a></li>
+          </ul>
         </div>
         <div class="footer-col">
-            <h4>Resources</h4>
-            <ul>
-                <li><a href="#">Documentation</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Support</a></li>
-            </ul>
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
         </div>
         <div class="footer-col">
-            <h4>Connect</h4>
-            <ul>
-                <li><a href="#">Twitter</a></li>
-                <li><a href="#">LinkedIn</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#">Twitter</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
         </div>
-    </div>
-    <div class="footer-bottom">
-        <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
-    </div>
-</footer>
-</div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="current-year"></span> Inside Imaging. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var html = document.documentElement;
-    var saved = localStorage.getItem('theme') || 'dark';
-    if (saved === 'light') {
-        html.classList.add('light');
-    }
-    var settingsButton = document.getElementById('settings-button');
-    var dropdown = document.getElementById('settings-dropdown');
-    if (settingsButton && dropdown) {
-        settingsButton.addEventListener('click', function() {
-            dropdown.classList.toggle('show');
-        });
-    }
-    var toggleDark = document.getElementById('toggle-dark');
-    var toggleLight = document.getElementById('toggle-light');
-    if (toggleDark) {
-        toggleDark.addEventListener('click', function() {
-            html.classList.remove('light');
-            localStorage.setItem('theme', 'dark');
-        });
-    }
-    if (toggleLight) {
-        toggleLight.addEventListener('click', function() {
-            html.classList.add('light');
-            localStorage.setItem('theme', 'light');
-        });
-    }
-    var currentYear = document.getElementById('current-year');
-    if (currentYear) {
-        currentYear.textContent = new Date().getFullYear();
-    }
-});
-</script>
+  <!-- Shared theme logic; no page-local theme code -->
+  <script src="/static/theme.js"></script>
+  <script>
+    var y = document.getElementById('current-year');
+    if (y) y.textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

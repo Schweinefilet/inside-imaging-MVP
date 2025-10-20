@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>Report Status - Inside Imaging</title>
+  <title>Statistics - Inside Imaging</title>
 
   <!-- Pre-paint: identical to working pages -->
   <script>
@@ -33,14 +33,13 @@
       <nav class="nav-links">
         <a href="{{ url_for('index') }}">Dashboard</a>
         <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
-        <a href="{{ url_for('report_status') }}" class="active">Report Status</a>
+        <a href="{{ url_for('report_status') }}" class="active">Statistics</a>
         <a href="{{ url_for('payment') }}">Payment</a>
         <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
         <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
 
       <div class="nav-auth">
-        <!-- Exact slider UI -->
         <label class="theme-switch" aria-label="Toggle theme">
           <span class="theme-row">
             <span class="theme-icon" aria-hidden="true">🌙</span>
@@ -51,34 +50,109 @@
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
 
-  <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-  <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% if session.get('username') %}
+        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
+        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% endif %}
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="content">
-      <h1>Report Status</h1>
-      <p class="tagline">Track the progress of your reports and get notified when they’re ready for download.</p>
+    <main class="content analytics">
+      <header class="analytics-header">
+        <h1>Platform Statistics</h1>
+        <p class="tagline">Aggregated engagement metrics from de-identified report summaries.</p>
+      </header>
 
-      <section class="status-overview">
-        <div class="status-card">
-          <h3>Pending Reports</h3>
-          <p class="status-count">0</p>
-        </div>
-        <div class="status-card">
-          <h3>Processing Reports</h3>
-          <p class="status-count">0</p>
-        </div>
-        <div class="status-card">
-          <h3>Completed Reports</h3>
-          <p class="status-count">0</p>
-        </div>
+      <section class="analytics-summary" aria-label="Summary metrics">
+        <article class="summary-card">
+          <p class="summary-label">Total Reports Parsed</p>
+          <p class="summary-value">{{ stats.summary.total_reports }}</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Reports in Last 30 Days</p>
+          <p class="summary-value">{{ stats.summary.last_30_days }}</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Average Word Count</p>
+          <p class="summary-value">{{ stats.summary.average_word_count }}</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Languages Logged</p>
+          <p class="summary-value">{{ stats.summary.languages_tracked }}</p>
+        </article>
       </section>
 
-      <section class="reports-list">
-        <h2>Your Reports</h2>
-        <p>No reports available yet.</p>
+      <section class="analytics-grid">
+        <article class="analytics-panel">
+          <h2>Age Distribution</h2>
+          <ul class="stat-list">
+            {% for label, count in stats.age_ranges.items() %}
+            <li><span>{{ label }}</span><span>{{ count }}</span></li>
+            {% endfor %}
+          </ul>
+        </article>
+        <article class="analytics-panel">
+          <h2>Gender Mix</h2>
+          <ul class="stat-list">
+            <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
+            <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
+            <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
+          </ul>
+        </article>
+        <article class="analytics-panel">
+          <h2>Languages</h2>
+          <ul class="stat-list">
+            {% for entry in stats.languages %}
+            <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>
+            {% else %}
+            <li><span>No data yet</span><span>0</span></li>
+            {% endfor %}
+          </ul>
+        </article>
+        <article class="analytics-panel">
+          <h2>Modalities</h2>
+          <ul class="stat-list">
+            {% for entry in stats.studies %}
+            <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>
+            {% else %}
+            <li><span>No data yet</span><span>0</span></li>
+            {% endfor %}
+          </ul>
+        </article>
+        <article class="analytics-panel span-2">
+          <h2>Top Findings</h2>
+          <ul class="stat-list">
+            {% for entry in stats.diseases %}
+            <li><span>{{ entry.label|capitalize }}</span><span>{{ entry.count }}</span></li>
+            {% else %}
+            <li><span>No data yet</span><span>0</span></li>
+            {% endfor %}
+          </ul>
+        </article>
+        <article class="analytics-panel span-2">
+          <h2>Recent Activity</h2>
+          <ul class="recent-list">
+            {% for item in stats.recent %}
+            <li>
+              <div>
+                <strong>{{ item.study }}</strong>
+                <span class="recent-language">{{ item.language or '—' }}</span>
+              </div>
+              <div class="recent-meta">
+                <span>{{ item.created_at }}</span>
+                {% if item.disease_tags %}
+                <span class="recent-tags">{{ item.disease_tags | join(', ') }}</span>
+                {% endif %}
+              </div>
+            </li>
+            {% else %}
+            <li>No reports logged yet.</li>
+            {% endfor %}
+          </ul>
+        </article>
       </section>
     </main>
 

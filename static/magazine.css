@@ -32,14 +32,14 @@
 
 .magazine-toolbar button,
 .magazine-toolbar a {
-  border: 1px solid rgba(45, 226, 164, 0.55);
+  border: 1px solid color-mix(in oklab, var(--mint) 35%, var(--border));
   border-radius: 999px;
   padding: 0.65rem 1.75rem;
-  background: linear-gradient(135deg, rgba(45, 226, 164, 0.92), rgba(134, 255, 209, 0.82));
-  color: #061c14;
+  background: var(--mint);
+  color: #051e14;
   font-weight: 600;
   letter-spacing: 0.035em;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -50,14 +50,16 @@
 .magazine-toolbar button:focus-visible,
 .magazine-toolbar a:hover,
 .magazine-toolbar a:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(45, 226, 164, 0.3);
+  transform: translateY(-2px);
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
 }
 
 .magazine-frame {
   position: relative;
   width: 100%;
-  min-height: min(80vh, 960px);
+  min-height: 0;
+  height: clamp(520px, 85vh, 1100px);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -80,7 +82,7 @@
   text-align: center;
   gap: 1rem;
   padding: 4rem 1.5rem;
-  background: color-mix(in oklab, var(--mint) 12%, transparent);
+  background: rgba(62, 230, 176, 0.08);
   border: 1px dashed var(--mint);
   border-radius: 14px;
 }

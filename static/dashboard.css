@@ -35,11 +35,34 @@
     box-shadow: var(--shadow);
 }
 
-.upload-section h3,
-.reports-section h3 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
+.reports-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.reports-section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.reports-section-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: var(--mint);
+}
+
+.reports-section-header p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.upload-section h2,
+.reports-section h2,
+.reports-section h3,
+.reports-section h4 {
+    margin: 0 0 0.75rem;
     color: var(--mint);
 }
 
@@ -86,6 +109,252 @@
 
 .reports-section p {
     color: var(--muted);
+}
+
+.reports-history {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.history-item {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.history-item:hover {
+    border-color: color-mix(in oklab, var(--mint) 55%, var(--border));
+    transform: translateY(-1px);
+}
+
+.history-item.empty {
+    justify-content: center;
+    align-items: center;
+    color: var(--muted);
+    text-align: center;
+}
+
+.history-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.history-primary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+}
+
+.history-primary strong {
+    font-size: 1.05rem;
+}
+
+.history-language {
+    font-size: 0.8rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    background: color-mix(in oklab, var(--panel-2) 50%, var(--mint) 15%);
+}
+
+.history-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.history-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--mint) 20%, var(--panel));
+    color: var(--text);
+    text-transform: capitalize;
+}
+
+.history-link {
+    align-self: center;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--mint);
+    white-space: nowrap;
+}
+
+.reports-insights {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.reports-insights h3 {
+    font-size: 1.3rem;
+}
+
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.insight-card {
+    position: relative;
+    padding: 1.1rem 1.25rem;
+    border-radius: 16px;
+    background: linear-gradient(145deg, color-mix(in oklab, var(--panel) 80%, rgba(62, 230, 176, 0.12)), color-mix(in oklab, var(--panel-2) 70%, rgba(15, 23, 42, 0.55)));
+    border: 1px solid color-mix(in oklab, var(--mint) 20%, var(--border));
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.insight-card::after {
+    content: "";
+    position: absolute;
+    inset: 12% 12% auto auto;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(62, 230, 176, 0.45), rgba(62, 230, 176, 0));
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.insight-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(62, 230, 176, 0.16);
+    color: var(--mint);
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+}
+
+.insight-label {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.insight-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+}
+
+.insight-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.insight-column {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.insight-column h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--mint);
+}
+
+.insight-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.insight-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.insight-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.insight-name {
+    color: var(--text);
+}
+
+.insight-count {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.insight-bar {
+    position: relative;
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--panel) 70%, rgba(62, 230, 176, 0.08));
+    overflow: hidden;
+}
+
+.insight-bar .insight-progress {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(62, 230, 176, 0.85), rgba(62, 230, 176, 0.45));
+    transition: width 0.4s ease;
+}
+
+.insight-empty {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.history-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.history-tags span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--mint) 18%, var(--panel));
+    color: var(--text);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
 }
 
 .footer {
@@ -154,5 +423,12 @@
     }
     .content {
         padding: 1rem;
+    }
+    .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .history-link {
+        padding-top: 0.4rem;
     }
 }

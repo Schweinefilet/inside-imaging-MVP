@@ -137,16 +137,17 @@
           <ul class="recent-list">
             {% for item in stats.recent %}
             <li>
-              <div>
-                <strong>{{ item.study }}</strong>
-                <span class="recent-language">{{ item.language or '—' }}</span>
+              <div class="recent-head">
+                <div class="recent-primary">
+                  <strong>{{ item.study }}</strong>
+                  <span class="recent-language">{{ item.language or '—' }}</span>
+                </div>
+                <span class="recent-time">{{ item.created_at }}</span>
               </div>
-              <div class="recent-meta">
-                <span>{{ item.created_at }}</span>
-                {% if item.disease_tags %}
-                <span class="recent-tags">{{ item.disease_tags | join(', ') }}</span>
-                {% endif %}
-              </div>
+              {% if item.disease_tags %}
+              <div class="recent-tags">{{ item.disease_tags | join(', ') }}</div>
+              {% endif %}
+              <a class="recent-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
             </li>
             {% else %}
             <li>No reports logged yet.</li>
@@ -168,7 +169,7 @@
           <ul>
             <li><a href="{{ url_for('index') }}">Dashboard</a></li>
              <li><a href="{{ url_for('magazine') }}">Magazine Viewer</a></li>
-            <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+            <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
             <li><a href="{{ url_for('payment') }}">Payment</a></li>
              <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
             <li><a href="{{ url_for('help_page') }}">Help</a></li>

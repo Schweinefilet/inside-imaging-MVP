@@ -518,6 +518,59 @@ html.light ::selection,
   background: var(--mint-soft);
   box-shadow: inset 0 0 0 1px rgba(62, 230, 176, 0.35);
 }
+
+html.light .navbar {
+  background-color: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 65%, rgba(15, 23, 42, 0.12));
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.08);
+}
+
+html.light .nav-links {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+}
+
+@supports (backdrop-filter: blur(0.1px)) {
+  html.light .nav-links {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(14px);
+  }
+}
+
+html.light .nav-links a {
+  color: color-mix(in oklab, #0f172a 75%, rgba(15, 23, 42, 0.35));
+}
+
+html.light .nav-links a:hover,
+html.light .nav-links a:focus-visible {
+  color: #0f172a;
+}
+
+html.light .nav-links a::before {
+  background: transparent;
+}
+
+html.light .nav-links a:hover::before,
+html.light .nav-links a:focus-visible::before {
+  background: rgba(15, 23, 42, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.1);
+}
+
+html.light .nav-links a.active {
+  color: var(--mint);
+}
+
+html.light .nav-links a.active::before {
+  background: color-mix(in oklab, var(--mint) 25%, rgba(15, 23, 42, 0.08));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--mint) 45%, rgba(15, 23, 42, 0.1));
+}
+
+html.light .username-badge,
+html.light .nav-auth a,
+html.light .nav-auth span {
+  color: #0f172a;
+}
 .nav-links a:focus-visible{
   outline: none;
 }

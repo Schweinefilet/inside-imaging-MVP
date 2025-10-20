@@ -2,40 +2,63 @@
 (function () {
   function ensureOverlay() {
     let el = document.getElementById('global-loader');
-    if (el) return el;
+    if (el) {
+      return el;
+    }
     el = document.createElement('div');
     el.id = 'global-loader';
     el.className = 'loader-overlay loader-hidden';
-    el.setAttribute('role','status');
-    el.innerHTML =
-      '<div class="loader-card">' +
-        '<div class="loader-spin" aria-hidden="true"></div>' +
-        '<div class="loader-col">' +
-          '<div class="loader-text">Working on your report…</div>' +
-          '<div class="loader-sub">This can take about 30 seconds</div>' +
-        '</div>' +
-      '</div>';
+    el.setAttribute('role', 'status');
+    el.innerHTML = [
+      '<div class="loader-card">',
+      '  <div class="loader-five" aria-hidden="true">',
+      '    <span class="loader-five-ring"></span>',
+      '    <span class="loader-five-dot"></span>',
+      '  </div>',
+      '  <div class="loader-text" data-loader-text>Generating report summary…</div>',
+      '  <div class="loader-sub">Translating your findings and building visuals.</div>',
+      '</div>'
+    ].join('');
     document.body.appendChild(el);
     return el;
   }
 
-  function show() { ensureOverlay().classList.remove('loader-hidden'); }
-  function hide() { ensureOverlay().classList.add('loader-hidden'); }
+  function show(text) {
+    const overlay = ensureOverlay();
+    const label = overlay.querySelector('[data-loader-text]');
+    if (label && text) {
+      label.textContent = text;
+    }
+    overlay.classList.remove('loader-hidden');
+  }
+
+  function hide() {
+    const overlay = ensureOverlay();
+    overlay.classList.add('loader-hidden');
+  }
 
   document.addEventListener('DOMContentLoaded', function () {
     ensureOverlay();
 
-    // Show on submit of any form that posts to /upload
-    document.querySelectorAll('form[action$="/upload"]').forEach(function (f) {
-      f.addEventListener('submit', function () { show(); }, { passive: true });
+    document.querySelectorAll('form[action$="/upload"]').forEach(function (form) {
+      form.addEventListener('submit', function () {
+        show();
+      }, { passive: true });
     });
 
-    // Optional: buttons/links can opt-in
     document.querySelectorAll('[data-show-loader]').forEach(function (el) {
-      el.addEventListener('click', function () { show(); }, { passive: true });
+      el.addEventListener('click', function () {
+        show();
+      }, { passive: true });
     });
 
-    // Hide after load completes (for SPA fragments, if used)
-    window.addEventListener('pageshow', function () { hide(); });
+    window.addEventListener('pageshow', function () {
+      hide();
+    });
   });
+
+  window.GlobalLoader = {
+    show: show,
+    hide: hide,
+  };
 })();

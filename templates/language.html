@@ -30,7 +30,7 @@
       <nav class="nav-links">
         <a href="{{ url_for('index') }}">Dashboard</a>
         <a href="{{ url_for('magazine') }}" class="active">Magazine Viewer</a>
-        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('report_status') }}">Statistics</a>
         <a href="{{ url_for('payment') }}">Payment</a>
         <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
         <a href="{{ url_for('help_page') }}">Help</a>
@@ -45,9 +45,13 @@
           </span>
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
-
+        {% if session.get('username') %}
+        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
+        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+        {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% endif %}
       </div>
     </header>
 
@@ -68,6 +72,13 @@
 
       {% if magazine_url %}
       <section class="magazine-frame" aria-label="Magazine PDF viewer">
+        <div id="magazine-loader" class="magazine-loader" role="status" aria-live="polite">
+          <div class="loader-one">
+            <div class="loader-orb"></div>
+            <div class="loader-tail"></div>
+            <span class="loader-copy">Loading magazine…</span>
+          </div>
+        </div>
         <iframe src="{{ magazine_url }}#toolbar=0" title="Inside Imaging Magazine PDF"></iframe>
       </section>
       {% else %}
@@ -97,5 +108,15 @@
   </div>
 
   <script src="/static/theme.js"></script>
+  <script>
+  (function(){
+    var frame = document.querySelector('.magazine-frame iframe');
+    var loader = document.getElementById('magazine-loader');
+    if (!frame || !loader) return;
+    loader.classList.add('is-active');
+    var hide = function(){ loader.classList.remove('is-active'); loader.classList.add('is-hidden'); };
+    frame.addEventListener('load', hide, { once: true });
+  })();
+  </script>
 </body>
 </html>

@@ -33,7 +33,7 @@
         <nav class="nav-links">
             <a href="{{ url_for('index') }}">Dashboard</a>
             <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
-            <a href="{{ url_for('report_status') }}">Report Status</a>
+            <a href="{{ url_for('report_status') }}">Statistics</a>
             <a href="{{ url_for('payment') }}">Payment</a>
             <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
             <a href="{{ url_for('help_page') }}">Help</a>
@@ -52,16 +52,9 @@
 
 
 
-            {% if session.get('user_id') %}
-            <span class="username">{{ session.get('username') }}</span>
-            <div class="settings-wrapper">
-                <button id="settings-button" class="settings-btn">⚙️</button>
-                <div id="settings-dropdown" class="settings-dropdown">
-                    <button id="toggle-dark">Dark Mode</button>
-                    <button id="toggle-light">Light Mode</button>
-                    <a href="{{ url_for('logout') }}">Log Out</a>
-                </div>
-            </div>
+            {% if session.get('username') %}
+            <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
             {% else %}
             <a href="{{ url_for('login') }}" class="login-button">Log In</a>
             <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
@@ -142,7 +135,7 @@
                 <ul>
                     <li><a href="{{ url_for('index') }}">Dashboard</a></li>
                     <li><a href="{{ url_for('magazine') }}">Magazine Viewer</a></li>
-                    <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+                    <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
                     <li><a href="{{ url_for('payment') }}">Payment</a></li>
                     <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
                     <li><a href="{{ url_for('help_page') }}">Help</a></li>

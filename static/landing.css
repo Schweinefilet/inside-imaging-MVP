@@ -82,21 +82,22 @@
   justify-self: center;
   padding: 0.85rem 2.6rem;
   border-radius: 999px;
-  border: 1px solid rgba(45, 226, 164, 0.55);
-  background: linear-gradient(135deg, rgba(45, 226, 164, 0.92), rgba(134, 255, 209, 0.82));
-  color: #061c14;
+  border: 1px solid color-mix(in oklab, var(--mint) 35%, rgba(0, 0, 0, 0.8));
+  background: var(--mint);
+  color: #051e14;
   font-family: inherit;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .landing-continue:hover,
 .landing-continue:focus-visible {
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 20px 40px rgba(45, 226, 164, 0.35);
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
 }
 
 @media (max-width: 720px) {

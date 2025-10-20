@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, List
+from collections import Counter
+import re
 import hashlib
 from datetime import datetime
 
@@ -47,15 +49,21 @@ def init_db() -> None:
             conclusion TEXT,
             concern TEXT,
             language TEXT,
+            word_count INTEGER DEFAULT 0,
+            disease_tags TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
-    # Ensure the language column exists for backward compatibility
+    # Ensure upgrade columns exist for older databases
     cur.execute("PRAGMA table_info(patients)")
     cols = [row[1] for row in cur.fetchall()]
-    if 'language' not in cols:
+    if "language" not in cols:
         cur.execute("ALTER TABLE patients ADD COLUMN language TEXT")
+    if "word_count" not in cols:
+        cur.execute("ALTER TABLE patients ADD COLUMN word_count INTEGER DEFAULT 0")
+    if "disease_tags" not in cols:
+        cur.execute("ALTER TABLE patients ADD COLUMN disease_tags TEXT")
     # Table for users
     cur.execute(
         """
@@ -82,7 +90,7 @@ def truncate_name(name: str) -> str:
     return " ".join(p[0] + "***" for p in parts)
 
 
-def add_patient_record(data: Dict[str, str]) -> None:
+def add_patient_record(data: Dict[str, Any]) -> None:
     """Insert a patient encounter record into the database.
 
     The data dictionary should contain the keys: name, age, sex, date,
@@ -92,12 +100,24 @@ def add_patient_record(data: Dict[str, str]) -> None:
     """
     conn = get_connection()
     cur = conn.cursor()
+    disease_tags = data.get("disease_tags", [])
+    if isinstance(disease_tags, (list, tuple)):
+        disease_str = ",".join(sorted({tag.strip().lower() for tag in disease_tags if tag}))
+    else:
+        disease_str = str(disease_tags or "")
+
+    try:
+        word_count = int(data.get("word_count", 0) or 0)
+    except Exception:
+        word_count = 0
+
     cur.execute(
         """
         INSERT INTO patients (
             truncated_name, age, sex, date, hospital, study,
-            reason, technique, findings, conclusion, concern, language
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            reason, technique, findings, conclusion, concern, language,
+            word_count, disease_tags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             truncate_name(data.get("name", "")),
@@ -112,51 +132,191 @@ def add_patient_record(data: Dict[str, str]) -> None:
             data.get("conclusion", ""),
             data.get("concern", ""),
             data.get("language", ""),
+            word_count,
+            disease_str,
         ),
     )
     conn.commit()
     conn.close()
 
 
-def get_stats() -> Dict[str, int]:
-    """Return aggregate statistics on stored patient encounters.
+def _parse_age(raw: Any) -> Optional[int]:
+    if raw is None:
+        return None
+    parts = re.findall(r"\d+", str(raw))
+    if not parts:
+        return None
+    try:
+        return int(parts[0])
+    except Exception:
+        return None
 
-    Returns a dictionary with keys: total, male, female, and age range counts.
-    Age ranges are grouped as: 0-17, 18-30, 31-50, 51-65, 66+.
-    """
+
+_DISEASE_KEYWORDS = {
+    "oncology": ["tumor", "mass", "neoplasm", "malignan", "carcinoma"],
+    "fracture": ["fracture", "break", "compression fracture"],
+    "infection": ["infection", "abscess", "pneumonia", "sepsis"],
+    "inflammation": ["inflamm", "itis", "colitis", "hepatitis"],
+    "hemorrhage": ["hemorrhage", "bleed", "hematoma"],
+    "degeneration": ["degeneration", "arthrosis", "arthritis", "sclerosis"],
+    "vascular": ["aneurysm", "stenosis", "thrombus", "embol"],
+    "normal": ["normal", "unremarkable", "no acute", "negative"],
+}
+
+
+def _detect_disease_tags(text: str) -> List[str]:
+    low = (text or "").lower()
+    tags = []
+    for label, keywords in _DISEASE_KEYWORDS.items():
+        if any(keyword in low for keyword in keywords):
+            tags.append(label)
+    if not tags:
+        return ["general"]
+    return sorted(set(tags))
+
+
+def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str) -> None:
+    """Persist a summarized encounter for analytics without storing PHI."""
+    text_blob = " ".join(
+        filter(
+            None,
+            [
+                structured.get("findings"),
+                structured.get("conclusion"),
+                structured.get("concern"),
+            ],
+        )
+    )
+    disease_tags = _detect_disease_tags(text_blob)
+
+    record = {
+        "name": patient.get("name", ""),
+        "age": patient.get("age", ""),
+        "sex": patient.get("sex", ""),
+        "date": patient.get("date", ""),
+        "hospital": patient.get("hospital", ""),
+        "study": patient.get("study", ""),
+        "reason": structured.get("reason", ""),
+        "technique": structured.get("technique", ""),
+        "findings": structured.get("findings", ""),
+        "conclusion": structured.get("conclusion", ""),
+        "concern": structured.get("concern", ""),
+        "language": language,
+        "word_count": report_stats.get("words", 0),
+        "disease_tags": disease_tags,
+    }
+    add_patient_record(record)
+
+
+def get_stats() -> Dict[str, Any]:
+    """Return aggregate statistics for dashboard and analytics views."""
     conn = get_connection()
     cur = conn.cursor()
-    # Overall counts
+
     cur.execute("SELECT COUNT(*) FROM patients")
     total = cur.fetchone()[0]
-    cur.execute("SELECT COUNT(*) FROM patients WHERE sex = 'M'")
-    male = cur.fetchone()[0]
-    cur.execute("SELECT COUNT(*) FROM patients WHERE sex = 'F'")
-    female = cur.fetchone()[0]
-    # Age range counts
+
+    cur.execute("SELECT COUNT(*) FROM patients WHERE created_at >= datetime('now', '-30 day')")
+    last_30 = cur.fetchone()[0]
+
+    cur.execute("SELECT AVG(word_count) FROM patients WHERE word_count > 0")
+    avg_words = cur.fetchone()[0] or 0
+
+    cur.execute("SELECT sex, COUNT(*) FROM patients GROUP BY sex")
+    gender_counts = {"male": 0, "female": 0, "other": 0}
+    for sex, count in cur.fetchall():
+        label = (sex or "").strip().upper()
+        if label.startswith("M"):
+            gender_counts["male"] += count
+        elif label.startswith("F"):
+            gender_counts["female"] += count
+        else:
+            gender_counts["other"] += count
+
     cur.execute("SELECT age FROM patients WHERE age IS NOT NULL AND age != ''")
-    ages = cur.fetchall()
     ranges = {"0-17": 0, "18-30": 0, "31-50": 0, "51-65": 0, "66+": 0}
-    for row in ages:
-        a = row[0]
-        # attempt to parse the age as an integer; if fails, skip
-        try:
-            n = int(str(a).split()[0])
-        except Exception:
+    for (age_value,) in cur.fetchall():
+        age = _parse_age(age_value)
+        if age is None:
             continue
-        if n < 18:
+        if age < 18:
             ranges["0-17"] += 1
-        elif n <= 30:
+        elif age <= 30:
             ranges["18-30"] += 1
-        elif n <= 50:
+        elif age <= 50:
             ranges["31-50"] += 1
-        elif n <= 65:
+        elif age <= 65:
             ranges["51-65"] += 1
         else:
             ranges["66+"] += 1
+
+    cur.execute(
+        """
+        SELECT language, COUNT(*) AS c
+        FROM patients
+        WHERE ifnull(language, '') != ''
+        GROUP BY language
+        ORDER BY c DESC
+        """
+    )
+    language_mix = [{"label": row[0], "count": row[1]} for row in cur.fetchall()]
+
+    cur.execute(
+        """
+        SELECT study, COUNT(*) AS c
+        FROM patients
+        WHERE ifnull(study, '') != ''
+        GROUP BY study
+        ORDER BY c DESC
+        """
+    )
+    study_mix = [{"label": row[0], "count": row[1]} for row in cur.fetchall()]
+
+    cur.execute("SELECT disease_tags FROM patients WHERE ifnull(disease_tags, '') != ''")
+    disease_counter: Counter[str] = Counter()
+    for (raw_tags,) in cur.fetchall():
+        tags = [t.strip() for t in raw_tags.split(",") if t.strip()]
+        disease_counter.update(tags)
+    disease_mix = [
+        {"label": label, "count": count}
+        for label, count in disease_counter.most_common()
+    ]
+
+    cur.execute(
+        """
+        SELECT study, language, created_at, disease_tags
+        FROM patients
+        ORDER BY datetime(created_at) DESC
+        LIMIT 6
+        """
+    )
+    recent = []
+    for study, language, created_at, tags in cur.fetchall():
+        recent.append(
+            {
+                "study": study or "Unknown",
+                "language": language or "",
+                "created_at": created_at,
+                "disease_tags": [t for t in (tags or "").split(",") if t],
+            }
+        )
+
     conn.close()
-    # Flatten the dictionary for ease of use in templates
-    return {"total": total, "male": male, "female": female, **ranges}
+
+    return {
+        "summary": {
+            "total_reports": total,
+            "last_30_days": last_30,
+            "average_word_count": int(round(avg_words)) if avg_words else 0,
+            "languages_tracked": len(language_mix),
+        },
+        "gender": gender_counts,
+        "age_ranges": ranges,
+        "languages": language_mix,
+        "studies": study_mix,
+        "diseases": disease_mix,
+        "recent": recent,
+    }
 
 
 def get_user_by_username(username: str) -> Optional[sqlite3.Row]:

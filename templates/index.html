@@ -35,7 +35,7 @@
       <nav class="nav-links">
         <a href="{{ url_for('index') }}">Dashboard</a>
         <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
-        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('report_status') }}">Statistics</a>
         <a href="{{ url_for('payment') }}">Payment</a>
         <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
         <a href="{{ url_for('help_page') }}">Help</a>
@@ -53,8 +53,13 @@
     <span id="theme-label" class="theme-switch-text">Dark mode</span>
 </label>
 
+        {% if session.get('username') %}
+        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
+        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+        {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% endif %}
       </div>
     </header>
 
@@ -78,8 +83,54 @@
         </section>
 
         <section class="reports-section">
-          <h2>Your Reports</h2>
-          <p>No reports found.</p>
+          <h2>Platform Insights</h2>
+          <div class="insight-cards">
+            <article class="insight-card">
+              <span class="insight-label">Reports Parsed</span>
+              <span class="insight-value">{{ stats.summary.total_reports }}</span>
+            </article>
+            <article class="insight-card">
+              <span class="insight-label">Last 30 Days</span>
+              <span class="insight-value">{{ stats.summary.last_30_days }}</span>
+            </article>
+            <article class="insight-card">
+              <span class="insight-label">Avg. Word Count</span>
+              <span class="insight-value">{{ stats.summary.average_word_count }}</span>
+            </article>
+            <article class="insight-card">
+              <span class="insight-label">Languages Logged</span>
+              <span class="insight-value">{{ stats.summary.languages_tracked }}</span>
+            </article>
+          </div>
+
+          <div class="insight-columns">
+            <div class="insight-column">
+              <h3>Age Distribution</h3>
+              <ul class="insight-list">
+                {% for label, count in stats.age_ranges.items() %}
+                <li><span>{{ label }}</span><span>{{ count }}</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="insight-column">
+              <h3>Gender Mix</h3>
+              <ul class="insight-list">
+                <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
+                <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
+                <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
+              </ul>
+            </div>
+            <div class="insight-column">
+              <h3>Top Findings</h3>
+              <ul class="insight-list">
+                {% for item in stats.diseases[:4] %}
+                <li><span>{{ item.label|capitalize }}</span><span>{{ item.count }}</span></li>
+                {% else %}
+                <li><span>No findings yet</span><span>0</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -95,7 +146,7 @@
           <ul>
             <li><a href="{{ url_for('index') }}">Dashboard</a></li>
             <li><a href="{{ url_for('magazine') }}">Magazine Viewer</a></li>
-            <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+            <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
             <li><a href="{{ url_for('payment') }}">Payment</a></li>
             <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
             <li><a href="{{ url_for('help_page') }}">Help</a></li>

@@ -502,7 +502,7 @@ def _is_reasoning_model(m: str) -> bool:
 
 def _resolve_models() -> Tuple[str, str]:
     """Return (env_model, chat_fallback). chat_fallback must support JSON mode."""
-    env_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    env_model = os.getenv("OPENAI_MODEL", "gpt-5")
     chat_fallback = os.getenv("OPENAI_CHAT_FALLBACK", "gpt-4o-mini")
     return (env_model, chat_fallback)
 

@@ -46,19 +46,9 @@ LANGUAGES = ["English", "Kiswahili"]
 # curated content for magazine + blog pages
 MAGAZINE_ISSUES = [
     {
-        "title": "January 2025 · AI Decision Support in Radiology",
-        "url": "https://www.radiologyinfo.org/pdfs/safety/angiography_and_arteriography.pdf",
-        "note": "Latest digital issue featuring augmented reading workflows.",
-    },
-    {
-        "title": "November 2024 · Patient Prep Essentials",
-        "url": None,
-        "note": "Upload static/magazine/nov-2024.pdf and update MAGAZINE_ISSUES to link it here.",
-    },
-    {
-        "title": "September 2024 · Interventional Trends",
-        "url": None,
-        "note": "Archive forthcoming once release is finalized.",
+        "title": "July 2025 · THE FUTURE OF AI IN IMAGING",
+        "url": "magazine/July-2025.pdf",
+        "note": "Upload static/magazine/July-2025.pdf",
     },
 ]
 
@@ -157,14 +147,14 @@ def _pdf_response_from_html(html_str: str, *, filename="inside-imaging-report.pd
 
 @app.route("/", methods=["GET"])
 def index():
-    stats = {"total": 0, "male": 0, "female": 0, "0-17": 0, "18-30": 0, "31-50": 0, "51-65": 0, "66+": 0}
+    stats = db.get_stats()
     return render_template("index.html", stats=stats, languages=LANGUAGES)
 
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "GET":
-        stats = {"total": 0, "male": 0, "female": 0, "0-17": 0, "18-30": 0, "31-50": 0, "51-65": 0, "66+": 0}
+        stats = db.get_stats()
         return render_template("index.html", stats=stats, languages=LANGUAGES)
 
     file = request.files.get("file")
@@ -242,6 +232,11 @@ def upload():
     session["patient"] = patient
     session["language"] = lang
 
+    try:
+        db.store_report_event(patient, structured, report_stats, lang)
+    except Exception:
+        logging.exception("Failed to persist report analytics.")
+
     return render_template(
         "result.html",
         S=structured,
@@ -304,9 +299,24 @@ def report_preview():
 
 @app.route("/magazine")
 def magazine():
-    current_issue = next((item for item in MAGAZINE_ISSUES if item.get("url")), None)
-    magazine_url = current_issue.get("url") if current_issue else None
-    return render_template("language.html", magazine_url=magazine_url, archive=MAGAZINE_ISSUES)
+    archive = []
+    magazine_url = None
+
+    for item in MAGAZINE_ISSUES:
+        record = dict(item)
+        raw_url = record.get("url")
+        resolved_url = None
+        if raw_url:
+            if raw_url.startswith(("http://", "https://", "/")):
+                resolved_url = raw_url
+            else:
+                resolved_url = url_for("static", filename=raw_url.lstrip("/"))
+            record["url"] = resolved_url
+            if magazine_url is None:
+                magazine_url = resolved_url
+        archive.append(record)
+
+    return render_template("language.html", magazine_url=magazine_url, archive=archive)
 
 
 @app.route("/language")
@@ -325,7 +335,8 @@ def blogs():
 
 @app.route("/report_status")
 def report_status():
-    return render_template("report_status.html")
+    stats = db.get_stats()
+    return render_template("report_status.html", stats=stats)
 
 
 @app.route("/payment")

@@ -158,14 +158,27 @@ def upload():
         S = {"reason": "", "technique": "", "findings": "", "conclusion": "", "concern": ""}
 
     # Patient and study from structured metadata
-    patient = {
-        "hospital": S.get("hospital", ""),
-        "study": S.get("study", "Unknown"),
-        "name": S.get("name", ""),
-        "sex": S.get("sex", ""),
-        "age": S.get("age", ""),
-        "date": S.get("date", ""),
-    }
+    patient_struct = S.get("patient") if isinstance(S, dict) else None
+    if isinstance(patient_struct, dict) and patient_struct:
+        patient = {
+            "hospital": patient_struct.get("hospital", ""),
+            "study": patient_struct.get("study", "Unknown"),
+            "name": patient_struct.get("name", ""),
+            "sex": patient_struct.get("sex", ""),
+            "age": patient_struct.get("age", ""),
+            "date": patient_struct.get("date", ""),
+            "history": patient_struct.get("history", ""),
+        }
+    else:
+        patient = {
+            "hospital": S.get("hospital", ""),
+            "study": S.get("study", "Unknown"),
+            "name": S.get("name", ""),
+            "sex": S.get("sex", ""),
+            "age": S.get("age", ""),
+            "date": S.get("date", ""),
+            "history": "",
+        }
     study = {"organ": patient.get("study") or "Unknown"}
     structured = S
 

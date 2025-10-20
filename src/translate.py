@@ -163,7 +163,60 @@ NOISE_PATTERNS = [
 NOISE_RX = re.compile("|".join(f"(?:{p})" for p in NOISE_PATTERNS), re.I | re.M)
 
 # ---------- PHI redaction ----------
-def _redact_phi(s: str) -> str:
+_PHI_STOPWORDS = {
+    "hospital","clinic","centre","center","medical","radiology","imaging","ct","mri","xray",
+    "scan","study","male","female","sex","age","date","mrn","patient","ref","no","number",
+    "id","account","acct","doctor","dr","clinic",
+}
+
+_PHI_PLACEHOLDER_REPLACEMENTS = {
+    "[REDACTED]": "the patient",
+    "[DOB]": "date withheld",
+    "[AGE]": "age withheld",
+    "[SEX]": "sex withheld",
+    "[AGE/SEX]": "age/sex withheld",
+}
+
+
+def _phi_term_variants(value: str) -> List[str]:
+    terms: List[str] = []
+    val = (value or "").strip()
+    if not val:
+        return terms
+    cleaned = re.sub(r"\s+", " ", val)
+    if cleaned:
+        terms.append(cleaned)
+    split_src = re.sub(r"[:;,_-]+", " ", cleaned)
+    for piece in split_src.split():
+        piece = piece.strip()
+        if len(piece) < 2:
+            continue
+        low = piece.lower()
+        if low in _PHI_STOPWORDS:
+            continue
+        if not re.search(r"[A-Za-z]", piece):
+            continue
+        terms.append(piece)
+    return terms
+
+
+def _collect_phi_terms(meta: Dict[str, str]) -> List[str]:
+    terms: List[str] = []
+    for key in ("name", "hospital", "date"):
+        val = meta.get(key, "")
+        terms.extend(_phi_term_variants(val))
+    return [t for t in terms if t]
+
+
+def _normalize_phi_placeholders(text: str) -> str:
+    t = text or ""
+    for placeholder, replacement in _PHI_PLACEHOLDER_REPLACEMENTS.items():
+        if placeholder in t:
+            t = t.replace(placeholder, replacement)
+    return t
+
+
+def _redact_phi(s: str, extra_terms: List[str] | None = None) -> str:
     t = s or ""
     t = re.sub(r"(?im)^\s*(name|patient|pt|mrn|id|acct|account|gender|sex|age|dob|date\s+of\s+birth)\s*[:#].*$","[REDACTED]",t)
     t = re.sub(r"(?i)\bDOB\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b","[DOB]",t)
@@ -173,6 +226,13 @@ def _redact_phi(s: str) -> str:
     t = re.sub(r"(?i)\b(\d{1,3})\s*/\s*(m|f)\b","[AGE/SEX]",t)
     t = re.sub(r"(?i)\b(\d{1,3})(m|f)\b","[AGE/SEX]",t)
     t = re.sub(r"(?im)^(\s*(indication|reason|history)\s*:\s*)[A-Z][A-Za-z'.-]+(?:\s+[A-Z][A-Za-z'.-]+){0,2},\s*",r"\1",t)
+    if extra_terms:
+        for term in extra_terms:
+            term = (term or "").strip()
+            if not term or len(term) < 2:
+                continue
+            escaped = re.escape(term)
+            t = re.sub(rf"(?i){escaped}", "[REDACTED]", t)
     return t
 
 # ---------- helpers ----------
@@ -725,20 +785,27 @@ def build_structured(
     hx, cleaned = _extract_history(cleaned)
     secs = sections_from_text(cleaned)
 
+    phi_terms = _collect_phi_terms(meta)
+    sanitized_for_model = _redact_phi(cleaned, extra_terms=phi_terms)
+    sanitized_for_public = _normalize_phi_placeholders(sanitized_for_model)
+
     reason_seed = secs.get("reason") or "Not provided."
     if hx: reason_seed = (reason_seed.rstrip(".") + f". History: {hx}.").strip()
     findings_src = _strip_signatures(secs.get("findings") or (cleaned or "Not described."))
     impression_src = _strip_signatures(secs.get("impression") or "")
+    findings_src_masked = _normalize_phi_placeholders(_redact_phi(findings_src, extra_terms=phi_terms))
+    impression_src_masked = _normalize_phi_placeholders(_redact_phi(impression_src, extra_terms=phi_terms))
 
     m = re.search(r"(?mi)^\s*comparison\s*:\s*(.+)$", cleaned); comparison = (m.group(1).strip() if m else "")
     m = re.search(r"(?mi)^\s*oral\s+contrast\s*:\s*(.+)$", cleaned); oral_contrast = (m.group(1).strip() if m else "")
 
-    fallback_findings = _simplify(_prune_findings_for_public(findings_src), lay_gloss)
-    base_conc = impression_src or ""
+    fallback_findings = _simplify(_prune_findings_for_public(findings_src_masked), lay_gloss)
+    base_conc = impression_src_masked or ""
     if not base_conc:
         picks: List[str] = []
+        search_source = sanitized_for_public or cleaned
         for kw in ["mass","obstruction","compression","dilation","fracture","bleed","appendicitis","adenopathy","necrotic","atrophy","stenosis","herniation"]:
-            m2 = re.search(rf"(?is)([^.]*\b{kw}\b[^.]*)\.", cleaned)
+            m2 = re.search(rf"(?is)([^.]*\b{kw}\b[^.]*)\.", search_source)
             if m2: picks.append(m2.group(0).strip())
         base_conc = " ".join(dict.fromkeys(picks))
     fallback_conclusion = _simplify(_strip_labels(base_conc) or "See important findings.", lay_gloss)
@@ -751,17 +818,20 @@ def build_structured(
     # no else/fallback here
 
     # LLM attempt, gated + PHI-redacted
-    llm = _summarize_with_openai(_redact_phi(cleaned), language)
+    llm = _summarize_with_openai(sanitized_for_model, language)
     llm_reason = _strip_labels((llm or {}).get("reason","")) if llm else ""
     llm_tech = _strip_labels((llm or {}).get("technique","")) if llm else ""
 
     raw_findings = (_simplify(_strip_labels((llm or {}).get("findings","")), lay_gloss) if llm else "") or fallback_findings
     raw_conclusion = (_simplify(_strip_labels((llm or {}).get("conclusion","")), lay_gloss) if llm else "") or fallback_conclusion
+    raw_findings = _normalize_phi_placeholders(raw_findings)
+    raw_conclusion = _normalize_phi_placeholders(raw_conclusion)
 
     # remove overlap
     raw_findings, raw_conclusion = _dedupe_sections(raw_findings, raw_conclusion)
 
     concern_txt = (_simplify((llm or {}).get("concern",""), lay_gloss) if llm else "") or concern
+    concern_txt = _normalize_phi_placeholders(concern_txt)
 
     # technique prefer deterministic
     technique_extracted = _extract_technique_details(cleaned) or _infer_modality_and_region(cleaned)
@@ -769,6 +839,8 @@ def build_structured(
 
     # reason
     reason_txt = _infer_reason(cleaned, llm_reason or reason_seed)
+    reason_txt = _normalize_phi_placeholders(reason_txt)
+    technique_txt = _normalize_phi_placeholders(technique_txt)
 
     # render
     findings_html = _to_colored_bullets_html(raw_findings, max_items=4, include_normal=True)
@@ -783,13 +855,24 @@ def build_structured(
     pos_hi = len(re.findall(r'class="ii-pos"', findings_html + conclusion_html))
     neg_hi = len(re.findall(r'class="ii-neg"', findings_html + conclusion_html))
 
+    patient_bundle = {
+        "name": meta.get("name", ""),
+        "age": meta.get("age", ""),
+        "sex": meta.get("sex", ""),
+        "hospital": meta.get("hospital", ""),
+        "date": meta.get("date", ""),
+        "study": meta.get("study", ""),
+        "history": hx,
+    }
+
     return {
-        "name": meta.get("name",""), "age": meta.get("age",""), "sex": meta.get("sex",""),
-        "hospital": meta.get("hospital",""), "date": meta.get("date",""), "study": meta.get("study",""),
+        "name": patient_bundle.get("name", ""), "age": patient_bundle.get("age", ""), "sex": patient_bundle.get("sex", ""),
+        "hospital": patient_bundle.get("hospital", ""), "date": patient_bundle.get("date", ""), "study": patient_bundle.get("study", ""),
         "reason": reason_html.strip(), "technique": technique_html.strip(),
         "comparison": comparison or "None", "oral_contrast": oral_contrast or "Not stated",
         "findings": findings_html.strip(), "conclusion": conclusion_html.strip(), "concern": concern_html.strip(),
         "word_count": words, "sentence_count": sentences, "highlights_positive": pos_hi, "highlights_negative": neg_hi,
+        "patient": patient_bundle,
     }
 
 __all__ = ["Glossary", "build_structured"]

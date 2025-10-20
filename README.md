@@ -15,18 +15,20 @@ parse reports, build structured summaries and persist patient records.
   viewer that highlights the approximate location of the organ being
   scanned based on the study name passed from the server.
 * `data/` – CSV files for the lay glossary and the SQLite database.
+* `docs/` – the lightweight static marketing page that GitHub Pages
+  serves.  A workflow keeps the assets in `docs/static/` aligned with
+  the main Flask styles on every push to `main`.
 * `app.py` – the main Flask server.  It provides login, upload/paste
   functionality and calls into `src/translate.py` for summarisation.
+### GitHub Pages
 
-### Removing unused components
-
-Earlier versions of this repository contained a separate FastAPI
-backend under `backend/` and a React/Vite client under `frontend/`.
-Those components are no longer required: the Flask app encapsulates
-all functionality.  You can safely delete the `backend/` and
-`frontend/` directories and the `.gh-pages` folder to avoid confusion
-and reduce deployment size.  The zipped archives in the root of this
-project were retained for reference and can also be removed.
+The repository includes a GitHub Actions workflow at
+`.github/workflows/pages.yml` that deploys the contents of `docs/` to
+GitHub Pages whenever `main` is updated.  The workflow rebuilds
+`docs/static/` from the source `static/` directory so that the marketing
+site mirrors the latest styles automatically.  You can also trigger the
+workflow manually from the Actions tab if you need to redeploy without
+making a commit.
 
 To run the application locally, install the Python dependencies listed
 in `requirements.txt` and start the Flask server:

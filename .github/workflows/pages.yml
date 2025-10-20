@@ -1,8 +1,9 @@
 name: Deploy Pages
+
 on:
   push:
     branches: [main]
-    paths: ['docs/**']
+  workflow_dispatch:
 permissions:
   contents: read
   pages: write
@@ -15,6 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare Pages content
+        run: |
+          set -euo pipefail
+          rm -rf docs/static
+          if [ -d static ]; then
+            mkdir -p docs/static
+            rsync -a static/ docs/static/
+          fi
+          touch docs/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: 'docs' }

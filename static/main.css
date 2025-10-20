@@ -247,10 +247,10 @@ a:hover { text-decoration: underline; }
 }
 .logo-wrapper{ display:flex; align-items:center; }
 .logo{
-  width:241px;
-  height:120px;
+  height:64px;
+  width:auto;
   border-radius:8px;
-  margin-right:8px;
+  margin-right:12px;
 }
 .brand{ font-size:1.5rem; font-weight:700; color:var(--text); }
 .nav a{
@@ -444,25 +444,38 @@ html.light ::selection,
 
 /* Lock navbar layout across pages: [logo] [centered nav] [auth/theme] */
 .navbar{
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  column-gap: 24px;
-  padding: 10px 16px;        /* keep if you want uniform padding */
-}
-.navbar-brand{ justify-self: start; }
-.nav-auth{ justify-self: end; display: flex; align-items: center; gap: .75rem; }
-.navbar *{ min-width: 0; }   /* prevent overflow pushing layout */
-
-/* Center the nav links in the middle column */
-.nav-links{
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 18px;
-  white-space: nowrap;
-  margin: 0;                 /* kill stray margins */
+  gap: 1.5rem;
+  padding: 0.5rem 2rem;
+  background-color: var(--panel);
+  border-bottom: 1px solid var(--border);
 }
+.navbar-brand{
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.nav-links{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+.nav-auth{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.navbar *{ min-width: 0; }
 
 /* Optional: make link pills consistent across pages */
 .nav-links a{
@@ -473,6 +486,19 @@ html.light ::selection,
   border-radius: 10px;
   background: var(--panel);
   text-decoration: none;
+}
+.nav-links a:hover,
+.nav-links a:focus{
+  color: var(--mint);
+  border-color: var(--mint);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--mint) 45%, transparent);
+  outline: 0;
+}
+
+@media (max-width: 900px){
+  .navbar{ flex-wrap: wrap; gap: 1rem; padding: 0.75rem 1.5rem; }
+  .nav-links{ position: static; transform: none; width: 100%; justify-content: center; flex-wrap: wrap; row-gap: 0.5rem; }
+  .nav-auth{ width: 100%; justify-content: center; flex-wrap: wrap; }
 }
 
 /* === Theme slider EXACT override === */

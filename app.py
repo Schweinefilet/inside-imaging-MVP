@@ -43,6 +43,52 @@ CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS", "https://schwe
 # available languages
 LANGUAGES = ["English", "Kiswahili"]
 
+# curated content for magazine + blog pages
+MAGAZINE_ISSUES = [
+    {
+        "title": "January 2025 · AI Decision Support in Radiology",
+        "url": "https://www.radiologyinfo.org/pdfs/safety/angiography_and_arteriography.pdf",
+        "note": "Latest digital issue featuring augmented reading workflows.",
+    },
+    {
+        "title": "November 2024 · Patient Prep Essentials",
+        "url": None,
+        "note": "Upload static/magazine/nov-2024.pdf and update MAGAZINE_ISSUES to link it here.",
+    },
+    {
+        "title": "September 2024 · Interventional Trends",
+        "url": None,
+        "note": "Archive forthcoming once release is finalized.",
+    },
+]
+
+BLOG_POSTS = [
+    {
+        "title": "Making MRI Findings Actionable for Patients",
+        "summary": "How radiologists can translate technical impressions into patient-friendly plans without losing nuance.",
+        "author": "Dr. Amina Hussein",
+        "date": "January 15, 2025",
+        "read_time": "6 min read",
+        "url": "https://www.rsna.org/news/2024/september/patient-connections",
+    },
+    {
+        "title": "AI Triage: What Clinicians Need to Know",
+        "summary": "A practical framework for validating AI-assisted reads inside busy radiology departments.",
+        "author": "Dr. Marc Feld",
+        "date": "December 9, 2024",
+        "read_time": "5 min read",
+        "url": "https://www.diagnosticimaging.com/view/ai-in-radiology-five-takeaways",
+    },
+    {
+        "title": "Ultrasound Rooms Built for Empathy",
+        "summary": "Designing spaces and scripts that help expectant parents stay informed and calm during imaging.",
+        "author": "Dr. Lillian Chen",
+        "date": "November 28, 2024",
+        "read_time": "4 min read",
+        "url": "https://appliedradiology.com/articles/improving-patient-experience-in-ultrasound",
+    },
+]
+
 # Initialize database
 try:
     db.init_db()
@@ -256,9 +302,25 @@ def report_preview():
     return render_template("pdf_report.html", structured=structured, patient=patient)
 
 
+@app.route("/magazine")
+def magazine():
+    current_issue = next((item for item in MAGAZINE_ISSUES if item.get("url")), None)
+    magazine_url = current_issue.get("url") if current_issue else None
+    return render_template("language.html", magazine_url=magazine_url, archive=MAGAZINE_ISSUES)
+
+
 @app.route("/language")
-def language():
-    return render_template("language.html")
+def legacy_language():
+    return redirect(url_for("magazine"))
+
+
+@app.route("/blogs")
+def blogs():
+    return render_template(
+        "blogs.html",
+        posts=BLOG_POSTS,
+        submit_url="mailto:editor@insideimaging.example?subject=Radiologist%20Blog%20Pitch",
+    )
 
 
 @app.route("/report_status")

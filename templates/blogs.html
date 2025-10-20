@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Radiologist Blogs - Inside Imaging</title>
+
+  <script>
+  (function(){
+    try {
+      var t = localStorage.getItem('theme');
+      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      var useLight = t ? (t === 'light') : preferLight;
+      if (useLight) document.documentElement.classList.add('light');
+    } catch(e) {}
+  })();
+  </script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='blogs.css') }}">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="navbar">
+      <div class="navbar-brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
+      </div>
+      <nav class="nav-links">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('blogs') }}" class="active">Radiologist Blogs</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+      </nav>
+      <div class="nav-auth">
+        <label class="theme-switch" aria-label="Toggle theme">
+          <span class="theme-row">
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+            <span class="theme-switch-track" aria-hidden="true"></span>
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+          </span>
+          <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        </label>
+        {% if session.get('username') %}
+          <span class="username">{{ session.get('username') }}</span>
+          <a href="{{ url_for('logout') }}" class="login-button">Log Out</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+          <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="content blogs-page">
+      <section class="blogs-hero">
+        <h1>Radiologist Blogs</h1>
+        <p>Perspectives from practicing radiologists on communication, technology, and patient partnership.</p>
+      </section>
+
+      {% if posts %}
+      <section class="blog-grid">
+        {% for post in posts %}
+        <article class="blog-card">
+          <header>
+            <h2>{{ post.title }}</h2>
+            <div class="blog-meta">
+              <span>{{ post.author }}</span>
+              <span>{{ post.date }}</span>
+              <span>{{ post.read_time }}</span>
+            </div>
+          </header>
+          <p class="blog-summary">{{ post.summary }}</p>
+          <footer>
+            <a href="{{ post.url }}" target="_blank" rel="noopener">Read full post →</a>
+          </footer>
+        </article>
+        {% endfor %}
+      </section>
+      {% else %}
+      <section class="blog-submit">
+        <h2>Want to contribute?</h2>
+        <p>We are curating essays from radiology leaders. Share your ideas with our editorial team.</p>
+        {% if submit_url %}
+        <a href="{{ submit_url }}">Pitch a story →</a>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <section class="blog-submit">
+        <h2>Publish Your Perspective</h2>
+        <p>We feature practical guidance, communication strategies, and patient-centered workflows. Submissions are reviewed weekly.</p>
+        {% if submit_url %}
+        <a href="{{ submit_url }}">Pitch a story →</a>
+        {% else %}
+        <p>Email <strong>editor@insideimaging.example</strong> to submit a draft.</p>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

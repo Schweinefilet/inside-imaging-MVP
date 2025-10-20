@@ -32,9 +32,10 @@
         </div>
         <nav class="nav-links">
             <a href="{{ url_for('index') }}">Dashboard</a>
-            <a href="{{ url_for('language') }}">Language Selection</a>
+            <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
             <a href="{{ url_for('report_status') }}">Report Status</a>
             <a href="{{ url_for('payment') }}">Payment</a>
+            <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
             <a href="{{ url_for('help_page') }}">Help</a>
         </nav>
         <div class="nav-auth">
@@ -88,7 +89,7 @@
                 </div>
                 <div class="faq-card">
                     <h3>What languages are available for translation?</h3>
-                    <p>We currently offer simplified translations in English, Spanish, French, and Chinese. You can select your preferred language on the Language Selection page after uploading your report.</p>
+                    <p>We currently offer simplified translations in English, Spanish, French, and Chinese. You can select your preferred language during the upload process on the Dashboard page.</p>
                 </div>
                 <div class="faq-card">
                     <h3>How much does the service cost?</h3>
@@ -140,9 +141,10 @@
                 <h4>Navigation</h4>
                 <ul>
                     <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-                    <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+                    <li><a href="{{ url_for('magazine') }}">Magazine Viewer</a></li>
                     <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
                     <li><a href="{{ url_for('payment') }}">Payment</a></li>
+                    <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
                     <li><a href="{{ url_for('help_page') }}">Help</a></li>
                 </ul>
             </div>

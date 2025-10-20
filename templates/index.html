@@ -13,7 +13,7 @@
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
-        <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
       </div>
       <nav class="nav-links">
         <a href="{{ url_for('index') }}">Dashboard</a>

@@ -27,15 +27,15 @@
     <!-- Navigation Bar -->
     <header class="navbar">
       <div class="navbar-brand">
-        <img src="/static/logo.png" alt="Inside Imaging logo" class="logo">
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
       </div>
 
       <nav class="nav-links">
-        <a href="/">Dashboard</a>
-        <a href="/static/language-selection.html">Language Selection</a>
-        <a href="/static/report-status.html">Report Status</a>
-        <a href="/static/payment.html">Payment</a>
-        <a href="/static/help.html">Help</a>
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('language') }}">Language Selection</a>
+        <a href="{{ url_for('report_status') }}">Report Status</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
 
       <div class="nav-auth">
@@ -50,8 +50,8 @@
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
 
-        <a href="#" class="login-button">Log In</a>
-        <a href="#" class="signup-button">Sign Up</a>
+  <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+  <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
       </div>
     </header>
 
@@ -91,11 +91,11 @@
         <div class="footer-col">
           <h4>Navigation</h4>
           <ul>
-            <li><a href="/">Dashboard</a></li>
-            <li><a href="/static/language-selection.html">Language Selection</a></li>
-            <li><a href="/static/report-status.html">Report Status</a></li>
-            <li><a href="/static/payment.html">Payment</a></li>
-            <li><a href="/static/help.html">Help</a></li>
+            <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('language') }}">Language Selection</a></li>
+            <li><a href="{{ url_for('report_status') }}">Report Status</a></li>
+            <li><a href="{{ url_for('payment') }}">Payment</a></li>
+            <li><a href="{{ url_for('help_page') }}">Help</a></li>
           </ul>
         </div>
         <div class="footer-col">

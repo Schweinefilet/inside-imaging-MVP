@@ -8,8 +8,31 @@
   <link rel="stylesheet" href="./static/main.css">
   <link rel="stylesheet" href="./static/dashboard.css">
   <link rel="stylesheet" href="./static/loader.css">
+  <link rel="stylesheet" href="./static/landing.css">
 </head>
 <body>
+  <div id="landing-overlay" class="landing-overlay landing-hidden" role="dialog" aria-modal="true" aria-label="Inside Imaging introduction" aria-hidden="true" tabindex="-1">
+    <div class="landing-inner">
+      <div class="landing-heading" aria-hidden="true">
+        <span data-char="I">I</span>
+        <span data-char="N">N</span>
+        <span data-char="S">S</span>
+        <span data-char="I">I</span>
+        <span data-char="D">D</span>
+        <span data-char="E">E</span>
+        <span class="spacer" data-char=" "></span>
+        <span data-char="I">I</span>
+        <span data-char="M">M</span>
+        <span data-char="A">A</span>
+        <span data-char="G">G</span>
+        <span data-char="I">I</span>
+        <span data-char="N">N</span>
+        <span data-char="G">G</span>
+      </div>
+      <p class="landing-tagline">Plain-language radiology reports with immersive visuals and guidance tailored for patients.</p>
+      <button type="button" class="landing-continue" id="landing-continue">Continue</button>
+    </div>
+  </div>
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
@@ -102,7 +125,6 @@
   </div>
 
   <script src="./static/theme.js"></script>
-  <script src="./static/loader.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var html = document.documentElement;
@@ -110,5 +132,58 @@
       if (saved === 'light') html.classList.add('light');
     });
   </script>
+  <script>
+    (function(){
+      var overlay = document.getElementById('landing-overlay');
+      if (!overlay) return;
+      var continueBtn = document.getElementById('landing-continue');
+      var disableOverlay = function(){
+        overlay.classList.add('landing-hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+        localStorage.setItem('iiLandingSeen', '1');
+        setTimeout(function(){ if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 650);
+      };
+
+      if (localStorage.getItem('iiLandingSeen') === '1') {
+        disableOverlay();
+        return;
+      }
+
+      requestAnimationFrame(function(){
+        overlay.classList.remove('landing-hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        if (continueBtn) continueBtn.focus();
+      });
+
+      var updateGradient = function(evt){
+        var rect = overlay.getBoundingClientRect();
+        var x = ((evt.clientX - rect.left) / rect.width) * 100;
+        var y = ((evt.clientY - rect.top) / rect.height) * 100;
+        overlay.style.setProperty('--mx', x + '%');
+        overlay.style.setProperty('--my', y + '%');
+      };
+
+      overlay.addEventListener('mousemove', updateGradient);
+      overlay.addEventListener('touchmove', function(evt){
+        if (!evt.touches || !evt.touches.length) return;
+        updateGradient(evt.touches[0]);
+      }, { passive: true });
+
+      if (continueBtn) continueBtn.addEventListener('click', disableOverlay);
+      overlay.addEventListener('click', function(evt){
+        if (evt.target === overlay) disableOverlay();
+      });
+      overlay.addEventListener('keydown', function(evt){
+        if (evt.key === 'Enter' || evt.key === ' ') {
+          evt.preventDefault();
+          disableOverlay();
+        }
+        if (evt.key === 'Escape') {
+          disableOverlay();
+        }
+      });
+    })();
+  </script>
+  <script src="./static/loader.js"></script>
 </body>
 </html>

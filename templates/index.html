@@ -8,8 +8,25 @@
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/loader.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
 </head>
 <body>
+  {% set landing_text = "INSIDE IMAGING" %}
+  <div id="landing-overlay" class="landing-overlay landing-hidden" role="dialog" aria-modal="true" aria-label="Inside Imaging introduction" aria-hidden="true" tabindex="-1">
+    <div class="landing-inner">
+      <div class="landing-heading" aria-hidden="true">
+        {% for char in landing_text %}
+          {% if char == ' ' %}
+            <span class="spacer" data-char=" "></span>
+          {% else %}
+            <span data-char="{{ char }}">{{ char }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <p class="landing-tagline">Plain-language radiology reports with immersive visuals and guidance tailored for patients.</p>
+      <button type="button" class="landing-continue" id="landing-continue">Continue</button>
+    </div>
+  </div>
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
@@ -125,6 +142,61 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
     if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
 });
+</script>
+
+<script>
+(function(){
+  var overlay = document.getElementById('landing-overlay');
+  if (!overlay) return;
+  var continueBtn = document.getElementById('landing-continue');
+  var seen = localStorage.getItem('iiLandingSeen') === '1';
+
+  var disableOverlay = function(){
+    overlay.classList.add('landing-hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    localStorage.setItem('iiLandingSeen', '1');
+    setTimeout(function(){ if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 650);
+  };
+
+  if (seen) {
+    disableOverlay();
+    return;
+  }
+
+  requestAnimationFrame(function(){
+    overlay.classList.remove('landing-hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    if (continueBtn) continueBtn.focus();
+  });
+
+  var updateGradient = function(evt){
+    var rect = overlay.getBoundingClientRect();
+    var x = ((evt.clientX - rect.left) / rect.width) * 100;
+    var y = ((evt.clientY - rect.top) / rect.height) * 100;
+    overlay.style.setProperty('--mx', x + '%');
+    overlay.style.setProperty('--my', y + '%');
+  };
+
+  overlay.addEventListener('mousemove', updateGradient);
+  overlay.addEventListener('touchmove', function(evt){
+    if (!evt.touches || !evt.touches.length) return;
+    updateGradient(evt.touches[0]);
+  }, { passive: true });
+
+  if (continueBtn) continueBtn.addEventListener('click', disableOverlay);
+  overlay.addEventListener('click', function(evt){
+    if (evt.target === overlay) disableOverlay();
+  });
+  overlay.addEventListener('keydown', function(evt){
+    if (evt.key === 'Enter' || evt.key === ' ') {
+      evt.preventDefault();
+      disableOverlay();
+    }
+    if (evt.key === 'Escape') {
+      disableOverlay();
+    }
+  });
+})();
 </script>
 
   <script src="/static/loader.js"></script>

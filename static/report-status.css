@@ -1,47 +1,179 @@
-/* Styles for Report Status page */
-.navbar-brand img {
-  height: 64px;
-  width: auto;
-}
-
-.status-overview {
+/* Analytics page */
+.content.analytics {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.analytics-header {
+  max-width: 760px;
+}
+
+.analytics-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  color: var(--mint);
+}
+
+.analytics-header .tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.analytics-summary {
+  display: grid;
   gap: 1rem;
-  margin-top: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
-.status-card {
-  flex: 1;
-  min-width: 200px;
-  background: var(--surface-alt);
+.summary-card {
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 14px;
+  padding: 1.3rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.analytics-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.analytics-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   padding: 1.5rem;
-  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.status-card h3 {
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-  font-size: 1.1rem;
+.analytics-panel h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--mint);
 }
 
-.status-count {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--mint-500);
+.analytics-panel.span-2 {
+  grid-column: span 2;
 }
 
-.reports-list {
-  margin-top: 2rem;
+.stat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
-.reports-list h2 {
-  margin-bottom: 0.5rem;
-  font-size: 1.5rem;
+.stat-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed color-mix(in oklab, var(--border) 80%, transparent);
+  font-size: 0.95rem;
 }
 
-.reports-list p {
-  color: var(--text-secondary);
+.stat-list li:last-child {
+  border-bottom: none;
+}
+
+.stat-list span:last-child {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recent-list li {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.recent-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.recent-primary {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+
+.recent-language {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--mint) 18%, var(--panel));
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.recent-time {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.recent-tags {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.recent-link {
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--mint);
+  align-self: flex-start;
+}
+
+.recent-link:hover,
+.history-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .analytics-panel.span-2 {
+    grid-column: span 1;
+  }
 }

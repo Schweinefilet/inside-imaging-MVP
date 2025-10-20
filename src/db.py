@@ -90,14 +90,8 @@ def truncate_name(name: str) -> str:
     return " ".join(p[0] + "***" for p in parts)
 
 
-def add_patient_record(data: Dict[str, Any]) -> None:
-    """Insert a patient encounter record into the database.
-
-    The data dictionary should contain the keys: name, age, sex, date,
-    hospital, study, reason, technique, findings, conclusion, concern,
-    and language. The name will be truncated before being stored. If
-    language is not provided, it will be stored as an empty string.
-    """
+def add_patient_record(data: Dict[str, Any]) -> int:
+    """Insert a patient encounter record and return its new primary key."""
     conn = get_connection()
     cur = conn.cursor()
     disease_tags = data.get("disease_tags", [])
@@ -137,7 +131,9 @@ def add_patient_record(data: Dict[str, Any]) -> None:
         ),
     )
     conn.commit()
+    record_id = cur.lastrowid
     conn.close()
+    return int(record_id)
 
 
 def _parse_age(raw: Any) -> Optional[int]:
@@ -175,7 +171,11 @@ def _detect_disease_tags(text: str) -> List[str]:
     return sorted(set(tags))
 
 
-def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str) -> None:
+def _format_tags_display(tags: List[str]) -> List[str]:
+    return [t.replace("_", " ").strip().title() for t in tags if t]
+
+
+def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str) -> int:
     """Persist a summarized encounter for analytics without storing PHI."""
     text_blob = " ".join(
         filter(
@@ -205,7 +205,16 @@ def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], repo
         "word_count": report_stats.get("words", 0),
         "disease_tags": disease_tags,
     }
-    add_patient_record(record)
+    return add_patient_record(record)
+
+
+def _format_timestamp(raw: Optional[str]) -> str:
+    if not raw:
+        return ""
+    try:
+        return datetime.fromisoformat(str(raw)).strftime("%b %d, %Y %H:%M")
+    except Exception:
+        return str(raw)
 
 
 def get_stats() -> Dict[str, Any]:
@@ -284,20 +293,22 @@ def get_stats() -> Dict[str, Any]:
 
     cur.execute(
         """
-        SELECT study, language, created_at, disease_tags
+        SELECT id, study, language, created_at, disease_tags
         FROM patients
         ORDER BY datetime(created_at) DESC
         LIMIT 6
         """
     )
     recent = []
-    for study, language, created_at, tags in cur.fetchall():
+    for report_id, study, language, created_at, tags in cur.fetchall():
+        raw_tags = [t for t in (tags or "").split(",") if t]
         recent.append(
             {
+                "id": report_id,
                 "study": study or "Unknown",
                 "language": language or "",
-                "created_at": created_at,
-                "disease_tags": [t for t in (tags or "").split(",") if t],
+                "created_at": _format_timestamp(created_at),
+                "disease_tags": _format_tags_display(raw_tags),
             }
         )
 
@@ -316,6 +327,83 @@ def get_stats() -> Dict[str, Any]:
         "studies": study_mix,
         "diseases": disease_mix,
         "recent": recent,
+    }
+
+
+def get_report_brief(report_id: int) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, study, language, created_at, disease_tags
+        FROM patients
+        WHERE id = ?
+        """,
+        (report_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    tags = [t for t in (row[4] or "").split(",") if t]
+    return {
+        "id": row[0],
+        "study": row[1] or "Unknown",
+        "language": row[2] or "",
+        "created_at": _format_timestamp(row[3]),
+        "disease_tags": _format_tags_display(tags),
+    }
+
+
+def get_report_detail(report_id: int) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, truncated_name, age, sex, date, hospital, study,
+               reason, technique, findings, conclusion, concern,
+               language, word_count, disease_tags, created_at
+        FROM patients
+        WHERE id = ?
+        """,
+        (report_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+
+    disease_tags = [t for t in (row[14] or "").split(",") if t]
+
+    patient = {
+        "hospital": row[5] or "",
+        "study": row[6] or "Unknown",
+        "name": row[1] or "",
+        "sex": row[3] or "",
+        "age": row[2] or "",
+        "date": row[4] or "",
+        "history": "",
+    }
+
+    structured = {
+        "reason": row[7] or "",
+        "technique": row[8] or "",
+        "findings": row[9] or "",
+        "conclusion": row[10] or "",
+        "concern": row[11] or "",
+        "word_count": row[13] or 0,
+        "comparison": "",
+        "oral_contrast": "",
+    }
+
+    return {
+        "id": row[0],
+        "patient": patient,
+        "structured": structured,
+        "language": row[12] or "",
+        "word_count": row[13] or 0,
+    "disease_tags": _format_tags_display(disease_tags),
+        "created_at": _format_timestamp(row[15]),
     }
 
 

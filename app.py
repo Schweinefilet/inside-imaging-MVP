@@ -18,6 +18,7 @@ from flask import (
     session,
     make_response,
     jsonify,
+    abort,
 )
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -148,14 +149,16 @@ def _pdf_response_from_html(html_str: str, *, filename="inside-imaging-report.pd
 @app.route("/", methods=["GET"])
 def index():
     stats = db.get_stats()
-    return render_template("index.html", stats=stats, languages=LANGUAGES)
+    recent_reports = session.get("recent_reports", [])
+    return render_template("index.html", stats=stats, languages=LANGUAGES, recent_reports=recent_reports)
 
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "GET":
         stats = db.get_stats()
-        return render_template("index.html", stats=stats, languages=LANGUAGES)
+        recent_reports = session.get("recent_reports", [])
+        return render_template("index.html", stats=stats, languages=LANGUAGES, recent_reports=recent_reports)
 
     file = request.files.get("file")
     lang = request.form.get("language", "English")
@@ -232,10 +235,22 @@ def upload():
     session["patient"] = patient
     session["language"] = lang
 
+    report_id = None
     try:
-        db.store_report_event(patient, structured, report_stats, lang)
+        report_id = db.store_report_event(patient, structured, report_stats, lang)
     except Exception:
         logging.exception("Failed to persist report analytics.")
+
+    if report_id:
+        try:
+            brief = db.get_report_brief(report_id)
+        except Exception:
+            logging.exception("Failed to fetch report brief.")
+            brief = None
+        if brief:
+            history = session.get("recent_reports") or []
+            filtered = [item for item in history if item.get("id") != report_id]
+            session["recent_reports"] = [brief] + filtered[:4]
 
     return render_template(
         "result.html",
@@ -245,6 +260,50 @@ def upload():
         extracted=extracted,
         study=study,
         language=lang,
+        report_stats=report_stats,
+    )
+
+
+@app.route("/reports/<int:report_id>")
+def report_detail(report_id: int):
+    record = db.get_report_detail(report_id)
+    if not record:
+        abort(404)
+
+    structured = dict(record.get("structured") or {})
+    patient = dict(record.get("patient") or {})
+    language = record.get("language") or "English"
+
+    findings_blob = (structured.get("findings") or "") + (structured.get("conclusion") or "")
+    highlight_pos = findings_blob.count('class="ii-pos"')
+    highlight_neg = findings_blob.count('class="ii-neg"')
+
+    structured.setdefault("word_count", record.get("word_count", 0))
+    structured.setdefault("sentence_count", 0)
+    structured.setdefault("highlights_positive", highlight_pos)
+    structured.setdefault("highlights_negative", highlight_neg)
+
+    report_stats = {
+        "words": structured.get("word_count", 0),
+        "sentences": structured.get("sentence_count", 0),
+        "highlights_positive": highlight_pos,
+        "highlights_negative": highlight_neg,
+    }
+
+    session["structured"] = structured
+    session["patient"] = patient
+    session["language"] = language
+
+    study = {"organ": patient.get("study") or "Unknown"}
+
+    return render_template(
+        "result.html",
+        S=structured,
+        structured=structured,
+        patient=patient,
+        extracted="",
+        study=study,
+        language=language,
         report_stats=report_stats,
     )
 

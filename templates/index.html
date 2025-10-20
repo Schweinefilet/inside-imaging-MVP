@@ -83,54 +83,123 @@
         </section>
 
         <section class="reports-section">
-          <h2>Platform Insights</h2>
-          <div class="insight-cards">
-            <article class="insight-card">
-              <span class="insight-label">Reports Parsed</span>
-              <span class="insight-value">{{ stats.summary.total_reports }}</span>
-            </article>
-            <article class="insight-card">
-              <span class="insight-label">Last 30 Days</span>
-              <span class="insight-value">{{ stats.summary.last_30_days }}</span>
-            </article>
-            <article class="insight-card">
-              <span class="insight-label">Avg. Word Count</span>
-              <span class="insight-value">{{ stats.summary.average_word_count }}</span>
-            </article>
-            <article class="insight-card">
-              <span class="insight-label">Languages Logged</span>
-              <span class="insight-value">{{ stats.summary.languages_tracked }}</span>
-            </article>
-          </div>
+          <header class="reports-section-header">
+            <h2>Your Reports</h2>
+            <p>Revisit the reports you generated during this session and jump back into their summaries.</p>
+          </header>
 
-          <div class="insight-columns">
-            <div class="insight-column">
-              <h3>Age Distribution</h3>
-              <ul class="insight-list">
-                {% for label, count in stats.age_ranges.items() %}
-                <li><span>{{ label }}</span><span>{{ count }}</span></li>
-                {% endfor %}
-              </ul>
+          <ul class="reports-history">
+            {% if recent_reports %}
+              {% for item in recent_reports %}
+              <li class="history-item">
+                <div class="history-info">
+                  <div class="history-primary">
+                    <strong>{{ item.study }}</strong>
+                    <span class="history-language">{{ item.language or 'English' }}</span>
+                  </div>
+                  <div class="history-meta">
+                    <span>{{ item.created_at or 'Just now' }}</span>
+                  </div>
+                  {% if item.disease_tags %}
+                  <div class="history-tags">
+                    {% for tag in item.disease_tags %}
+                    <span>{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+                <a class="history-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
+              </li>
+              {% endfor %}
+            {% else %}
+              <li class="history-item empty">
+                <p>No reports yet. Upload a file to see your history here.</p>
+              </li>
+            {% endif %}
+          </ul>
+
+          {% set total_reports = stats.summary.total_reports or 0 %}
+          <section class="reports-insights" aria-label="Platform insights">
+            <h3>Platform Insights</h3>
+            <div class="insight-cards">
+              <article class="insight-card">
+                <span class="insight-icon" aria-hidden="true">📄</span>
+                <span class="insight-label">Reports Parsed</span>
+                <span class="insight-value">{{ stats.summary.total_reports }}</span>
+              </article>
+              <article class="insight-card">
+                <span class="insight-icon" aria-hidden="true">🗓️</span>
+                <span class="insight-label">Reports (30 Days)</span>
+                <span class="insight-value">{{ stats.summary.last_30_days }}</span>
+              </article>
+              <article class="insight-card">
+                <span class="insight-icon" aria-hidden="true">📝</span>
+                <span class="insight-label">Avg. Word Count</span>
+                <span class="insight-value">{{ stats.summary.average_word_count }}</span>
+              </article>
+              <article class="insight-card">
+                <span class="insight-icon" aria-hidden="true">🌍</span>
+                <span class="insight-label">Languages Logged</span>
+                <span class="insight-value">{{ stats.summary.languages_tracked }}</span>
+              </article>
             </div>
-            <div class="insight-column">
-              <h3>Gender Mix</h3>
-              <ul class="insight-list">
-                <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
-                <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
-                <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
-              </ul>
+
+            <div class="insight-columns">
+              <div class="insight-column">
+                <h4>Age Distribution</h4>
+                <ul class="insight-list">
+                  {% for label, count in stats.age_ranges.items() %}
+                  {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
+                  <li>
+                    <div class="insight-row">
+                      <span class="insight-name">{{ label }}</span>
+                      <span class="insight-count">{{ count }}</span>
+                    </div>
+                    <div class="insight-bar" data-progress="{{ percent }}">
+                      <span class="insight-progress"></span>
+                    </div>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="insight-column">
+                <h4>Gender Mix</h4>
+                <ul class="insight-list">
+                  {% for label, count in {'Female': stats.gender.female, 'Male': stats.gender.male, 'Other': stats.gender.other}.items() %}
+                  {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
+                  <li>
+                    <div class="insight-row">
+                      <span class="insight-name">{{ label }}</span>
+                      <span class="insight-count">{{ count }}</span>
+                    </div>
+                    <div class="insight-bar" data-progress="{{ percent }}">
+                      <span class="insight-progress"></span>
+                    </div>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="insight-column">
+                <h4>Top Findings</h4>
+                <ul class="insight-list">
+                  {% for item in stats.diseases[:4] %}
+                  {% set percent = ((item.count / total_reports) * 100)|round(1) if total_reports else 0 %}
+                  <li>
+                    <div class="insight-row">
+                      <span class="insight-name">{{ item.label }}</span>
+                      <span class="insight-count">{{ item.count }}</span>
+                    </div>
+                    <div class="insight-bar" data-progress="{{ percent }}">
+                      <span class="insight-progress"></span>
+                    </div>
+                  </li>
+                  {% else %}
+                  <li class="insight-empty">No findings yet.</li>
+                  {% endfor %}
+                </ul>
+              </div>
             </div>
-            <div class="insight-column">
-              <h3>Top Findings</h3>
-              <ul class="insight-list">
-                {% for item in stats.diseases[:4] %}
-                <li><span>{{ item.label|capitalize }}</span><span>{{ item.count }}</span></li>
-                {% else %}
-                <li><span>No findings yet</span><span>0</span></li>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
+          </section>
         </section>
       </div>
     </main>
@@ -194,6 +263,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var toggleLight = document.getElementById('toggle-light');
     if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
     if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
+
+  document.querySelectorAll('.insight-bar').forEach(function(bar) {
+    var span = bar.querySelector('.insight-progress');
+    if (!span) return;
+    var raw = parseFloat(bar.dataset.progress);
+    var clamped = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 100) : 0;
+    span.style.width = clamped + '%';
+  });
 });
 </script>
 

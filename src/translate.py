@@ -531,8 +531,8 @@ def _call_openai_once(report_text: str, language: str, temperature: float, effor
         instructions = f"""Wewe ni msaidizi wa kuandika ripoti za uchunguzi wa mwili kwa lugha rahisi. Andika KILA KITU kwa Kiswahili sanifu BILA kuchanganya Kiingereza.
 Rudisha JSON object tu yenye: reason, technique, findings, conclusion, concern.
 Hadhira ni mtoto wa miaka 10. Tumia sentensi FUPI SANA (maneno 5-8 kwa kila sentensi). Tumia maneno ya kawaida ambayo mtoto anaweza kuelewa.
-reason na technique: sentensi 1-2 FUPI SANA; findings: bullets 2-3 FUPI; conclusion: bullets 1-2 FUPI; concern: sentensi 1 FUPI.
-Panga namba zote. Tumia cm isipokuwa ni chini ya 1 cm, kisha tumia mm. Kagua tahajia YOTE. Usitumie majina ya kitaalamu au maneno ya kisayansi.
+reason: sentensi 1-2 FUPI SANA; technique: sentensi 2-4 zenye maelezo ya kina ya jinsi uchunguzi ulivyofanywa (eleza maneno kama 'axial', 'reconstructions', 'coverage'); findings: bullets 2-3 FUPI; conclusion: bullets 1-2 FUPI; concern: sentensi 1 FUPI.
+WEKA NAMBA ZOTE kama zilivyo katika ripoti ya asili - USIZIPUNGUZE. Kama ripoti inasema "5.4 x 5.6 x 6.7 cm", weka sawa sawa kama hivo. Kagua tahajia YOTE. Usitumie majina ya kitaalamu au maneno ya kisayansi.
 Andika KILA KITU kwa Kiswahili sanifu bila Kiingereza:
 - "scan" → "uchunguzi" au "skani"
 - "mass" → "uvimbe" au "chungu"
@@ -547,8 +547,8 @@ Hakikisha KILA neno ni Kiswahili."""
         instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
 Audience is a 10-year-old. Use VERY simple, SHORT sentences (5-8 words each). Use everyday words a child would know.
-reason and technique: 1-2 VERY SHORT sentences; findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
-Round all numbers. Use cm unless under 1 cm, then mm. Double-check ALL spelling. No medical names or jargon.
+reason: 1-2 VERY SHORT sentences; technique: 2-4 sentences with detailed plain-language explanation of HOW the scan was done (explain terms like 'axial' means cross-sectional slices, 'reconstructions' means creating different views, 'coverage from X to Y' means scanned area, 'without contrast' means no dye was used); findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
+KEEP ALL NUMBERS exactly as stated in the original report - do NOT round or remove them. If the report says "5.4 x 5.6 x 6.7 cm", keep it exactly like that. Double-check ALL spelling. No medical names or jargon.
 If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in."""
 
     # 1) Try Chat Completions JSON mode when supported.

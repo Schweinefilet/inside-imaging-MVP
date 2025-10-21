@@ -20,6 +20,8 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='blogs.css') }}">
 </head>
 <body>
 <div class="page-wrapper">
@@ -30,9 +32,9 @@
         <nav class="nav-links">
             <a href="{{ url_for('index') }}">Dashboard</a>
             <a href="{{ url_for('projects') }}" class="active">Projects</a>
+            <a href="{{ url_for('projects') }}#insights">Insights</a>
             <a href="{{ url_for('report_status') }}">Statistics</a>
             <a href="{{ url_for('payment') }}">Payment</a>
-            <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
             <a href="{{ url_for('help_page') }}">Help</a>
         </nav>
         <div class="nav-auth">
@@ -65,49 +67,111 @@
         </div>
     </header>
 
-    <main class="content">
-        <h1>Projects & Resources</h1>
-        <p class="tagline">Explore our educational materials, magazine archives, and video tutorials.</p>
-
-        <div class="dashboard-grid">
-            <section class="upload-section" style="grid-column: 1 / -1;">
-                <h2>📰 Inside Imaging Magazine</h2>
-                <p>Read our monthly magazine featuring the latest in radiology, AI insights, and patient education.</p>
-                <a href="{{ url_for('magazine') }}" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--mint); color: #051e14; border-radius: 8px; text-decoration: none; font-weight: 600;">Browse Magazine Archives</a>
-            </section>
-
-            <section class="reports-section" style="grid-column: 1 / -1;">
-                <h2>🎥 Online Sessions & Tutorials</h2>
-                <p>Watch educational videos about understanding medical imaging, interpreting radiology reports, and using our platform.</p>
-                
-                <div class="insight-cards" style="margin-top: 1.5rem;">
-                    <div class="insight-card">
-                        <span class="insight-icon" aria-hidden="true">📺</span>
-                        <span class="insight-label">Coming Soon</span>
-                        <span class="insight-value" style="font-size: 1.2rem;">Video Tutorials</span>
-                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted);">Step-by-step guides on using Inside Imaging</p>
-                    </div>
-                    
-                    <div class="insight-card">
-                        <span class="insight-icon" aria-hidden="true">🎓</span>
-                        <span class="insight-label">Coming Soon</span>
-                        <span class="insight-value" style="font-size: 1.2rem;">Webinars</span>
-                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted);">Live sessions with radiologists</p>
-                    </div>
-                    
-                    <div class="insight-card">
-                        <span class="insight-icon" aria-hidden="true">📚</span>
-                        <span class="insight-label">Coming Soon</span>
-                        <span class="insight-value" style="font-size: 1.2rem;">Case Studies</span>
-                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted);">Real-world examples and explanations</p>
-                    </div>
+    <main class="content projects-page">
+        <section class="marquee-hero" id="showcase">
+            <div class="marquee-overlay" aria-hidden="true"></div>
+            <div class="marquee-content">
+                <span class="marquee-kicker">Inside Imaging Studio</span>
+                <h1>Translate every scan into an action plan.</h1>
+                <p class="marquee-description">Interactive visuals, simplified explanations, and ready-to-share summaries designed to help clinicians and patients align around the same story.</p>
+                <div class="marquee-actions">
+                    <a class="btn-primary" href="#portfolio">Explore projects</a>
+                    <a class="btn-secondary" href="#insights">Read radiologist insights</a>
                 </div>
-                
-                <p style="margin-top: 2rem; padding: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
-                    <strong>Note:</strong> Video content and online sessions are currently in development. Check back soon for updates, or <a href="{{ url_for('help_page') }}" style="color: var(--mint);">contact us</a> to learn more about our upcoming educational programs.
-                </p>
-            </section>
-        </div>
+            </div>
+            <div class="marquee-plane" aria-hidden="true">
+                <div class="marquee-row marquee-row-a">
+                    {% for _ in range(2) %}
+                        {% for image in marquee_images %}
+                        <figure class="marquee-card"><img src="{{ image }}" alt="Inside Imaging showcase tile"></figure>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <div class="marquee-row marquee-row-b">
+                    {% for _ in range(2) %}
+                        {% for image in marquee_images %}
+                        <figure class="marquee-card"><img src="{{ image }}" alt="Inside Imaging showcase tile"></figure>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section id="portfolio" class="portfolio-section">
+            <header class="section-heading">
+                <h2>Projects & Learning Tracks</h2>
+                <p>Tools that make imaging conversations clearer today, plus sneak peeks at what is landing next.</p>
+            </header>
+            <div class="portfolio-grid">
+                <article class="project-card">
+                    <div class="project-icon" aria-hidden="true">�</div>
+                    <h3>Inside Imaging Magazine</h3>
+                    <p>Monthly deep-dives on radiology storytelling, AI adoption, and patient-centered education.</p>
+                    <a class="project-link" href="{{ url_for('magazine') }}">Browse magazine archives →</a>
+                </article>
+                <article class="project-card">
+                    <div class="project-icon" aria-hidden="true">🎥</div>
+                    <h3>Sessions & Tutorials</h3>
+                    <p>Short video explainers, live walkthroughs, and downloadable guides that translate scans into clear next steps.</p>
+                    <span class="project-pill">Launching soon</span>
+                </article>
+                <article class="project-card">
+                    <div class="project-icon" aria-hidden="true">🧠</div>
+                    <h3>Case Study Library</h3>
+                    <p>Real-world report rewrites that pair annotated imaging with plain-language interpretations.</p>
+                    <span class="project-pill">In production</span>
+                </article>
+            </div>
+            <div class="project-note">
+                <strong>Want to collaborate?</strong> Reach out via our <a href="{{ url_for('help_page') }}">support channel</a> to co-create educational content or request custom walkthroughs for your team.
+            </div>
+        </section>
+
+        <section id="insights" class="insights-section blogs-page">
+            <div class="blogs-hero">
+                <h2>Radiologist Insights</h2>
+                <p>Practical advice from clinicians who turn complex findings into conversations patients actually understand.</p>
+            </div>
+
+            {% if posts %}
+            <div class="blog-grid">
+                {% for post in posts %}
+                <article class="blog-card">
+                    <header>
+                        <h3>{{ post.title }}</h3>
+                        <div class="blog-meta">
+                            <span>{{ post.author }}</span>
+                            <span>{{ post.date }}</span>
+                            <span>{{ post.read_time }}</span>
+                        </div>
+                    </header>
+                    <p class="blog-summary">{{ post.summary }}</p>
+                    <footer>
+                        <a href="{{ post.url }}" target="_blank" rel="noopener">Read full post →</a>
+                    </footer>
+                </article>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="blog-submit">
+                <h3>Publish Your Perspective</h3>
+                <p>We feature communication strategies, workflow redesigns, and patient-centered playbooks. Submissions are reviewed weekly.</p>
+                {% if submit_url %}
+                <a href="{{ submit_url }}">Pitch a story →</a>
+                {% else %}
+                <p>Email <strong>editor@insideimaging.example</strong> to submit a draft.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="cta-panel">
+            <div class="cta-content">
+                <h2>Ready to showcase your imaging practice?</h2>
+                <p>Partner with Inside Imaging to build guided experiences, educational modules, and patient-ready summaries tailored to your service lines.</p>
+                <a class="btn-primary" href="{{ url_for('help_page') }}">Start a project brief</a>
+            </div>
+        </section>
     </main>
 
     {% include '_footer.html' %}

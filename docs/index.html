@@ -67,18 +67,47 @@
       <p>Upload, manage, and download your translated radiology reports in one place.</p>
 
       <div class="dashboard-grid">
-        <section class="upload-section">
-          <h2>Upload New Report</h2>
-          <form action="https://inside-imaging-mvp.onrender.com/upload" method="post" enctype="multipart/form-data" class="upload-form">
-            <input type="file" name="file" accept=".pdf,.txt" required>
-            <label for="language">Language:</label>
-            <select name="language" id="language">
-              <option value="English">English</option>
-              <option value="Kiswahili">Kiswahili</option>
-            </select>
-            <button type="submit">Upload &amp; Convert</button>
-          </form>
-        </section>
+        <div class="dashboard-left">
+          <section class="upload-section">
+            <h2>Upload New Report</h2>
+            <form action="https://inside-imaging-mvp.onrender.com/upload" method="post" enctype="multipart/form-data" class="upload-form">
+              <input type="file" name="file" accept=".pdf,.txt" required>
+              <label for="language">Language:</label>
+              <select name="language" id="language">
+                <option value="English">English</option>
+                <option value="Kiswahili">Kiswahili</option>
+              </select>
+              <button type="submit">Upload &amp; Convert</button>
+            </form>
+          </section>
+
+          <section class="transformation-section">
+            <h2>See the Transformation</h2>
+            <p class="transformation-subtitle">Compare raw medical phrasing with patient-friendly wording.</p>
+            <div class="compare-container-compact" data-mode="drag">
+              <div class="compare-wrapper-compact">
+                <img 
+                  src="./static/before-report.png" 
+                  alt="Complex medical report before translation" 
+                  class="compare-image first"
+                />
+                <img 
+                  src="./static/after-report.png" 
+                  alt="Simplified patient-friendly report after translation" 
+                  class="compare-image second"
+                />
+                <div class="compare-slider">
+                  <div class="compare-handle"></div>
+                </div>
+                <span class="compare-label before">Before</span>
+                <span class="compare-label after">After</span>
+              </div>
+              <p class="compare-description-compact">
+                Drag to compare medical jargon vs plain language.
+              </p>
+            </div>
+          </section>
+        </div>
 
         <section class="reports-section">
           <h2>Your Reports</h2>

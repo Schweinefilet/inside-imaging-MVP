@@ -250,10 +250,17 @@ a:hover { text-decoration: underline; }
 }
 .logo-wrapper{ display:flex; align-items:center; }
 .logo{
-  height:64px;
+  height:56px;
   width:auto;
   border-radius:8px;
-  margin-right:12px;
+}
+.navbar-brand .logo{
+  height:56px;
+  width:auto;
+}
+.navbar-brand img{
+  height:56px;
+  width:auto;
 }
 .brand{ font-size:1.5rem; font-weight:700; color:var(--text); }
 .nav a{

@@ -32,7 +32,6 @@
         <nav class="nav-links">
             <a href="{{ url_for('index') }}">Dashboard</a>
             <a href="{{ url_for('projects') }}" class="active">Projects</a>
-            <a href="{{ url_for('projects') }}#insights">Insights</a>
             <a href="{{ url_for('report_status') }}">Statistics</a>
             <a href="{{ url_for('payment') }}">Payment</a>
             <a href="{{ url_for('help_page') }}">Help</a>
@@ -72,11 +71,11 @@
             <div class="marquee-overlay" aria-hidden="true"></div>
             <div class="marquee-content">
                 <span class="marquee-kicker">Inside Imaging Studio</span>
-                <h1>Translate every scan into an action plan.</h1>
-                <p class="marquee-description">Interactive visuals, simplified explanations, and ready-to-share summaries designed to help clinicians and patients align around the same story.</p>
+                <h1>Transform complex radiology reports into clear, actionable insights.</h1>
+                <p class="marquee-description">AI-powered translation, interactive body diagrams, and plain-language explanations that empower patients and streamline clinical communication.</p>
                 <div class="marquee-actions">
-                    <a class="btn-primary" href="#portfolio">Explore projects</a>
-                    <a class="btn-secondary" href="#insights">Read radiologist insights</a>
+                    <a class="btn-primary" href="{{ url_for('index') }}">Try it now</a>
+                    <a class="btn-secondary" href="#portfolio">View our projects</a>
                 </div>
             </div>
             <div class="marquee-plane" aria-hidden="true">

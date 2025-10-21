@@ -41,10 +41,19 @@ html.light .marquee-overlay {
   gap: 1.4rem;
   text-align: center;
   color: #e6f8f0;
+  background: rgba(8, 12, 18, 0.75);
+  backdrop-filter: blur(12px);
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  border: 1px solid rgba(82, 113, 140, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 html.light .marquee-content {
   color: #0f2b26;
+  background: rgba(230, 248, 242, 0.85);
+  border-color: rgba(12, 133, 98, 0.2);
+  box-shadow: 0 8px 32px rgba(11, 76, 63, 0.15);
 }
 
 .marquee-kicker {
@@ -146,14 +155,15 @@ html.light .btn-secondary:focus-visible {
   flex-direction: column;
   justify-content: center;
   gap: 3.5rem;
-  opacity: 0.5;
+  opacity: 0.4;
   pointer-events: none;
-  filter: blur(0.4px);
+  filter: blur(0.8px);
   z-index: 1;
 }
 
 html.light .marquee-plane {
-  opacity: 0.6;
+  opacity: 0.5;
+  filter: blur(0.6px);
 }
 
 .marquee-row {
@@ -164,11 +174,11 @@ html.light .marquee-plane {
 }
 
 .marquee-row-a {
-  animation: marquee-slide 48s linear infinite;
+  animation: marquee-slide-slow 80s linear infinite;
 }
 
 .marquee-row-b {
-  animation: marquee-slide-alt 54s linear infinite;
+  animation: marquee-slide-slow-alt 90s linear infinite;
 }
 
 .marquee-card {
@@ -193,12 +203,12 @@ html.light .marquee-card {
   object-fit: cover;
 }
 
-@keyframes marquee-slide {
+@keyframes marquee-slide-slow {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
 
-@keyframes marquee-slide-alt {
+@keyframes marquee-slide-slow-alt {
   from { transform: translateX(-25%); }
   to { transform: translateX(-75%); }
 }

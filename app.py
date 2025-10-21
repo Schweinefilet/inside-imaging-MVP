@@ -86,37 +86,23 @@ BLOG_POSTS = [
 ]
 
 MARQUEE_IMAGES = [
-    "https://assets.aceternity.com/cloudinary_bkp/3d-card.png",
-    "https://assets.aceternity.com/animated-modal.png",
-    "https://assets.aceternity.com/animated-testimonials.webp",
-    "https://assets.aceternity.com/cloudinary_bkp/Tooltip_luwy44.png",
-    "https://assets.aceternity.com/github-globe.png",
-    "https://assets.aceternity.com/glare-card.png",
-    "https://assets.aceternity.com/layout-grid.png",
-    "https://assets.aceternity.com/flip-text.png",
-    "https://assets.aceternity.com/hero-highlight.png",
-    "https://assets.aceternity.com/carousel.webp",
-    "https://assets.aceternity.com/placeholders-and-vanish-input.png",
-    "https://assets.aceternity.com/shooting-stars-and-stars-background.png",
-    "https://assets.aceternity.com/signup-form.png",
-    "https://assets.aceternity.com/cloudinary_bkp/stars_sxle3d.png",
-    "https://assets.aceternity.com/spotlight-new.webp",
-    "https://assets.aceternity.com/cloudinary_bkp/Spotlight_ar5jpr.png",
-    "https://assets.aceternity.com/cloudinary_bkp/Parallax_Scroll_pzlatw_anfkh7.png",
-    "https://assets.aceternity.com/tabs.png",
-    "https://assets.aceternity.com/cloudinary_bkp/Tracing_Beam_npujte.png",
-    "https://assets.aceternity.com/cloudinary_bkp/typewriter-effect.png",
-    "https://assets.aceternity.com/glowing-effect.webp",
-    "https://assets.aceternity.com/hover-border-gradient.png",
-    "https://assets.aceternity.com/cloudinary_bkp/Infinite_Moving_Cards_evhzur.png",
-    "https://assets.aceternity.com/cloudinary_bkp/Lamp_hlq3ln.png",
-    "https://assets.aceternity.com/macbook-scroll.png",
-    "https://assets.aceternity.com/cloudinary_bkp/Meteors_fye3ys.png",
-    "https://assets.aceternity.com/cloudinary_bkp/Moving_Border_yn78lv.png",
-    "https://assets.aceternity.com/multi-step-loader.png",
-    "https://assets.aceternity.com/vortex.png",
-    "https://assets.aceternity.com/wobble-card.png",
-    "https://assets.aceternity.com/world-map.webp",
+    # Radiology imaging examples - MRI, CT, X-ray samples
+    "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=500&fit=crop",  # MRI brain scan
+    "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=400&h=500&fit=crop",  # Medical imaging screen
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=500&fit=crop",  # CT scan
+    "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&h=500&fit=crop",  # Chest X-ray
+    "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=400&h=500&fit=crop",  # Radiology workspace
+    "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?w=400&h=500&fit=crop",  # Medical monitor
+    "https://images.unsplash.com/photo-1581093458791-9d42e4f43b80?w=400&h=500&fit=crop",  # Radiologist at work
+    "https://images.unsplash.com/photo-1581093804475-577d72e38aa0?w=400&h=500&fit=crop",  # Medical imaging equipment
+    "https://images.unsplash.com/photo-1579684453401-966b11832744?w=400&h=500&fit=crop",  # CT scanner
+    "https://images.unsplash.com/photo-1582560475093-ba66accbc424?w=400&h=500&fit=crop",  # MRI machine
+    "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=500&fit=crop",  # Medical analysis
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=500&fit=crop",  # Spine X-ray
+    "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=500&fit=crop",  # Medical consultation
+    "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?w=400&h=500&fit=crop",  # Digital radiology
+    "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&h=500&fit=crop",  # Lung scan
+    "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=500&fit=crop",  # Brain imaging
 ]
 
 # Initialize database

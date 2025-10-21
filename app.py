@@ -228,6 +228,83 @@ def _parse_brain_lesion(structured: dict) -> dict:
     }
 
 
+def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
+    """
+    Detect if report shows abnormalities and identify the affected organ.
+    Returns: {'has_abnormality': bool, 'organ': str, 'abnormality_type': str}
+    """
+    import re
+    
+    conclusion = (structured.get("conclusion") or "").lower()
+    findings = (structured.get("findings") or "").lower()
+    study = (patient.get("study") or "").lower()
+    
+    # Strip HTML tags
+    conclusion = re.sub(r'<[^>]+>', ' ', conclusion)
+    findings = re.sub(r'<[^>]+>', ' ', findings)
+    combined = conclusion + ' ' + findings + ' ' + study
+    
+    # Normal scan indicators
+    normal_indicators = [
+        r'\bnormal\b', r'\bunremarkable\b', r'\bno\s+abnormalit', r'\bwithin\s+normal\s+limits\b',
+        r'\bno\s+significant\b', r'\bno\s+acute\b', r'\bclear\b.*\blungs?\b', r'\bintact\b'
+    ]
+    
+    # Abnormality indicators
+    abnormal_indicators = [
+        r'\bmass\b', r'\btumou?r\b', r'\blesion\b', r'\bmeningioma\b', r'\bcancer\b',
+        r'\bfracture\b', r'\bbleed\b', r'\bhemorrhage\b', r'\binfarct\b', r'\bstroke\b',
+        r'\bedema\b', r'\bswelling\b', r'\bobstruction\b', r'\benlarged\b',
+        r'\badenopathy\b', r'\bnodule\b', r'\bhydro\w+\b', r'\bherniation\b',
+        r'\bshift\b', r'\bcompression\b', r'\beffusion\b', r'\bpneumonia\b'
+    ]
+    
+    # Count indicators
+    normal_count = sum(1 for pattern in normal_indicators if re.search(pattern, combined, re.I))
+    abnormal_count = sum(1 for pattern in abnormal_indicators if re.search(pattern, combined, re.I))
+    
+    has_abnormality = abnormal_count > 0 and abnormal_count >= normal_count
+    
+    # Organ detection
+    organ = None
+    if re.search(r'\b(brain|head|skull|cerebral|intracranial)\b', combined, re.I):
+        organ = 'brain'
+    elif re.search(r'\b(lung|pulmonary|chest|thorax|bronch)\b', combined, re.I):
+        organ = 'lung'
+    elif re.search(r'\b(liver|hepatic)\b', combined, re.I):
+        organ = 'liver'
+    elif re.search(r'\b(kidney|renal)\b', combined, re.I):
+        organ = 'kidney'
+    elif re.search(r'\b(spine|spinal|cervical|lumbar|thoracic|vertebra)\b', combined, re.I):
+        organ = 'spine'
+    elif re.search(r'\b(abdomen|abdominal|belly)\b', combined, re.I):
+        organ = 'abdomen'
+    elif re.search(r'\b(pelvis|pelvic)\b', combined, re.I):
+        organ = 'pelvis'
+    
+    # Abnormality type
+    abnormality_type = None
+    if has_abnormality:
+        if re.search(r'\bmass\b|\btumou?r\b|\blesion\b|\bmeningioma\b|\bcancer\b', combined, re.I):
+            abnormality_type = 'mass'
+        elif re.search(r'\bfracture\b', combined, re.I):
+            abnormality_type = 'fracture'
+        elif re.search(r'\bbleed\b|\bhemorrhage\b', combined, re.I):
+            abnormality_type = 'bleed'
+        elif re.search(r'\bedema\b|\bswelling\b', combined, re.I):
+            abnormality_type = 'edema'
+        elif re.search(r'\binfection\b|\bpneumonia\b', combined, re.I):
+            abnormality_type = 'infection'
+        else:
+            abnormality_type = 'other'
+    
+    return {
+        'has_abnormality': has_abnormality,
+        'organ': organ,
+        'abnormality_type': abnormality_type
+    }
+
+
 @app.route("/", methods=["GET"])
 def index():
     stats = db.get_stats()
@@ -312,10 +389,14 @@ def upload():
         "highlights_negative": high_html.count('class="ii-neg"'),
     }
 
+    # Detect abnormality and organ for smart visualization
+    diagnosis = _detect_abnormality_and_organ(structured, patient)
+
     # persist for later pages like /payment and PDF download
     session["structured"] = structured
     session["patient"] = patient
     session["language"] = lang
+    session["diagnosis"] = diagnosis
 
     report_id = None
     try:
@@ -343,6 +424,7 @@ def upload():
         study=study,
         language=lang,
         report_stats=report_stats,
+        diagnosis=diagnosis,
     )
 
 
@@ -405,10 +487,15 @@ def download_pdf():
         logging.exception("Failed to parse form JSON")
         return jsonify({"error": "bad form JSON", "detail": str(e)}), 400
 
-    # Parse brain lesion data for dynamic positioning
-    lesion_data = _parse_brain_lesion(structured)
+    # Detect abnormality and organ for conditional visualization
+    diagnosis = _detect_abnormality_and_organ(structured, patient)
     
-    html_str = render_template("pdf_report.html", structured=structured, patient=patient, lesion_data=lesion_data)
+    # Parse brain lesion data for dynamic positioning (only if brain abnormality)
+    lesion_data = None
+    if diagnosis['has_abnormality'] and diagnosis['organ'] == 'brain':
+        lesion_data = _parse_brain_lesion(structured)
+    
+    html_str = render_template("pdf_report.html", structured=structured, patient=patient, lesion_data=lesion_data, diagnosis=diagnosis)
 
     # hard fail if PDF fails. no HTML fallback.
     try:

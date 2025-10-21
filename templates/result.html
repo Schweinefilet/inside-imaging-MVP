@@ -51,8 +51,8 @@
 
   /* Body silhouette */
   .body-svg{display:block;margin:1rem auto;width:100%;height:100%}
-  .body-base *{fill:var(--body-fill);}              /* solid silhouette underneath */
-  .body-outline *{fill:none;stroke:color-mix(in oklab, var(--border) 45%, #000);stroke-width:1.6}
+  .body-base use{fill:var(--body-fill);}              /* solid silhouette underneath */
+  .body-outline use{fill:none;stroke:color-mix(in oklab, var(--border) 45%, #000);stroke-width:1.6}
   .region-band{fill:transparent;opacity:1;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
   .region-band.highlight{fill:color-mix(in srgb, var(--mint) 80%, #ffffff 20%);opacity:.98;stroke:color-mix(in oklab, var(--mint) 70%, #0f766e);stroke-width:2.2}
   .light .region-band.highlight{fill:color-mix(in srgb, var(--mint) 80%, #000000 20%);stroke-width:2.6}
@@ -249,7 +249,7 @@
       <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
     </section>
 
-    {% if 'brain' in (patient.study|default('', true)|lower) or 'head' in (patient.study|default('', true)|lower) %}
+    {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' %}
     <section class="brain-visual-section">
       <h2>Brain Visualization</h2>
       <p class="brain-summary">A simplified diagram showing the approximate location of key findings mentioned in the report. This is for illustrative purposes only.</p>
@@ -315,8 +315,8 @@
         </figure>
       </div>
       <ul class="brain-notes">
-        <li>The red area indicates a lesion in the right frontoparietal region, consistent with findings of a meningioma.</li>
-        <li>Diagram shows mass effect and potential brain shift for context.</li>
+        <li>The red area indicates a lesion consistent with the findings mentioned in the report.</li>
+        <li>Diagram shows approximate location for illustrative purposes only.</li>
       </ul>
     </section>
     {% endif %}

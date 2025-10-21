@@ -156,8 +156,25 @@
           const percent = ((data[foundIndex].value / total) * 100).toFixed(1);
           tooltip.textContent = `${data[foundIndex].label}: ${data[foundIndex].value} (${percent}%)`;
           tooltip.style.display = 'block';
-          tooltip.style.left = (e.clientX + 5) + 'px';
-          tooltip.style.top = (e.clientY - 40) + 'px';
+          
+          // Position tooltip following cursor with bounds checking
+          const tooltipRect = tooltip.getBoundingClientRect();
+          let left = e.clientX + 15;
+          let top = e.clientY - 15;
+          
+          // Keep tooltip within viewport
+          if (left + tooltipRect.width > window.innerWidth) {
+            left = e.clientX - tooltipRect.width - 15;
+          }
+          if (top < 0) {
+            top = e.clientY + 15;
+          }
+          if (top + tooltipRect.height > window.innerHeight) {
+            top = window.innerHeight - tooltipRect.height - 10;
+          }
+          
+          tooltip.style.left = left + 'px';
+          tooltip.style.top = top + 'px';
         } else {
           canvas.style.cursor = 'default';
           tooltip.style.display = 'none';

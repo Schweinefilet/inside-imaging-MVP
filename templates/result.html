@@ -51,12 +51,13 @@
   .body-svg{display:block;margin:1rem auto;width:100%;height:100%}
   .body-base *{fill:#050505}              /* solid silhouette underneath */
   .body-outline *{fill:none;stroke:color-mix(in oklab, var(--border) 40%, #000);stroke-width:1.6}
-  .region-band{fill:#050505;opacity:.92;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
+  .region-band{fill:#d3d3d3;opacity:.92;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
   .region-band.highlight{fill:var(--mint);opacity:.95;stroke:color-mix(in oklab, var(--mint) 70%, #0f766e);stroke-width:2.5}
     
   /* Improve region highlight visibility in light mode */
-  .light .region-band{fill:#0f1419;opacity:.96}
-  .light .region-band.highlight{fill:var(--mint);opacity:.96;stroke:color-mix(in oklab, var(--mint) 85%, #0f766e);stroke-width:3}
+  .light .body-base *{fill:#000000}
+  .light .region-band{fill:#d3d3d3;opacity:.96}
+  .light .region-band.highlight{fill:#000000;opacity:.96;stroke:color-mix(in oklab, var(--mint) 85%, #0f766e);stroke-width:3}
 
 
     /* Base: keep your CSS backgrounds; only remove default margins to kill seam */

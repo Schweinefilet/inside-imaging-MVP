@@ -43,9 +43,19 @@
                         <span class="theme-icon" aria-hidden="true">🌙</span>
                         <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
                         <span class="theme-switch-track" aria-hidden="true"></span>
+                        <span class="theme-icon" aria-hidden="true">☀️</span>
                     </span>
                     <span id="theme-label" class="theme-switch-text">Dark mode</span>
                 </label>
+                <script>
+                (function(){
+                  var toggle = document.getElementById('theme-toggle');
+                  if (!toggle) return;
+                  var isLight = document.documentElement.classList.contains('light');
+                  toggle.checked = isLight;
+                  toggle.setAttribute('aria-checked', isLight ? 'true' : 'false');
+                })();
+                </script>
 
                 <a href="{{ url_for('login') }}" class="login-button">Log In</a>
                 <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>

@@ -3,7 +3,7 @@
   'use strict';
 
   function initCompare(container) {
-    const wrapper = container.querySelector('.compare-wrapper');
+    const wrapper = container.querySelector('.compare-wrapper, .compare-wrapper-compact');
     const secondImage = container.querySelector('.compare-image.second');
     const slider = container.querySelector('.compare-slider');
     const handle = container.querySelector('.compare-handle');
@@ -57,10 +57,13 @@
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleEnd);
 
-    // Hover mode - follow mouse without clicking
+    // Mode detection
     const mode = container.dataset.mode || 'drag';
+    
+    // For hover mode only
     if (mode === 'hover') {
       wrapper.addEventListener('mousemove', function(e) {
+        if (isDragging) return; // Don't interfere with drag
         const rect = wrapper.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
@@ -70,9 +73,11 @@
       });
 
       wrapper.addEventListener('mouseleave', function() {
-        // Reset to center on leave
-        secondImage.style.clipPath = `inset(0 50% 0 0)`;
-        slider.style.left = '50%';
+        if (!isDragging) {
+          // Reset to center on leave
+          secondImage.style.clipPath = `inset(0 50% 0 0)`;
+          slider.style.left = '50%';
+        }
       });
     }
   }

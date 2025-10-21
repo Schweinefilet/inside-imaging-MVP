@@ -35,6 +35,10 @@
     box-shadow: var(--shadow);
 }
 
+.upload-section {
+    align-self: flex-start;
+}
+
 .reports-section {
     display: flex;
     flex-direction: column;
@@ -332,6 +336,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 0.35rem;
+    max-width: fit-content;
 }
 
 .history-tags span {
@@ -343,6 +348,7 @@
     color: var(--text);
     font-size: 0.75rem;
     letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
 .footer {

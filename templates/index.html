@@ -13,7 +13,9 @@
       var t = localStorage.getItem('theme');
       var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
       var useLight = t ? (t === 'light') : preferLight;
-      if (useLight) document.documentElement.classList.add('light');
+      if (useLight) {
+        document.documentElement.classList.add('light');
+      }
     } catch(e){}
   })();
   </script>
@@ -52,7 +54,6 @@
         <a href="{{ url_for('payment') }}">Payment</a>
         <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
         <a href="{{ url_for('help_page') }}">Help</a>
-        {% if session.get('username') %}<a href="{{ url_for('profile') }}">Profile</a>{% endif %}
       </nav>
       <div class="nav-auth">
 
@@ -66,10 +67,27 @@
     </span>
     <span id="theme-label" class="theme-switch-text">Dark mode</span>
 </label>
+<script>
+(function(){
+  var toggle = document.getElementById('theme-toggle');
+  if (!toggle) return;
+  var isLight = document.documentElement.classList.contains('light');
+  toggle.checked = isLight;
+  toggle.setAttribute('aria-checked', isLight ? 'true' : 'false');
+})();
+</script>
 
         {% if session.get('username') %}
-        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
-        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+        <div class="user-menu">
+          <button class="user-menu-toggle" type="button" aria-expanded="false">
+            <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+            <span class="user-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="user-menu-dropdown" role="menu" hidden>
+            <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+            <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+          </div>
+        </div>
         {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
@@ -218,66 +236,13 @@
       </div>
     </main>
 
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-about">
-          <h3>Inside Imaging</h3>
-          <p>Transforming radiology reports.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('projects') }}">Projects</a></li>
-            <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
-            <li><a href="{{ url_for('payment') }}">Payment</a></li>
-            <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
-            <li><a href="{{ url_for('help_page') }}">Help</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="{{ url_for('help_page') }}">Documentation</a></li>
-            <li><a href="{{ url_for('help_page') }}">FAQ</a></li>
-            <li><a href="{{ url_for('help_page') }}">Support</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Connect</h4>
-          <ul>
-            <li><a href="https://twitter.com">Twitter</a></li>
-            <li><a href="https://linkedin.com">LinkedIn</a></li>
-            <li><a href="{{ url_for('help_page') }}">Contact</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
-      </div>
-    </footer>
+    {% include '_footer.html' %}
   </div>
 
   <script src="{{ url_for('static', filename='theme.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var html = document.documentElement;
-    var saved = localStorage.getItem('theme') || 'dark';
-    if (saved === 'light') html.classList.add('light');
-
-    var settingsButton = document.getElementById('settings-button');
-    var dropdown = document.getElementById('settings-dropdown');
-    if (settingsButton && dropdown) {
-        settingsButton.addEventListener('click', function() {
-            dropdown.classList.toggle('show');
-        });
-    }
-    var toggleDark = document.getElementById('toggle-dark');
-    var toggleLight = document.getElementById('toggle-light');
-    if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
-    if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
-
   document.querySelectorAll('.insight-bar').forEach(function(bar) {
     var span = bar.querySelector('.insight-progress');
     if (!span) return;

@@ -34,7 +34,6 @@
             <a href="{{ url_for('payment') }}">Payment</a>
             <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
             <a href="{{ url_for('help_page') }}">Help</a>
-            {% if session.get('username') %}<a href="{{ url_for('profile') }}">Profile</a>{% endif %}
         </nav>
         <div class="nav-auth">
             <!-- Slider toggle -->
@@ -49,8 +48,16 @@
             </label>
 
             {% if session.get('username') %}
-            <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
-            <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+            <div class="user-menu">
+                <button class="user-menu-toggle" type="button" aria-expanded="false">
+                    <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+                    <span class="user-caret" aria-hidden="true">▾</span>
+                </button>
+                <div class="user-menu-dropdown" role="menu" hidden>
+                    <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+                    <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+                </div>
+            </div>
             {% else %}
             <a href="{{ url_for('login') }}" class="login-button">Log In</a>
             <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>

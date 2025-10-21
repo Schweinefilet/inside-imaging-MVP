@@ -47,16 +47,16 @@
       --link:#1d4ed8;
     }
 
-    /* Body silhouette */
-    .body-svg{display:block;margin:1rem auto;width:100%;height:100%}
-    .body-base *{fill:var(--panel-2)}              /* solid silhouette underneath */
-    .body-outline *{fill:none;stroke:var(--border);stroke-width:1.4}  /* lines only */
-    .region-band{fill:var(--panel);opacity:.35;transition:opacity .2s}
-    .region-band.highlight{fill:var(--mint);opacity:.55}
+  /* Body silhouette */
+  .body-svg{display:block;margin:1rem auto;width:100%;height:100%}
+  .body-base *{fill:#050505}              /* solid silhouette underneath */
+  .body-outline *{fill:none;stroke:color-mix(in oklab, var(--border) 40%, #000);stroke-width:1.6}
+  .region-band{fill:#050505;opacity:.92;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
+  .region-band.highlight{fill:var(--mint);opacity:.95;stroke:color-mix(in oklab, var(--mint) 70%, #0f766e);stroke-width:2.5}
     
-    /* Improve region highlight visibility in light mode */
-    .light .region-band{fill:#e0e0e0;opacity:.5}
-    .light .region-band.highlight{fill:#22c55e;opacity:.75;stroke:#16a34a;stroke-width:2}
+  /* Improve region highlight visibility in light mode */
+  .light .region-band{fill:#0f1419;opacity:.96}
+  .light .region-band.highlight{fill:var(--mint);opacity:.96;stroke:color-mix(in oklab, var(--mint) 85%, #0f766e);stroke-width:3}
 
 
     /* Base: keep your CSS backgrounds; only remove default margins to kill seam */
@@ -178,8 +178,16 @@
       </label>
 
       {% if session.get('username') %}
-        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
-        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+        <div class="user-menu">
+          <button class="user-menu-toggle" type="button" aria-expanded="false">
+            <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+            <span class="user-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="user-menu-dropdown" role="menu" hidden>
+            <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+            <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+          </div>
+        </div>
       {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
@@ -263,44 +271,7 @@
     <p><a href="{{ url_for('index') }}">&larr; Back to Dashboard</a></p>
   </main>
 
-  <footer class="footer">
-    <div class="footer-columns">
-      <div class="footer-about">
-        <h3>Inside Imaging</h3>
-        <p>Transforming radiology reports into your preferred language with ease.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Navigation</h4>
-        <ul>
-          <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('projects') }}">Projects</a></li>
-          <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
-          <li><a href="{{ url_for('payment') }}">Payment</a></li>
-          <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
-          <li><a href="{{ url_for('help_page') }}">Help</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="#">Documentation</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Support</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Connect</h4>
-        <ul>
-          <li><a href="#">Twitter</a></li>
-          <li><a href="#">LinkedIn</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
-    </div>
-  </footer>
+  {% include '_footer.html' %}
 </div>
 
 <div id="def-tooltip" class="def-tooltip hidden" role="tooltip" aria-hidden="true"></div>
@@ -423,9 +394,6 @@
         }
       }
     }
-    /* Footer year */
-    var currentYear = document.getElementById('current-year');
-    if(currentYear) currentYear.textContent = new Date().getFullYear();
 
     /* Term definitions */
     var TERM_DEFS = {

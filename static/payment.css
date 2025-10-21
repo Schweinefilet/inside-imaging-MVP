@@ -71,6 +71,13 @@
   font-weight: bold;
 }
 
+.payment-summary .token-note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted, #94a3b8);
+  text-align: center;
+}
+
 .payment-form form {
   display: flex;
   flex-direction: column;

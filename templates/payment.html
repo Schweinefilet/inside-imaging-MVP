@@ -35,7 +35,6 @@
       <a href="{{ url_for('payment') }}" class="active">Payment</a>
       <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
       <a href="{{ url_for('help_page') }}">Help</a>
-      {% if session.get('username') %}<a href="{{ url_for('profile') }}">Profile</a>{% endif %}
     </nav>
     <div class="nav-auth">
       <!-- Slider toggle -->
@@ -50,8 +49,16 @@
       </label>
 
       {% if session.get('username') %}
-        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
-        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+        <div class="user-menu">
+          <button class="user-menu-toggle" type="button" aria-expanded="false">
+            <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+            <span class="user-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="user-menu-dropdown" role="menu" hidden>
+            <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+            <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+          </div>
+        </div>
       {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
@@ -69,15 +76,18 @@
         <ul class="details-list">
           <li><span class="label">Report Type:</span> <span class="value">{{ structured.get('report_type', 'CT Scan') }}</span></li>
           <li><span class="label">Language:</span> <span class="value">{{ language|default('English') }}</span></li>
-          <li><span class="label">Translation Fee:</span> <span class="value">${{ structured.get('price', '24.99') }}</span></li>
+          <li><span class="label">Translation Fee:</span> <span class="value">${{ pricing.usd_display }} · KSh {{ pricing.kes_display }}</span></li>
+          <li><span class="label">Tokens Required:</span> <span class="value">{{ pricing.tokens }} token{% if pricing.tokens != 1 %}s{% endif %}</span></li>
         </ul>
 
         <div class="payment-summary">
           <h3>Payment Summary</h3>
           <ul>
-            <li><span class="label">Translation Service:</span> <span class="value">${{ structured.get('price', '24.99') }}</span></li>
-            <li class="total"><span class="label">Total:</span> <span class="value">${{ structured.get('price', '24.99') }}</span></li>
+            <li><span class="label">Translation Service ({{ pricing.tokens }} token{% if pricing.tokens != 1 %}s{% endif %}):</span> <span class="value">${{ pricing.usd_display }}</span></li>
+            <li><span class="label">Equivalent in Kenyan Shillings:</span> <span class="value">KSh {{ pricing.kes_display }}</span></li>
+            <li class="total"><span class="label">Total Due:</span> <span class="value">${{ pricing.usd_display }}</span></li>
           </ul>
+          <p class="token-note">1 token = ${{ pricing.usd_display }} (≈ KSh {{ pricing.kes_display }})</p>
         </div>
       </section>
 
@@ -133,48 +143,7 @@
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="footer-columns">
-      <div class="footer-about">
-        <h3>Inside Imaging</h3>
-        <p>Transforming radiology reports into your preferred language with ease.</p>
-      </div>
-
-      <div class="footer-col">
-        <h4>Navigation</h4>
-        <ul>
-          <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('projects') }}">Projects</a></li>
-            <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
-          <li><a href="{{ url_for('payment') }}">Payment</a></li>
-            <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
-          <li><a href="{{ url_for('help_page') }}">Help</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="{{ url_for('help_page') }}">Documentation</a></li>
-          <li><a href="{{ url_for('blogs') }}">Blog</a></li>
-          <li><a href="{{ url_for('help_page') }}">Support</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Connect</h4>
-        <ul>
-          <li><a href="https://twitter.com">Twitter</a></li>
-          <li><a href="https://linkedin.com">LinkedIn</a></li>
-          <li><a href="{{ url_for('help_page') }}">Contact</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p><span id="current-year"></span> Inside Imaging. All rights reserved.</p>
-    </div>
-  </footer>
+  {% include '_footer.html' %}
 </div>
 
 <!-- Theme logic for the slider; no page-local theme code -->
@@ -185,8 +154,6 @@
     var btn = document.getElementById('settings-button');
     var dd = document.getElementById('settings-dropdown');
     if (btn && dd) btn.addEventListener('click', function(){ dd.classList.toggle('show'); });
-    var y = document.getElementById('current-year');
-    if (y) y.textContent = new Date().getFullYear();
     
     // Payment method switcher
     var methodSelect = document.getElementById('payment-method');

@@ -47,8 +47,21 @@
                     <span id="theme-label" class="theme-switch-text">Dark mode</span>
                 </label>
 
+                {% if session.get('username') %}
+                <div class="user-menu">
+                    <button class="user-menu-toggle" type="button" aria-expanded="false">
+                        <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+                        <span class="user-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="user-menu-dropdown" role="menu" hidden>
+                        <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+                        <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+                    </div>
+                </div>
+                {% else %}
                 <a href="{{ url_for('login') }}" class="login-button">Log In</a>
                 <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+                {% endif %}
             </div>
         </header>
         <main class="content">
@@ -70,17 +83,7 @@
             <p style="text-align: center;">Don't have an account? <a href="{{ url_for('signup') }}" style="color: var(--mint);">Sign Up</a></p>
         </main>
         
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-about">
-                    <h3>Inside Imaging</h3>
-                    <p>Transforming radiology reports.</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
-            </div>
-        </footer>
+        {% include '_footer.html' %}
     </div>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>

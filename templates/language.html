@@ -45,13 +45,21 @@
           </span>
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
-        {% if session.get('username') %}
-        <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
-        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
-        {% else %}
-        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-        {% endif %}
+          {% if session.get('username') %}
+          <div class="user-menu">
+            <button class="user-menu-toggle" type="button" aria-expanded="false">
+              <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+              <span class="user-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="user-menu-dropdown" role="menu" hidden>
+              <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+              <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+            </div>
+          </div>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+          <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+          {% endif %}
       </div>
     </header>
 
@@ -105,6 +113,8 @@
         </ul>
       </section>
     </main>
+
+    {% include '_footer.html' %}
   </div>
 
   <script src="/static/theme.js"></script>

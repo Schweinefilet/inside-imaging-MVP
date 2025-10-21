@@ -101,44 +101,48 @@
       <p>Upload, manage, and download your translated radiology reports in one place.</p>
 
       <div class="dashboard-grid">
-        <section class="upload-section">
-          <h2>Upload New Report</h2>
-          <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
-            <input type="file" name="file" accept=".pdf,.txt" required>
-            <label for="language">Language:</label>
-            <select name="language" id="language">
-              {% for language in languages %}
-              <option value="{{ language }}">{{ language }}</option>
-              {% endfor %}
-            </select>
-            <button type="submit">Upload &amp; Convert</button>
-          </form>
+        <div class="dashboard-left">
+          <section class="upload-section">
+            <h2>Upload New Report</h2>
+            <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
+              <input type="file" name="file" accept=".pdf,.txt" required>
+              <label for="language">Language:</label>
+              <select name="language" id="language">
+                {% for language in languages %}
+                <option value="{{ language }}">{{ language }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit">Upload &amp; Convert</button>
+            </form>
+          </section>
 
-          <!-- Before/After Report Comparison - Compact Version -->
-          <div class="compare-container-compact" data-mode="drag">
-            <h3 class="compare-title-compact">See the Transformation</h3>
-            <div class="compare-wrapper-compact">
-              <img 
-                src="{{ url_for('static', filename='before-report.png') }}" 
-                alt="Complex medical report before translation" 
-                class="compare-image first"
-              />
-              <img 
-                src="{{ url_for('static', filename='after-report.png') }}" 
-                alt="Simplified patient-friendly report after translation" 
-                class="compare-image second"
-              />
-              <div class="compare-slider">
-                <div class="compare-handle"></div>
+          <section class="transformation-section">
+            <h2>See the Transformation</h2>
+            <p class="transformation-subtitle">Compare raw medical phrasing with patient-friendly wording.</p>
+            <div class="compare-container-compact" data-mode="drag">
+              <div class="compare-wrapper-compact">
+                <img 
+                  src="{{ url_for('static', filename='before-report.png') }}" 
+                  alt="Complex medical report before translation" 
+                  class="compare-image first"
+                />
+                <img 
+                  src="{{ url_for('static', filename='after-report.png') }}" 
+                  alt="Simplified patient-friendly report after translation" 
+                  class="compare-image second"
+                />
+                <div class="compare-slider">
+                  <div class="compare-handle"></div>
+                </div>
+                <span class="compare-label before">Before</span>
+                <span class="compare-label after">After</span>
               </div>
-              <span class="compare-label before">Before</span>
-              <span class="compare-label after">After</span>
+              <p class="compare-description-compact">
+                Drag to compare medical jargon vs plain language.
+              </p>
             </div>
-            <p class="compare-description-compact">
-              Drag to compare medical jargon vs plain language.
-            </p>
-          </div>
-        </section>
+          </section>
+        </div>
 
         <section class="reports-section">
           <header class="reports-section-header">

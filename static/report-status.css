@@ -273,15 +273,15 @@ html.light .hover-card:hover {
 .chart-tooltip {
   position: fixed;
   display: none;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(5, 8, 12, 0.92);
   color: #ffffff;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   font-size: 0.85rem;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 12000;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   border: 1px solid var(--mint);
 }
 

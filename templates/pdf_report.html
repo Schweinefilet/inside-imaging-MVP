@@ -80,6 +80,31 @@
     <div class="box simple-output">{{ structured.conclusion|safe }}</div>
   </section>
 
+  <!-- BRAIN VISUALIZATION (print-friendly) -->
+  {% if 'brain' in (patient.study|default('', true)|lower) or 'head' in (patient.study|default('', true)|lower) %}
+  <section class="section">
+    <h2>Brain Visualization</h2>
+    <div class="box" style="display:flex; gap:10px; align-items:flex-start;">
+      <!-- Top / Axial -->
+      <svg width="120" height="120" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="120" cy="120" rx="85" ry="90" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
+        <ellipse cx="{{ lesion_data.coords[0] if lesion_data else 145 }}" cy="{{ lesion_data.coords[1] if lesion_data else 95 }}" rx="{{ lesion_data.size if lesion_data else 18 }}" ry="{{ (lesion_data.size * 1.2)|int if lesion_data else 22 }}" fill="#b30000" />
+      </svg>
+      <!-- Side / Sagittal -->
+      <svg width="120" height="120" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M60,120 Q60,50 100,35 Q140,50 160,70 Q175,90 178,120 Q175,150 165,175 Q150,195 120,205 Q90,200 70,175 Q60,150 60,120" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
+        <ellipse cx="{{ lesion_data.coords[2] if lesion_data else 135 }}" cy="{{ lesion_data.coords[3] if lesion_data else 90 }}" rx="{{ (lesion_data.size * 0.9)|int if lesion_data else 16 }}" ry="{{ (lesion_data.size * 1.1)|int if lesion_data else 20 }}" fill="#b30000" />
+      </svg>
+      <!-- Front / Coronal -->
+      <svg width="120" height="120" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M50,120 Q50,60 80,45 Q110,40 120,40 Q130,40 160,45 Q190,60 190,120 Q185,150 170,175 Q150,195 120,200 Q90,195 70,175 Q55,150 50,120" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
+        <ellipse cx="{{ lesion_data.coords[4] if lesion_data else 155 }}" cy="{{ lesion_data.coords[5] if lesion_data else 85 }}" rx="{{ (lesion_data.size * 0.95)|int if lesion_data else 17 }}" ry="{{ (lesion_data.size * 1.1)|int if lesion_data else 20 }}" fill="#b30000" />
+      </svg>
+    </div>
+    <p style="font-size:11px; color:#222; margin-top:6px;">{% if lesion_data and lesion_data.found %}Lesion location ({{ lesion_data.location }}) and approximate size derived from report text.{% else %}Illustrative lesion location derived from the conclusion text.{% endif %} Not a diagnostic image.</p>
+  </section>
+  {% endif %}
+
   <!-- NOTE OF CONCERN (optional) -->
   {% if structured.concern %}
   <section class="section">

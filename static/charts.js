@@ -2,6 +2,25 @@
 (function() {
   'use strict';
 
+  let globalTooltip = null;
+
+  function ensureTooltip() {
+    if (globalTooltip && document.body.contains(globalTooltip)) {
+      return globalTooltip;
+    }
+    globalTooltip = document.createElement('div');
+    globalTooltip.className = 'chart-tooltip';
+    globalTooltip.setAttribute('role', 'status');
+    globalTooltip.setAttribute('aria-live', 'polite');
+    document.body.appendChild(globalTooltip);
+    return globalTooltip;
+  }
+
+  function hideTooltip() {
+    if (!globalTooltip) return;
+    globalTooltip.style.display = 'none';
+  }
+
   // Simple line chart for time-series data with dates
   function createLineChart(canvas, data, label) {
     const ctx = canvas.getContext('2d');
@@ -117,13 +136,7 @@
       currentAngle += sliceAngle;
     });
 
-    // Create tooltip div
-    let tooltip = canvas.nextElementSibling;
-    if (!tooltip || !tooltip.classList.contains('chart-tooltip')) {
-      tooltip = document.createElement('div');
-      tooltip.className = 'chart-tooltip';
-      canvas.parentNode.insertBefore(tooltip, canvas.nextSibling);
-    }
+    const tooltip = ensureTooltip();
 
     // Add hover interaction with custom tooltip
     canvas.addEventListener('mousemove', function(e) {
@@ -159,34 +172,37 @@
           
           // Position tooltip following cursor with bounds checking
           const tooltipRect = tooltip.getBoundingClientRect();
-          let left = e.clientX + 15;
-          let top = e.clientY - 15;
+          let left = e.clientX + 16;
+          let top = e.clientY - (tooltipRect.height / 2) - 4;
           
           // Keep tooltip within viewport
           if (left + tooltipRect.width > window.innerWidth) {
-            left = e.clientX - tooltipRect.width - 15;
+            left = e.clientX - tooltipRect.width - 16;
           }
-          if (top < 0) {
-            top = e.clientY + 15;
+          if (left < 8) {
+            left = 8;
           }
-          if (top + tooltipRect.height > window.innerHeight) {
-            top = window.innerHeight - tooltipRect.height - 10;
+          if (top < 8) {
+            top = 8;
+          }
+          if (top + tooltipRect.height > window.innerHeight - 8) {
+            top = window.innerHeight - tooltipRect.height - 8;
           }
           
           tooltip.style.left = left + 'px';
           tooltip.style.top = top + 'px';
         } else {
           canvas.style.cursor = 'default';
-          tooltip.style.display = 'none';
+          hideTooltip();
         }
       } else {
         canvas.style.cursor = 'default';
-        tooltip.style.display = 'none';
+        hideTooltip();
       }
     });
 
     canvas.addEventListener('mouseleave', function() {
-      tooltip.style.display = 'none';
+      hideTooltip();
     });
   }
 
@@ -260,6 +276,7 @@
           const event = new Event('DOMContentLoaded');
           document.dispatchEvent(event);
         });
+        hideTooltip();
       }, 50);
     }
   });

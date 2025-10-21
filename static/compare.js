@@ -39,11 +39,17 @@
 
     function handleStart(e) {
       isDragging = true;
+      wrapper.classList.add('drag-active');
       wrapper.style.cursor = 'col-resize';
+      const point = e.touches && e.touches.length ? e.touches[0].clientX : e.clientX;
+      if (Number.isFinite(point)) {
+        updatePosition(point);
+      }
     }
 
     function handleEnd() {
       isDragging = false;
+      wrapper.classList.remove('drag-active');
       wrapper.style.cursor = 'col-resize';
     }
 
@@ -53,7 +59,9 @@
     document.addEventListener('mouseup', handleEnd);
 
     // Touch events
-    wrapper.addEventListener('touchstart', handleStart, { passive: true });
+    wrapper.addEventListener('touchstart', function(e) {
+      handleStart(e);
+    }, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleEnd);
 
@@ -80,11 +88,18 @@
         }
       });
     }
+
+    requestAnimationFrame(function() {
+      const rect = wrapper.getBoundingClientRect();
+      if (rect.width > 0) {
+        updatePosition(rect.left + rect.width / 2);
+      }
+    });
   }
 
   // Initialize all comparison containers
   document.addEventListener('DOMContentLoaded', function() {
-    const containers = document.querySelectorAll('.compare-container');
+    const containers = document.querySelectorAll('.compare-container, .compare-container-compact');
     containers.forEach(function(container) {
       initCompare(container);
     });

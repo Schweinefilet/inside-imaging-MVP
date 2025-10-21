@@ -34,6 +34,7 @@
       --mint:#22c55e;
       --shadow:0 6px 24px rgba(0,0,0,.3);
       --link:#93c5fd;
+      --body-fill:#f8fbff;
     }
     .light{
       --bg:#ffffff;
@@ -45,19 +46,16 @@
       --mint:#22c55e;
       --shadow:0 2px 8px rgba(0,0,0,.08);
       --link:#1d4ed8;
+      --body-fill:#060606;
     }
 
   /* Body silhouette */
   .body-svg{display:block;margin:1rem auto;width:100%;height:100%}
-  .body-base *{fill:#050505}              /* solid silhouette underneath */
-  .body-outline *{fill:none;stroke:color-mix(in oklab, var(--border) 40%, #000);stroke-width:1.6}
-  .region-band{fill:#d3d3d3;opacity:.92;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
-  .region-band.highlight{fill:var(--mint);opacity:.95;stroke:color-mix(in oklab, var(--mint) 70%, #0f766e);stroke-width:2.5}
-    
-  /* Improve region highlight visibility in light mode */
-  .light .body-base *{fill:#000000}
-  .light .region-band{fill:#d3d3d3;opacity:.96}
-  .light .region-band.highlight{fill:#000000;opacity:.96;stroke:color-mix(in oklab, var(--mint) 85%, #0f766e);stroke-width:3}
+  .body-base *{fill:var(--body-fill);}              /* solid silhouette underneath */
+  .body-outline *{fill:none;stroke:color-mix(in oklab, var(--border) 45%, #000);stroke-width:1.6}
+  .region-band{fill:transparent;opacity:1;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
+  .region-band.highlight{fill:color-mix(in srgb, var(--mint) 80%, #ffffff 20%);opacity:.98;stroke:color-mix(in oklab, var(--mint) 70%, #0f766e);stroke-width:2.2}
+  .light .region-band.highlight{fill:color-mix(in srgb, var(--mint) 80%, #000000 20%);stroke-width:2.6}
 
 
     /* Base: keep your CSS backgrounds; only remove default margins to kill seam */
@@ -118,6 +116,45 @@
       content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
       width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--panel);
     }
+
+    /* Brain summary diagrams */
+    .brain-visual-section{
+      margin:2rem 0;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:1.5rem;
+      box-shadow:var(--shadow);
+    }
+    .brain-visual-section h2{margin-top:0; color:var(--mint);}
+    .brain-summary{margin:0 0 1rem; color:var(--muted);}
+    .brain-diagrams{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+      gap:1.5rem;
+      margin-bottom:1rem;
+    }
+    .brain-view{
+      background:var(--panel-2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1.2rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.75rem;
+      align-items:center;
+      box-shadow:var(--shadow);
+      text-align:center;
+      margin:0;
+    }
+    .brain-view figcaption{font-size:0.9rem; font-weight:600; color:var(--text); margin:0;}
+    .brain-svg{width:100%; height:auto; max-width:200px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));}
+    .brain-outline{stroke:rgb(70,110,125); stroke-width:2.5;}
+    .brain-highlight{stroke:rgb(180,50,40); stroke-width:1.5;}
+    .light .brain-outline{stroke:rgb(90,130,145);}
+    .light .brain-highlight{stroke:rgb(200,60,50);}
+    .brain-notes{margin:1rem 0 0; padding-left:1.3rem; color:var(--muted); list-style-type:disc;}
+    .brain-notes li{margin:0.4rem 0; line-height:1.5;}
 
     /* Modal */
     .organ-modal{ position:fixed; inset:0; z-index:9997; display:none; align-items:center; justify-content:center;
@@ -211,6 +248,78 @@
       <h2>Body Region Highlight</h2>
       <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
     </section>
+
+    {% if 'brain' in (patient.study|default('', true)|lower) or 'head' in (patient.study|default('', true)|lower) %}
+    <section class="brain-visual-section">
+      <h2>Brain Visualization</h2>
+      <p class="brain-summary">A simplified diagram showing the approximate location of key findings mentioned in the report. This is for illustrative purposes only.</p>
+      <div class="brain-diagrams">
+        <figure class="brain-view">
+          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="brainGrad" cx="50%" cy="50%">
+                <stop offset="0%" style="stop-color:rgb(190,220,230);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(140,180,195);stop-opacity:1" />
+              </radialGradient>
+            </defs>
+            <!-- Brain outline (axial/top view) -->
+            <ellipse cx="120" cy="120" rx="85" ry="90" class="brain-outline" fill="url(#brainGrad)"/>
+            <!-- Longitudinal fissure -->
+            <path d="M120,30 Q120,60 120,120 Q120,180 120,210" stroke="rgb(100,140,155)" stroke-width="2.5" fill="none"/>
+            <!-- Left hemisphere sulci -->
+            <path d="M60,80 Q50,90 45,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M50,115 Q45,125 42,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M70,60 Q65,70 60,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Right hemisphere sulci -->
+            <path d="M180,80 Q190,90 195,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M190,115 Q195,125 198,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M170,60 Q175,70 180,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Lesion in right frontoparietal region -->
+            <ellipse cx="145" cy="95" rx="18" ry="22" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
+          </svg>
+          <figcaption>Top View (Axial)</figcaption>
+        </figure>
+        <figure class="brain-view">
+          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Brain outline (sagittal/side view) -->
+            <path d="M60,120 Q60,50 100,35 Q140,50 160,70 Q175,90 178,120 Q175,150 165,175 Q150,195 120,205 Q90,200 70,175 Q60,150 60,120" 
+                  class="brain-outline" fill="url(#brainGrad)"/>
+            <!-- Cerebellum hint -->
+            <ellipse cx="75" cy="185" rx="25" ry="20" fill="rgb(160,195,210)" opacity="0.8"/>
+            <!-- Sulci -->
+            <path d="M100,50 Q105,60 108,75" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M130,60 Q135,75 138,95" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M145,85 Q150,100 152,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Lesion -->
+            <ellipse cx="135" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
+          </svg>
+          <figcaption>Side View (Sagittal)</figcaption>
+        </figure>
+        <figure class="brain-view">
+          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Brain outline (coronal/front view) -->
+            <path d="M50,120 Q50,60 80,45 Q110,40 120,40 Q130,40 160,45 Q190,60 190,120 Q185,150 170,175 Q150,195 120,200 Q90,195 70,175 Q55,150 50,120" 
+                  class="brain-outline" fill="url(#brainGrad)"/>
+            <!-- Longitudinal fissure -->
+            <path d="M120,40 L120,120" stroke="rgb(100,140,155)" stroke-width="2.5" fill="none"/>
+            <!-- Left hemisphere sulci -->
+            <path d="M75,80 Q70,95 68,110" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M85,65 Q80,80 78,95" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Right hemisphere sulci -->
+            <path d="M165,80 Q170,95 172,110" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M155,65 Q160,80 162,95" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Lesion in right hemisphere -->
+            <ellipse cx="155" cy="85" rx="17" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
+          </svg>
+          <figcaption>Front View (Coronal)</figcaption>
+        </figure>
+      </div>
+      <ul class="brain-notes">
+        <li>The red area indicates a lesion in the right frontoparietal region, consistent with findings of a meningioma.</li>
+        <li>Diagram shows mass effect and potential brain shift for context.</li>
+      </ul>
+    </section>
+    {% endif %}
 
     {% if language and language != 'English' %}
       <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
@@ -317,9 +426,11 @@
       <defs>
         <!-- primitives -->
         <circle id="h"  cx="100" cy="58"  r="36"/>
-        <rect   id="t"  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
-        <rect   id="ll" x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
-        <rect   id="rl" x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
+  <rect   id="t"  x="58"  y="100" width="84" height="190" rx="22" ry="22"/>
+  <rect   id="la" x="32"  y="130" width="28" height="150" rx="12" ry="12"/>
+  <rect   id="ra" x="140" y="130" width="28" height="150" rx="12" ry="12"/>
+  <rect   id="ll" x="66"  y="290" width="32" height="164" rx="6"  ry="6"/>
+  <rect   id="rl" x="102" y="290" width="32" height="164" rx="6"  ry="6"/>
 
         <!-- region clips -->
         <clipPath id="clipHead"><use href="#h"/></clipPath>
@@ -329,7 +440,7 @@
 
       <!-- solid silhouette under bands -->
       <g class="body-base" aria-hidden="true">
-        <use href="#h"/><use href="#t"/><use href="#ll"/><use href="#rl"/>
+  <use href="#h"/><use href="#t"/><use href="#la"/><use href="#ra"/><use href="#ll"/><use href="#rl"/>
       </g>
 
       <!-- bands, each clipped to its region -->
@@ -349,10 +460,7 @@
 
       <!-- outline on top -->
       <g class="body-outline" aria-hidden="true">
-        <use href="#h"/><use href="#t"/>
-        <rect x="38" y="120" width="26" height="140" rx="13" ry="13"/>
-        <rect x="136" y="120" width="26" height="140" rx="13" ry="13"/>
-        <use href="#ll"/><use href="#rl"/>
+  <use href="#h"/><use href="#t"/><use href="#la"/><use href="#ra"/><use href="#ll"/><use href="#rl"/>
       </g>
     </svg>`;
     }
@@ -393,6 +501,113 @@
           container.querySelector('.region-band.chest')?.classList.add('highlight');
         }
       }
+    }
+
+    /* Dynamic brain lesion positioning */
+    function parseBrainLesion() {
+      var conclusion = '{{ structured.conclusion|default("", true)|safe }}'.toLowerCase().replace(/<[^>]+>/g, ' ');
+      var findings = '{{ structured.findings|default("", true)|safe }}'.toLowerCase().replace(/<[^>]+>/g, ' ');
+      var combinedText = conclusion + ' ' + findings;
+      
+      // Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]
+      var locationMap = {
+        'right frontoparietal': [145, 95, 135, 90, 155, 85],
+        'left frontoparietal': [95, 95, 135, 90, 85, 85],
+        'right frontal': [140, 85, 125, 75, 150, 75],
+        'left frontal': [100, 85, 125, 75, 90, 75],
+        'right parietal': [150, 100, 140, 95, 160, 90],
+        'left parietal': [90, 100, 140, 95, 80, 90],
+        'right temporal': [155, 115, 145, 110, 165, 105],
+        'left temporal': [85, 115, 145, 110, 75, 105],
+        'right occipital': [155, 125, 155, 130, 165, 120],
+        'left occipital': [85, 125, 155, 130, 75, 120],
+        'sphenoid wing': [130, 105, 120, 100, 135, 100],
+        'greater sphenoid wing': [135, 105, 120, 100, 140, 100],
+        'cerebellum': [120, 145, 80, 165, 120, 165],
+        'brainstem': [120, 155, 90, 175, 120, 175],
+        'thalamus': [120, 110, 115, 110, 120, 110],
+        'basal ganglia': [115, 110, 115, 105, 115, 105]
+      };
+      
+      // Parse size (e.g., "5.4 x 5.6 x 6.7 cm" or "measures 2.5 cm")
+      var sizeMatch = combinedText.match(/(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*cm|measures?\s+(\d+\.?\d*)\s*cm/i);
+      var avgSize = 18; // default radius
+      if (sizeMatch) {
+        if (sizeMatch[1]) {
+          var dims = [parseFloat(sizeMatch[1]), parseFloat(sizeMatch[2]), parseFloat(sizeMatch[3])];
+          avgSize = Math.min(30, Math.max(10, (dims[0] + dims[1] + dims[2]) / 3 * 3)); // scale to pixels
+        } else if (sizeMatch[4]) {
+          avgSize = Math.min(30, Math.max(10, parseFloat(sizeMatch[4]) * 3));
+        }
+      }
+      
+      // Find best location match
+      var bestMatch = null;
+      var bestLength = 0;
+      for (var loc in locationMap) {
+        if (combinedText.indexOf(loc) !== -1 && loc.length > bestLength) {
+          bestMatch = loc;
+          bestLength = loc.length;
+        }
+      }
+      
+      return {
+        location: bestMatch,
+        coords: bestMatch ? locationMap[bestMatch] : [145, 95, 135, 90, 155, 85],
+        size: avgSize,
+        found: !!bestMatch
+      };
+    }
+    
+    /* Update brain diagrams with parsed lesion data */
+    function updateBrainDiagrams() {
+      var lesionData = parseBrainLesion();
+      var diagrams = document.querySelectorAll('.brain-view svg');
+      
+      if (diagrams.length === 3) {
+        // Axial (top) view
+        var axialLesion = diagrams[0].querySelector('.brain-highlight');
+        if (axialLesion) {
+          axialLesion.setAttribute('cx', lesionData.coords[0]);
+          axialLesion.setAttribute('cy', lesionData.coords[1]);
+          axialLesion.setAttribute('rx', lesionData.size);
+          axialLesion.setAttribute('ry', lesionData.size * 1.2);
+        }
+        
+        // Sagittal (side) view
+        var sagittalLesion = diagrams[1].querySelector('.brain-highlight');
+        if (sagittalLesion) {
+          sagittalLesion.setAttribute('cx', lesionData.coords[2]);
+          sagittalLesion.setAttribute('cy', lesionData.coords[3]);
+          sagittalLesion.setAttribute('rx', lesionData.size * 0.9);
+          sagittalLesion.setAttribute('ry', lesionData.size * 1.1);
+        }
+        
+        // Coronal (front) view
+        var coronalLesion = diagrams[2].querySelector('.brain-highlight');
+        if (coronalLesion) {
+          coronalLesion.setAttribute('cx', lesionData.coords[4]);
+          coronalLesion.setAttribute('cy', lesionData.coords[5]);
+          coronalLesion.setAttribute('rx', lesionData.size * 0.95);
+          coronalLesion.setAttribute('ry', lesionData.size * 1.1);
+        }
+        
+        // Update notes if location was found
+        if (lesionData.found) {
+          var notesList = document.querySelector('.brain-notes');
+          if (notesList) {
+            var firstNote = notesList.querySelector('li');
+            if (firstNote) {
+              firstNote.textContent = 'The red area indicates a lesion in the ' + lesionData.location + ' region, as described in the conclusion.';
+            }
+          }
+        }
+      }
+    }
+    
+    // Run brain diagram updates after DOM is ready
+    if (document.querySelector('.brain-visual-section')) {
+      updateBrainDiagrams();
     }
 
     /* Term definitions */

@@ -26,7 +26,18 @@
     width: 100%;
 }
 
+.dashboard-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dashboard-left > section {
+    width: 100%;
+}
+
 .upload-section,
+.transformation-section,
 .reports-section {
     background-color: var(--panel);
     border: 1px solid var(--border);
@@ -35,8 +46,23 @@
     box-shadow: var(--shadow);
 }
 
-.upload-section {
-    align-self: flex-start;
+.upload-section,
+.transformation-section {
+    align-self: stretch;
+}
+
+.transformation-section h2 {
+    margin: 0 0 0.6rem;
+    color: var(--mint);
+}
+
+.transformation-subtitle {
+    margin: 0 0 1rem;
+    color: var(--muted);
+}
+
+.transformation-section .compare-container-compact {
+    margin-top: 0;
 }
 
 .reports-section {

@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/report-status.css">
+  <script src="/static/charts.js"></script>
 </head>
 <body>
   <div class="page-wrapper">
@@ -30,16 +31,13 @@
   <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
       </div>
 
-      <nav class="nav-links">
-        <a href="{{ url_for('index') }}">Dashboard</a>
-        <a href="{{ url_for('projects') }}">Projects</a>
-        <a href="{{ url_for('projects') }}#insights">Insights</a>
-        <a href="{{ url_for('report_status') }}" class="active">Statistics</a>
-        <a href="{{ url_for('payment') }}">Payment</a>
-        <a href="{{ url_for('help_page') }}">Help</a>
-      </nav>
-
-      <div class="nav-auth">
+    <nav class="nav-links">
+      <a href="{{ url_for('index') }}">Dashboard</a>
+      <a href="{{ url_for('projects') }}">Projects</a>
+      <a href="{{ url_for('report_status') }}" class="active">Statistics</a>
+      <a href="{{ url_for('payment') }}">Payment</a>
+      <a href="{{ url_for('help_page') }}">Help</a>
+    </nav>      <div class="nav-auth">
         <label class="theme-switch" aria-label="Toggle theme">
           <span class="theme-row">
             <span class="theme-icon" aria-hidden="true">🌙</span>
@@ -75,43 +73,55 @@
       </header>
 
       <section class="analytics-summary" aria-label="Summary metrics">
-        <article class="summary-card">
+        <article class="summary-card hover-card">
           <p class="summary-label">Total Reports Parsed</p>
           <p class="summary-value">{{ stats.summary.total_reports }}</p>
         </article>
-        <article class="summary-card">
+        <article class="summary-card hover-card">
           <p class="summary-label">Reports in Last 30 Days</p>
           <p class="summary-value">{{ stats.summary.last_30_days }}</p>
+          <div class="chart-container">
+            <canvas id="line-chart-reports" width="280" height="120"></canvas>
+          </div>
         </article>
-        <article class="summary-card">
+        <article class="summary-card hover-card">
           <p class="summary-label">Average Word Count</p>
           <p class="summary-value">{{ stats.summary.average_word_count }}</p>
         </article>
-        <article class="summary-card">
+        <article class="summary-card hover-card">
           <p class="summary-label">Languages Logged</p>
           <p class="summary-value">{{ stats.summary.languages_tracked }}</p>
         </article>
       </section>
 
       <section class="analytics-grid">
-        <article class="analytics-panel">
+        <article class="analytics-panel hover-card">
           <h2>Age Distribution</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-age" width="200" height="200"></canvas>
+          </div>
           <ul class="stat-list">
             {% for label, count in stats.age_ranges.items() %}
             <li><span>{{ label }}</span><span>{{ count }}</span></li>
             {% endfor %}
           </ul>
         </article>
-        <article class="analytics-panel">
+        <article class="analytics-panel hover-card">
           <h2>Gender Mix</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-gender" width="200" height="200"></canvas>
+          </div>
           <ul class="stat-list">
             <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
             <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
             <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
           </ul>
         </article>
-        <article class="analytics-panel">
+        <article class="analytics-panel hover-card">
           <h2>Languages</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-languages" width="200" height="200"></canvas>
+          </div>
           <ul class="stat-list">
             {% for entry in stats.languages %}
             <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>
@@ -120,8 +130,11 @@
             {% endfor %}
           </ul>
         </article>
-        <article class="analytics-panel">
+        <article class="analytics-panel hover-card">
           <h2>Modalities</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-modalities" width="200" height="200"></canvas>
+          </div>
           <ul class="stat-list">
             {% for entry in stats.studies %}
             <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>
@@ -130,8 +143,11 @@
             {% endfor %}
           </ul>
         </article>
-        <article class="analytics-panel span-2">
+        <article class="analytics-panel span-2 hover-card">
           <h2>Top Findings</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-findings" width="300" height="200"></canvas>
+          </div>
           <ul class="stat-list">
             {% for entry in stats.diseases %}
             <li><span>{{ entry.label|capitalize }}</span><span>{{ entry.count }}</span></li>
@@ -140,7 +156,7 @@
             {% endfor %}
           </ul>
         </article>
-        <article class="analytics-panel span-2">
+        <article class="analytics-panel span-2 hover-card">
           <h2>Recent Activity</h2>
           <ul class="recent-list">
             {% for item in stats.recent %}
@@ -163,6 +179,42 @@
           </ul>
         </article>
       </section>
+
+      <!-- Pass data to JavaScript -->
+      <script>
+        window.statsData = {
+          reportsTimeSeries: [
+            {% for entry in stats.time_series %}
+            { label: "{{ entry.label }}", value: {{ entry.value }} }{{ "," if not loop.last else "" }}
+            {% endfor %}
+          ],
+          ageData: [
+            {% for label, count in stats.age_ranges.items() %}
+            { label: "{{ label }}", value: {{ count }} }{{ "," if not loop.last else "" }}
+            {% endfor %}
+          ],
+          genderData: [
+            { label: "Female", value: {{ stats.gender.female }} },
+            { label: "Male", value: {{ stats.gender.male }} },
+            { label: "Other", value: {{ stats.gender.other }} }
+          ],
+          languagesData: [
+            {% for entry in stats.languages %}
+            { label: "{{ entry.label }}", value: {{ entry.count }} }{{ "," if not loop.last else "" }}
+            {% endfor %}
+          ],
+          modalitiesData: [
+            {% for entry in stats.studies %}
+            { label: "{{ entry.label }}", value: {{ entry.count }} }{{ "," if not loop.last else "" }}
+            {% endfor %}
+          ],
+          findingsData: [
+            {% for entry in stats.diseases %}
+            { label: "{{ entry.label|capitalize }}", value: {{ entry.count }} }{{ "," if not loop.last else "" }}
+            {% endfor %}
+          ]
+        };
+      </script>
     </main>
 
     {% include '_footer.html' %}

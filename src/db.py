@@ -312,6 +312,28 @@ def get_stats() -> Dict[str, Any]:
             }
         )
 
+    # Get time series data for last 30 days
+    cur.execute(
+        """
+        SELECT DATE(created_at) as report_date, COUNT(*) as count
+        FROM patients
+        WHERE created_at >= datetime('now', '-30 day')
+        GROUP BY DATE(created_at)
+        ORDER BY report_date ASC
+        """
+    )
+    time_series_raw = {row[0]: row[1] for row in cur.fetchall()}
+    
+    # Fill in missing dates with zeros
+    time_series = []
+    from datetime import datetime, timedelta
+    for i in range(30):
+        date = datetime.now() - timedelta(days=29 - i)
+        date_str = date.strftime('%Y-%m-%d')
+        month_day = date.strftime('%m/%d')
+        count = time_series_raw.get(date_str, 0)
+        time_series.append({"label": month_day, "value": count})
+
     conn.close()
 
     return {
@@ -327,6 +349,7 @@ def get_stats() -> Dict[str, Any]:
         "studies": study_mix,
         "diseases": disease_mix,
         "recent": recent,
+        "time_series": time_series,
     }
 
 

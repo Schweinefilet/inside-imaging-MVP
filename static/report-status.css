@@ -177,3 +177,79 @@
     grid-column: span 1;
   }
 }
+
+/* Hover card effects */
+.hover-card {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.hover-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--mint), transparent);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+.hover-card:hover::before {
+  opacity: 1;
+}
+
+html.light .hover-card:hover {
+  box-shadow: 
+    0 12px 24px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(16, 185, 129, 0.3);
+}
+
+/* Chart containers */
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
+  min-height: 120px;
+  position: relative;
+}
+
+.chart-tooltip {
+  position: fixed;
+  display: none;
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--mint);
+}
+
+.chart-container canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.summary-card .chart-container {
+  margin-top: 1rem;
+}
+
+.analytics-panel .chart-container {
+  padding: 1rem 0;
+}

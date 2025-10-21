@@ -1,9 +1,4 @@
 /* Styles for Payment page */
-.navbar-brand img {
-  height: 64px;
-  width: auto;
-}
-
 .payment-grid {
   display: flex;
   flex-wrap: wrap;

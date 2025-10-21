@@ -1,4 +1,4 @@
-// static/loader.js
+// static/loader.js - Spinning circle loader inspired by LoaderOne
 (function () {
   var DEFAULT_PRIMARY = "Working on your report...";
   var DEFAULT_SECONDARY = "This may take up to 30 seconds.";
@@ -14,9 +14,10 @@
     el.setAttribute('role', 'status');
     el.innerHTML = [
       '<div class="loader-card">',
-      '  <div class="loader-five" aria-hidden="true">',
-      '    <span class="loader-five-ring"></span>',
-      '    <span class="loader-five-dot"></span>',
+      '  <div class="loader-one" aria-hidden="true">',
+      '    <svg class="loader-one-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">',
+      '      <circle class="loader-one-circle" cx="50" cy="50" r="45"/>',
+      '    </svg>',
       '  </div>',
       '  <div class="loader-text" data-loader-text>' + DEFAULT_PRIMARY + '</div>',
       '  <div class="loader-sub" data-loader-sub>' + DEFAULT_SECONDARY + '</div>',

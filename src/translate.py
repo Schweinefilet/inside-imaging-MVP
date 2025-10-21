@@ -526,7 +526,25 @@ def _call_openai_once(report_text: str, language: str, temperature: float, effor
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     env_model, chat_fallback = _resolve_models()
 
-    instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
+    # Language-specific instructions
+    if language.lower() in ["kiswahili", "swahili"]:
+        instructions = f"""Wewe ni msaidizi wa kuandika ripoti za uchunguzi wa mwili kwa lugha rahisi. Andika KILA KITU kwa Kiswahili sanifu BILA kuchanganya Kiingereza.
+Rudisha JSON object tu yenye: reason, technique, findings, conclusion, concern.
+Hadhira ni mtoto wa miaka 10. Tumia sentensi FUPI SANA (maneno 5-8 kwa kila sentensi). Tumia maneno ya kawaida ambayo mtoto anaweza kuelewa.
+reason na technique: sentensi 1-2 FUPI SANA; findings: bullets 2-3 FUPI; conclusion: bullets 1-2 FUPI; concern: sentensi 1 FUPI.
+Panga namba zote. Tumia cm isipokuwa ni chini ya 1 cm, kisha tumia mm. Kagua tahajia YOTE. Usitumie majina ya kitaalamu au maneno ya kisayansi.
+Andika KILA KITU kwa Kiswahili sanifu bila Kiingereza:
+- "scan" → "uchunguzi" au "skani"
+- "mass" → "uvimbe" au "chungu"
+- "normal" → "kawaida"
+- "abnormal" → "si kawaida"
+- "brain" → "ubongo"
+- "liver" → "ini"
+- "kidney" → "figo"
+- "fracture" → "mfupa umevunjika"
+Hakikisha KILA neno ni Kiswahili."""
+    else:
+        instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
 Audience is a 10-year-old. Use VERY simple, SHORT sentences (5-8 words each). Use everyday words a child would know.
 reason and technique: 1-2 VERY SHORT sentences; findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
@@ -635,6 +653,62 @@ def _merge_runs(runs: List[Dict[str, str]]) -> Dict[str, str]:
         out[key] = pick
     return out
 
+def _clean_kiswahili_text(text: str) -> str:
+    """Post-process Kiswahili text to fix common mixed-language issues."""
+    if not text:
+        return text
+    
+    # Common English words that slip through → Kiswahili
+    replacements = {
+        r'\bscan\b': 'uchunguzi',
+        r'\bmass\b': 'uvimbe',
+        r'\btumor\b': 'uvimbe',
+        r'\bnormal\b': 'kawaida',
+        r'\babnormal\b': 'si kawaida',
+        r'\bbrain\b': 'ubongo',
+        r'\bliver\b': 'ini',
+        r'\bkidney\b': 'figo',
+        r'\bheart\b': 'moyo',
+        r'\blungs?\b': 'mapafu',
+        r'\bfracture\b': 'mvunjiko',
+        r'\bbleed(?:ing)?\b': 'kutokwa na damu',
+        r'\bswelling\b': 'uvimbe',
+        r'\bpain\b': 'maumivu',
+        r'\binflammation\b': 'uvimbe',
+        r'\binfection\b': 'maambukizi',
+        r'\bct\s+scan\b': 'uchunguzi wa CT',
+        r'\bmri\s+scan\b': 'uchunguzi wa MRI',
+        r'\bx-ray\b': 'X-ray',
+        r'\bultrasound\b': 'uchunguzi wa sauti',
+        r'\bfindings?\b': 'matokeo',
+        r'\bconclusion\b': 'hitimisho',
+        r'\breason\b': 'sababu',
+        r'\btechnique\b': 'mbinu',
+        r'\bconcern\b': 'wasiwasi',
+        r'\bdoctor\b': 'daktari',
+        r'\bpatient\b': 'mgonjwa',
+        r'\bhospital\b': 'hospitali',
+        r'\bthe\b': '',
+        r'\band\b': 'na',
+        r'\bor\b': 'au',
+        r'\bwith\b': 'na',
+        r'\bwithout\b': 'bila',
+        r'\bin\b': 'ndani ya',
+        r'\bon\b': 'juu ya',
+        r'\bof\b': 'ya',
+        r'\bto\b': 'kwa',
+        r'\bfor\b': 'kwa ajili ya',
+    }
+    
+    result = text
+    for pattern, replacement in replacements.items():
+        result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
+    
+    # Clean up extra spaces
+    result = re.sub(r'\s+', ' ', result).strip()
+    
+    return result
+
 def _summarize_with_openai(report_text: str, language: str) -> Dict[str, str] | None:
     if not (os.getenv("INSIDEIMAGING_ALLOW_LLM","0")=="1" and os.getenv("OPENAI_API_KEY")):
         logger.info("[LLM] disabled or missing API key"); return None
@@ -645,7 +719,15 @@ def _summarize_with_openai(report_text: str, language: str) -> Dict[str, str] | 
         runs: List[Dict[str,str]] = []
         for i in range(n):
             runs.append(_call_openai_once(report_text, language, min(1.0, base_temp+0.05*i), effort) or {})
-        return (_merge_runs(runs) if len(runs)>1 else runs[0]) or None
+        result = (_merge_runs(runs) if len(runs)>1 else runs[0]) or None
+        
+        # Post-process for Kiswahili to remove English words
+        if result and language.lower() in ["kiswahili", "swahili"]:
+            for key in ("reason", "technique", "findings", "conclusion", "concern"):
+                if key in result:
+                    result[key] = _clean_kiswahili_text(result[key])
+        
+        return result
     except Exception:
         logger.exception("[LLM] summarization failed"); return None
 
@@ -702,7 +784,37 @@ def _infer_modality_and_region(text: str) -> str:
         return f"{'CT scan' if modality=='CT' else modality} of the {region}" + (" with contrast." if modality=='CT' and with_contrast else ".")
     return f"{'CT scan' if modality=='CT' else modality}" + (" with contrast." if modality=='CT' and with_contrast else ".")
 
-def _infer_reason(text: str, seed: str) -> str:
+def _translate_to_kiswahili(text: str, context: str = "") -> str:
+    """Translate simple English fallback text to Kiswahili."""
+    translations = {
+        "The scan was done to check for a mass.": "Uchunguzi ulifanywa kuangalia uvimbe.",
+        "The scan was done to look for a problem in the head.": "Uchunguzi ulifanywa kutafuta tatizo katika kichwa.",
+        "The scan was done to look for a problem in the neck.": "Uchunguzi ulifanywa kutafuta tatizo katika shingo.",
+        "The scan was done to look for a problem in the abdomen.": "Uchunguzi ulifanywa kutafuta tatizo katika tumbo.",
+        "The scan was done to look for a problem in the area.": "Uchunguzi ulifanywa kutafuta tatizo katika eneo.",
+        " and swollen lymph nodes.": " na lymph nodes zilizovimba.",
+        "The goal was to find a simple cause for the symptoms.": "Lengo lilikuwa kupata sababu rahisi ya dalili.",
+        "Technique not described.": "Mbinu haijaeleweshwa.",
+        "Not described.": "Haijaeleweshwa.",
+        "No major problems were seen.": "Hakuna matatizo makubwa yaliyoonekana.",
+        "Most other areas look normal.": "Maeneo mengine yanaonekana kawaida.",
+        "See important findings.": "Tazama matokeo muhimu.",
+        "CT scan": "Uchunguzi wa CT",
+        "MRI": "Uchunguzi wa MRI",
+        "Ultrasound": "Uchunguzi wa sauti",
+        "X-ray": "X-ray",
+        " of the ": " ya ",
+        " with contrast.": " na rangi.",
+        " without contrast.": " bila rangi.",
+    }
+    
+    result = text
+    for eng, swh in translations.items():
+        result = result.replace(eng, swh)
+    
+    return result
+
+def _infer_reason(text: str, seed: str, language: str = "English") -> str:
     src = seed or ""
     if not src or src.strip().lower() == "not provided.":
         m = re.search(r"(?im)^\s*(indication|reason|history)\s*:\s*(.+)$", text or "")
@@ -723,7 +835,13 @@ def _infer_reason(text: str, seed: str) -> str:
     if has_nodes:
         p1 = p1.rstrip(".") + " and swollen lymph nodes."
     p2 = "The goal was to find a simple cause for the symptoms."
-    return f"{p1} {p2}"
+    result = f"{p1} {p2}"
+    
+    # Translate to Kiswahili if needed
+    if language.lower() in ["kiswahili", "swahili"]:
+        result = _translate_to_kiswahili(result)
+    
+    return result
 
 
 # ---------- dedupe and pruning ----------
@@ -762,7 +880,7 @@ def _prune_findings_for_public(text: str) -> str:
         if is_key or has_number or is_pos_blanket: kept.append(s)
     return " ".join(kept[:4])
 
-def _to_colored_bullets_html(raw: str, max_items: int, include_normal: bool) -> str:
+def _to_colored_bullets_html(raw: str, max_items: int, include_normal: bool, language: str = "English") -> str:
     items: List[str] = []
     sources = _normalize_listish(raw) or _split_sentences(raw or "")
     for s in sources:
@@ -771,13 +889,22 @@ def _to_colored_bullets_html(raw: str, max_items: int, include_normal: bool) -> 
         t = _dedupe_redundant_noun_phrase(t)
         if not t:
             continue
+        # Translate to Kiswahili if needed
+        if language.lower() in ["kiswahili", "swahili"]:
+            t = _clean_kiswahili_text(t)
         items.append(_highlight_phrasewise(t))
         if len(items) >= max_items - (1 if include_normal else 0):
             break
     if include_normal:
-        items.append(_highlight_phrasewise("Most other areas look normal."))
+        normal_text = "Most other areas look normal."
+        if language.lower() in ["kiswahili", "swahili"]:
+            normal_text = "Maeneo mengine yanaonekana kawaida."
+        items.append(_highlight_phrasewise(normal_text))
     if not items:
-        items = [_highlight_phrasewise("No major problems were seen.")]
+        no_problems_text = "No major problems were seen."
+        if language.lower() in ["kiswahili", "swahili"]:
+            no_problems_text = "Hakuna matatizo makubwa yaliyoonekana."
+        items = [_highlight_phrasewise(no_problems_text)]
     html = "<ul class='ii-list' style='color:#ffffff'>" + "".join(f"<li>{it}</li>" for it in items[:max_items]) + "</ul>"
     return _annotate_terms_outside_tags(html)
 
@@ -851,15 +978,21 @@ def build_structured(
     # technique prefer deterministic
     technique_extracted = _extract_technique_details(cleaned) or _infer_modality_and_region(cleaned)
     technique_txt = technique_extracted or _simplify(llm_tech, lay_gloss) or "Technique not described."
+    
+    # Translate technique fallback to Kiswahili if needed
+    if language.lower() in ["kiswahili", "swahili"] and technique_txt == "Technique not described.":
+        technique_txt = "Mbinu haijaeleweshwa."
+    elif language.lower() in ["kiswahili", "swahili"]:
+        technique_txt = _translate_to_kiswahili(technique_txt)
 
     # reason
-    reason_txt = _infer_reason(cleaned, llm_reason or reason_seed)
+    reason_txt = _infer_reason(cleaned, llm_reason or reason_seed, language)
     reason_txt = _normalize_phi_placeholders(reason_txt)
     technique_txt = _normalize_phi_placeholders(technique_txt)
 
     # render
-    findings_html = _to_colored_bullets_html(raw_findings, max_items=4, include_normal=True)
-    conclusion_html = _to_colored_bullets_html(raw_conclusion, max_items=2, include_normal=False)
+    findings_html = _to_colored_bullets_html(raw_findings, max_items=4, include_normal=True, language=language)
+    conclusion_html = _to_colored_bullets_html(raw_conclusion, max_items=2, include_normal=False, language=language)
     reason_html = _annotate_terms_outside_tags(f'<span class="ii-text" style="color:#ffffff">{_simplify(reason_txt, lay_gloss)}</span>')
     technique_html = _annotate_terms_outside_tags(f'<span class="ii-text" style="color:#ffffff">{_simplify(technique_txt, lay_gloss)}</span>')
     concern_html = _annotate_terms_outside_tags(f'<span class="ii-text" style="color:#ffffff">{_simplify(concern_txt, lay_gloss)}</span>') if concern_txt else ""

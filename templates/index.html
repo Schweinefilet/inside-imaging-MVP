@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/loader.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='compare.css') }}">
 </head>
 <body>
   {% set landing_text = "INSIDE IMAGING" %}
@@ -97,6 +98,31 @@
     <main class="content">
       <h1>Dashboard</h1>
       <p>Upload, manage, and download your translated radiology reports in one place.</p>
+
+      <!-- Before/After Report Comparison -->
+      <div class="compare-container" data-mode="hover">
+        <h3 class="compare-title">See the Transformation</h3>
+        <div class="compare-wrapper">
+          <img 
+            src="{{ url_for('static', filename='before-report.png') }}" 
+            alt="Complex medical report before translation" 
+            class="compare-image first"
+          />
+          <img 
+            src="{{ url_for('static', filename='after-report.png') }}" 
+            alt="Simplified patient-friendly report after translation" 
+            class="compare-image second"
+          />
+          <div class="compare-slider">
+            <div class="compare-handle"></div>
+          </div>
+          <span class="compare-label before">Before</span>
+          <span class="compare-label after">After</span>
+        </div>
+        <p class="compare-description">
+          Hover to compare: Complex medical jargon transformed into clear, understandable language.
+        </p>
+      </div>
 
       <div class="dashboard-grid">
         <section class="upload-section">
@@ -239,6 +265,7 @@
   </div>
 
   <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='compare.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

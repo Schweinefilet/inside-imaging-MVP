@@ -92,6 +92,12 @@
   color: var(--text-primary);
 }
 
+/* Fix dark mode dropdown text visibility */
+.payment-form select option {
+  background: var(--panel, #1a1a1a);
+  color: var(--text, #ffffff);
+}
+
 .payment-form .form-row {
   display: flex;
   gap: 1rem;

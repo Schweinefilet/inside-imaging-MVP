@@ -1,0 +1,46 @@
+<!-- Standardized footer across all pages -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-about">
+            <h3>Inside Imaging</h3>
+            <p>Transforming radiology reports into plain language with AI-powered translation and visual insights.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Navigation</h4>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('projects') }}">Projects</a></li>
+                <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
+                <li><a href="{{ url_for('payment') }}">Payment</a></li>
+                <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
+                <li><a href="{{ url_for('help_page') }}">Help</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="{{ url_for('help_page') }}">Documentation</a></li>
+                <li><a href="{{ url_for('blogs') }}">Blog</a></li>
+                <li><a href="{{ url_for('help_page') }}">Support</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="https://twitter.com" target="_blank" rel="noopener">Twitter</a></li>
+                <li><a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
+                <li><a href="{{ url_for('help_page') }}">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; <span class="footer-year"></span> Inside Imaging. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+// Set current year
+document.querySelectorAll('.footer-year').forEach(function(el) {
+    el.textContent = new Date().getFullYear();
+});
+</script>

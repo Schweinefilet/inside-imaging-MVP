@@ -1,35 +1,87 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <title>Login - Inside Imaging</title>
-  <link rel="stylesheet" href="/static/main.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Log In - Inside Imaging</title>
+    
+    <!-- Pre-paint: prevent flash on load -->
+    <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch(e){}
+    })();
+    </script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </head>
 <body>
-  <div class="wrap">
-    <header class="header">
-      <div class="logo-wrapper">
-        <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
-        <span class="brand">Inside Imaging</span>
-      </div>
-    </header>
-    <h2>Please sign in</h2>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul class="flash">
-          {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <form method="post" action="{{ url_for('login') }}">
-      <label class="language-label" for="username">Username</label>
-      <input id="username" name="username" type="text" required>
-      <label class="language-label" for="password">Password</label>
-      <input id="password" name="password" type="password" required>
-      <button type="submit">Sign in</button>
-    </form>
-  </div>
+    <div class="page-wrapper">
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
+            </div>
+            <nav class="nav-links">
+                <a href="{{ url_for('index') }}">Dashboard</a>
+                <a href="{{ url_for('projects') }}">Projects</a>
+                <a href="{{ url_for('report_status') }}">Statistics</a>
+                <a href="{{ url_for('payment') }}">Payment</a>
+                <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
+                <a href="{{ url_for('help_page') }}">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <!-- Slider toggle -->
+                <label class="theme-switch" aria-label="Toggle theme">
+                    <span class="theme-row">
+                        <span class="theme-icon" aria-hidden="true">🌙</span>
+                        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+                        <span class="theme-switch-track" aria-hidden="true"></span>
+                        <span class="theme-icon" aria-hidden="true">☀️</span>
+                    </span>
+                    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+                </label>
+
+                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+            </div>
+        </header>
+        <main class="content">
+            <h1>Log In to Your Account</h1>
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+              <ul class="flash">
+                {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+            {% endwith %}
+            <form method="post" action="{{ url_for('login') }}" style="max-width: 400px; margin: 2rem auto;">
+                <label class="form-label" for="username">Username</label>
+                <input id="username" name="username" type="text" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
+                <label class="form-label" for="password">Password</label>
+                <input id="password" name="password" type="password" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
+                <button type="submit" style="width: 100%; padding: 0.75rem; background: var(--mint); color: #051e14; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Log In</button>
+            </form>
+            <p style="text-align: center;">Don't have an account? <a href="{{ url_for('signup') }}" style="color: var(--mint);">Sign Up</a></p>
+        </main>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <h3>Inside Imaging</h3>
+                    <p>Transforming radiology reports.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

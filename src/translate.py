@@ -149,6 +149,20 @@ _TERM_DEFS = [
     {"pat": r"\bosteophyte\b", "def": "bone spur"},
     {"pat": r"\bcalvarium\b", "def": "skull bones over the brain"},
     {"pat": r"\buvunjaji\b", "def": "fracture"},
+    # commonly missing definitions
+    {"pat": r"\bhydroureteronephrosis\b", "def": "swelling of kidney and ureter from blocked urine"},
+    {"pat": r"\bhydronephrosis\b", "def": "kidney swelling from blocked urine"},
+    {"pat": r"\bhydroureter\b", "def": "ureter swelling from blocked urine"},
+    {"pat": r"\badenopathy\b", "def": "swollen lymph nodes"},
+    {"pat": r"\bnecrotic\b", "def": "dead tissue"},
+    {"pat": r"\bmetastasis\b", "def": "cancer spread to other areas"},
+    {"pat": r"\bobstruction\b", "def": "blockage"},
+    {"pat": r"\bcompression\b", "def": "being squeezed or pressed"},
+    {"pat": r"\binvasion\b", "def": "growth spreading into nearby tissues"},
+    {"pat": r"\bperforation\b", "def": "hole or tear in tissue"},
+    {"pat": r"\bischemia\b", "def": "reduced blood flow"},
+    {"pat": r"\batrophy\b", "def": "tissue shrinking or wasting away"},
+    {"pat": r"\bstenosis\b", "def": "narrowing of a passage"},
 ]
 _TERM_REGEX: List[Tuple[re.Pattern, str]] = [(re.compile(d["pat"], re.I), d["def"]) for d in _TERM_DEFS]
 
@@ -512,11 +526,12 @@ def _call_openai_once(report_text: str, language: str, temperature: float, effor
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     env_model, chat_fallback = _resolve_models()
 
-    instructions = f"""You summarize medical imaging reports for the public. Write all output in {language}.
+    instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
-Audience is a 13-year-old. Short sentences. Use plain words.
-reason and technique: 1–2 short sentences; findings and conclusion: 2–4; concern: 1–2.
-Round numbers. Use cm unless under 1 cm, then mm. Findings: bullet list. Conclusion: 1–2 bullets. No names."""
+Audience is a 10-year-old. Use VERY simple, SHORT sentences (5-8 words each). Use everyday words a child would know.
+reason and technique: 1-2 VERY SHORT sentences; findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
+Round all numbers. Use cm unless under 1 cm, then mm. Double-check ALL spelling. No medical names or jargon.
+If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in."""
 
     # 1) Try Chat Completions JSON mode when supported.
     chat_model = env_model if _supports_chat_completions(env_model) else chat_fallback

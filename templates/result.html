@@ -53,6 +53,10 @@
     .body-outline *{fill:none;stroke:var(--border);stroke-width:1.4}  /* lines only */
     .region-band{fill:var(--panel);opacity:.35;transition:opacity .2s}
     .region-band.highlight{fill:var(--mint);opacity:.55}
+    
+    /* Improve region highlight visibility in light mode */
+    .light .region-band{fill:#e0e0e0;opacity:.5}
+    .light .region-band.highlight{fill:#22c55e;opacity:.75;stroke:#16a34a;stroke-width:2}
 
 
     /* Base: keep your CSS backgrounds; only remove default margins to kill seam */
@@ -64,7 +68,7 @@
 
     /* Light-mode readability without touching layout or backgrounds */
     .light .report,
-    .light .report *:not(strong.negative):not(strong.positive),
+    .light .report *:not(strong.negative):not(strong.positive):not(.ii-neg):not(.ii-pos),
     .light .patient-card,
     .light .patient-card *,
     .light details,
@@ -74,6 +78,13 @@
 
     .light .simple-output strong.negative { color:#b91c1c !important; }
     .light .simple-output strong.positive { color:#166534 !important; }
+    
+    /* Preserve highlight colors in light mode */
+    .light .ii-neg,
+    .light .ii-neg * { color:#dc2626 !important; }
+    .light .ii-pos,
+    .light .ii-pos * { color:#16a34a !important; }
+    .light .ii-text { color: var(--text) !important; }
 
     /* Components */
     .diagram-container{
@@ -149,7 +160,7 @@
     </div>
     <nav class="nav-links">
       <a href="{{ url_for('index') }}">Dashboard</a>
-      <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
+      <a href="{{ url_for('projects') }}">Projects</a>
       <a href="{{ url_for('report_status') }}">Statistics</a>
       <a href="{{ url_for('payment') }}">Payment</a>
       <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
@@ -262,7 +273,7 @@
         <h4>Navigation</h4>
         <ul>
           <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('magazine') }}">Magazine Viewer</a></li>
+          <li><a href="{{ url_for('projects') }}">Projects</a></li>
           <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
           <li><a href="{{ url_for('payment') }}">Payment</a></li>
           <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>

@@ -1,4 +1,6 @@
 /* Inside Imaging - dark mint theme with enhanced visuals */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 :root {
   --bg: #050505;
   --panel: #0d0d0d;
@@ -23,7 +25,7 @@ html { background: var(--bg); }
 
 body {
   margin: 0;
-  font: 16px/1.55 system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font: 16px/1.55 'Montserrat', system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
   background: transparent; /* gradients move to ::before */
   position: relative;

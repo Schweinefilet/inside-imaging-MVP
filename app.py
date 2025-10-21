@@ -356,6 +356,11 @@ def report_preview():
     return render_template("pdf_report.html", structured=structured, patient=patient)
 
 
+@app.route("/projects")
+def projects():
+    return render_template("projects.html")
+
+
 @app.route("/magazine")
 def magazine():
     archive = []
@@ -413,10 +418,35 @@ def help_page():
     return render_template("help.html")
 
 
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
+
+@app.route("/contact-support", methods=["POST"])
+def contact_support():
+    """Handle contact support form submission"""
+    try:
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        subject = request.form.get("subject", "").strip()
+        message = request.form.get("message", "").strip()
+        
+        # Log the support request (in production, send email or save to database)
+        logging.info("Support request from %s (%s): %s - %s", name, email, subject, message)
+        
+        flash("Thank you for contacting us! We'll get back to you soon.", "success")
+    except Exception as e:
+        logging.exception("Failed to process support request")
+        flash("Sorry, there was an error submitting your message. Please try again.", "error")
+    
+    return redirect(url_for("help_page"))
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form.get("username", "")
+        username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         user = db.get_user_by_username(username)
         if user and check_password_hash(user["password_hash"], password):
@@ -430,7 +460,7 @@ def login():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        username = request.form.get("username", "")
+        username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         if db.get_user_by_username(username):
             flash("Username already exists. Please choose a different one.", "error")
@@ -444,7 +474,7 @@ def signup():
 
 @app.route("/logout")
 def logout():
-    session.pop("username", None)
+    session.clear()  # Clear entire session instead of just username
     flash("Logged out successfully.", "success")
     return redirect(url_for("login"))
 

@@ -5,27 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <title>Sign Up - Inside Imaging</title>
-    <link rel="stylesheet" href="/static/main.css">
+    
+    <!-- Pre-paint: prevent flash on load -->
+    <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch(e){}
+    })();
+    </script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </head>
 <body>
     <div class="page-wrapper">
-        <header class="nav-wrapper">
-            <div class="nav-brand">
-                <img src="/static/logo.png" alt="Inside Imaging Logo" class="logo">
-                <span class="brand-name">Inside Imaging</span>
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
             </div>
             <nav class="nav-links">
                 <a href="{{ url_for('index') }}">Dashboard</a>
-                <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
+                <a href="{{ url_for('projects') }}">Projects</a>
                 <a href="{{ url_for('report_status') }}">Statistics</a>
                 <a href="{{ url_for('payment') }}">Payment</a>
                 <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
                 <a href="{{ url_for('help_page') }}">Help</a>
+                {% if session.get('username') %}<a href="{{ url_for('profile') }}">Profile</a>{% endif %}
             </nav>
             <div class="nav-auth">
+                <!-- Slider toggle -->
+                <label class="theme-switch" aria-label="Toggle theme">
+                    <span class="theme-row">
+                        <span class="theme-icon" aria-hidden="true">🌙</span>
+                        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+                        <span class="theme-switch-track" aria-hidden="true"></span>
+                        <span class="theme-icon" aria-hidden="true">☀️</span>
+                    </span>
+                    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+                </label>
+
                 <a href="{{ url_for('login') }}" class="login-button">Log In</a>
                 <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-                <button id="theme-toggle-button" class="theme-toggle">Light Mode</button>
             </div>
         </header>
         <main class="content">
@@ -37,34 +61,52 @@
               </ul>
             {% endif %}
             {% endwith %}
-            <form method="post" action="{{ url_for('signup') }}">
+            <form method="post" action="{{ url_for('signup') }}" style="max-width: 400px; margin: 2rem auto;" id="signup-form">
                 <label class="form-label" for="username">Username</label>
-                <input id="username" name="username" type="text" required>
+                <input id="username" name="username" type="text" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
                 <label class="form-label" for="password">Password</label>
-                <input id="password" name="password" type="password" required>
-                <button type="submit" class="signup-submit">Sign Up</button>
+                <input id="password" name="password" type="password" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
+                <label class="form-label" for="confirm-password">Confirm Password</label>
+                <input id="confirm-password" name="confirm_password" type="password" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
+                <button type="submit" class="signup-submit" style="width: 100%; padding: 0.75rem; background: var(--mint); color: #051e14; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 1rem;">Sign Up</button>
+                
+                <div style="text-align: center; margin: 1rem 0; color: var(--muted); position: relative;">
+                    <span style="background: var(--panel); padding: 0 1rem; position: relative; z-index: 1;">OR</span>
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); z-index: 0;"></div>
+                </div>
+                
+                <button type="button" onclick="alert('Google Sign-In coming soon!')" style="width: 100%; padding: 0.75rem; background: #ffffff; color: #000000; border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Sign up with Google
+                </button>
             </form>
-            <p>Already have an account? <a href="{{ url_for('login') }}">Log In</a></p>
-        </main>
-    </div>
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var html = document.documentElement;
-        var button = document.getElementById('theme-toggle-button');
-        var saved = localStorage.getItem('theme') || 'dark';
-        if (saved === 'light') {
-            html.classList.add('light');
-            if (button) button.textContent = 'Dark Mode';
-        }
-        if (button) {
-            button.addEventListener('click', function () {
-                html.classList.toggle('light');
-                var isLight = html.classList.contains('light');
-                button.textContent = isLight ? 'Dark Mode' : 'Light Mode';
-                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            <p style="text-align: center;">Already have an account? <a href="{{ url_for('login') }}" style="color: var(--mint);">Log In</a></p>
+            
+            <script>
+            document.getElementById('signup-form').addEventListener('submit', function(e) {
+                var password = document.getElementById('password').value;
+                var confirm = document.getElementById('confirm-password').value;
+                if (password !== confirm) {
+                    e.preventDefault();
+                    alert('Passwords do not match. Please try again.');
+                    return false;
+                }
             });
-        }
-    });
-    </script>
+            </script>
+        </main>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <h3>Inside Imaging</h3>
+                    <p>Transforming radiology reports.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

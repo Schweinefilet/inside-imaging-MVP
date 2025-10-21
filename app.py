@@ -44,6 +44,11 @@ CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS", "https://schwe
 # available languages
 LANGUAGES = ["English", "Kiswahili"]
 
+# pricing + tokens
+USD_PER_REPORT = 1.00
+KES_PER_USD = 129
+TOKENS_PER_REPORT = 1
+
 # curated content for magazine + blog pages
 MAGAZINE_ISSUES = [
     {
@@ -406,11 +411,28 @@ def report_status():
 @app.route("/payment")
 def payment():
     # supply context expected by template
-    structured = session.get("structured")
-    if not isinstance(structured, dict):
-        structured = {"report_type": "CT Scan", "price": "24.99"}
+    structured_session = session.get("structured")
+    if isinstance(structured_session, dict):
+        structured = dict(structured_session)
+    else:
+        structured = {}
+
+    structured.setdefault("report_type", "CT Scan")
+    structured["price"] = f"{USD_PER_REPORT:.2f}"
+    session["structured"] = structured
+
+    kes_amount = USD_PER_REPORT * KES_PER_USD
+    kes_display = f"{kes_amount:,.2f}".rstrip("0").rstrip(".")
+    pricing = {
+        "usd": USD_PER_REPORT,
+        "usd_display": f"{USD_PER_REPORT:.2f}",
+        "kes": kes_amount,
+        "kes_display": kes_display,
+        "tokens": TOKENS_PER_REPORT,
+        "exchange_rate": KES_PER_USD,
+    }
     lang = session.get("language", "English")
-    return render_template("payment.html", structured=structured, language=lang)
+    return render_template("payment.html", structured=structured, language=lang, pricing=pricing)
 
 
 @app.route("/help")

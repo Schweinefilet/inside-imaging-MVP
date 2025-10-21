@@ -1,5 +1,8 @@
 // static/loader.js
 (function () {
+  var DEFAULT_PRIMARY = "Working on your report...";
+  var DEFAULT_SECONDARY = "This may take up to 30 seconds.";
+
   function ensureOverlay() {
     let el = document.getElementById('global-loader');
     if (el) {
@@ -15,19 +18,23 @@
       '    <span class="loader-five-ring"></span>',
       '    <span class="loader-five-dot"></span>',
       '  </div>',
-      '  <div class="loader-text" data-loader-text>Generating report summary…</div>',
-      '  <div class="loader-sub">Translating your findings and building visuals.</div>',
+      '  <div class="loader-text" data-loader-text>' + DEFAULT_PRIMARY + '</div>',
+      '  <div class="loader-sub" data-loader-sub>' + DEFAULT_SECONDARY + '</div>',
       '</div>'
     ].join('');
     document.body.appendChild(el);
     return el;
   }
 
-  function show(text) {
+  function show(text, subtext) {
     const overlay = ensureOverlay();
     const label = overlay.querySelector('[data-loader-text]');
-    if (label && text) {
-      label.textContent = text;
+    if (label) {
+      label.textContent = text || DEFAULT_PRIMARY;
+    }
+    const subLabel = overlay.querySelector('[data-loader-sub]');
+    if (subLabel) {
+      subLabel.textContent = subtext || DEFAULT_SECONDARY;
     }
     overlay.classList.remove('loader-hidden');
   }

@@ -8,6 +8,15 @@
   box-shadow: var(--shadow);
 }
 
+/* Compact version for sidebar */
+.compare-container-compact {
+  margin: 2rem 0 0 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel-2);
+}
+
 .compare-wrapper {
   position: relative;
   width: 100%;
@@ -16,6 +25,18 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: col-resize;
+  background: var(--panel-2);
+}
+
+.compare-wrapper-compact {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 12px;
   user-select: none;
   -webkit-user-select: none;
   cursor: col-resize;
@@ -122,10 +143,25 @@
   font-weight: 600;
 }
 
+.compare-title-compact {
+  text-align: center;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: var(--mint);
+  font-weight: 600;
+}
+
 .compare-description {
   text-align: center;
   margin: 1rem 0 0 0;
   font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.compare-description-compact {
+  text-align: center;
+  margin: 0.75rem 0 0 0;
+  font-size: 0.8rem;
   color: var(--muted);
 }
 

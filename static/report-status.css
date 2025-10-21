@@ -28,6 +28,16 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.summary-card.span-chart {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .summary-card.span-chart {
+    grid-column: span 1;
+  }
+}
+
 .summary-card {
   background: var(--panel);
   border: 1px solid var(--border);

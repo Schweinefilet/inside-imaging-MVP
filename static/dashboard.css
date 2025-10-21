@@ -222,18 +222,6 @@
     overflow: hidden;
 }
 
-.insight-card::after {
-    content: "";
-    position: absolute;
-    inset: 12% 12% auto auto;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(62, 230, 176, 0.45), rgba(62, 230, 176, 0));
-    opacity: 0.4;
-    pointer-events: none;
-}
-
 .insight-icon {
     display: inline-flex;
     align-items: center;

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Profile & Settings - Inside Imaging</title>
+    
+    <!-- Pre-paint: prevent flash on load -->
+    <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch(e){}
+    })();
+    </script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+<div class="page-wrapper">
+    <header class="navbar">
+        <div class="navbar-brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
+        </div>
+        <nav class="nav-links">
+            <a href="{{ url_for('index') }}">Dashboard</a>
+            <a href="{{ url_for('projects') }}">Projects</a>
+            <a href="{{ url_for('report_status') }}">Statistics</a>
+            <a href="{{ url_for('payment') }}">Payment</a>
+            <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
+            <a href="{{ url_for('help_page') }}">Help</a>
+        </nav>
+        <div class="nav-auth">
+            <!-- Slider toggle -->
+            <label class="theme-switch" aria-label="Toggle theme">
+                <span class="theme-row">
+                    <span class="theme-icon" aria-hidden="true">🌙</span>
+                    <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+                    <span class="theme-switch-track" aria-hidden="true"></span>
+                    <span class="theme-icon" aria-hidden="true">☀️</span>
+                </span>
+                <span id="theme-label" class="theme-switch-text">Dark mode</span>
+            </label>
+
+            {% if session.get('username') %}
+            <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+            <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="content">
+        <h1>Profile & Settings</h1>
+        <p class="tagline">Manage your account and preferences</p>
+
+        <div class="dashboard-grid">
+            <section class="upload-section">
+                <h2>Account Information</h2>
+                {% if session.get('username') %}
+                <div style="margin: 1rem 0;">
+                    <p><strong>Username:</strong> {{ session.get('username') }}</p>
+                    <p><strong>Member since:</strong> 2025</p>
+                </div>
+                {% else %}
+                <p>Please <a href="{{ url_for('login') }}" style="color: var(--mint);">log in</a> to view your profile.</p>
+                {% endif %}
+            </section>
+
+            <section class="reports-section">
+                <h2>Preferences</h2>
+                <div style="padding: 1rem;">
+                    <h3>Theme</h3>
+                    <p>Use the theme toggle in the top right corner to switch between dark and light modes.</p>
+                    
+                    <h3 style="margin-top: 2rem;">Language</h3>
+                    <p>Default translation language: <strong>English</strong></p>
+                    <p style="font-size: 0.9rem; color: var(--muted);">Change language when uploading reports on the Dashboard.</p>
+                    
+                    <h3 style="margin-top: 2rem;">Notifications</h3>
+                    <p style="font-size: 0.9rem; color: var(--muted);">Email notifications coming soon.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>Inside Imaging</h3>
+                <p>Transforming radiology reports.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('projects') }}">Projects</a></li>
+                    <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
+                    <li><a href="{{ url_for('payment') }}">Payment</a></li>
+                    <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
+                    <li><a href="{{ url_for('help_page') }}">Help</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="{{ url_for('help_page') }}">Documentation</a></li>
+                    <li><a href="{{ url_for('blogs') }}">Blog</a></li>
+                    <li><a href="{{ url_for('help_page') }}">Support</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="https://twitter.com">Twitter</a></li>
+                    <li><a href="https://linkedin.com">LinkedIn</a></li>
+                    <li><a href="{{ url_for('help_page') }}">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Inside Imaging. All rights reserved.</p>
+        </div>
+    </footer>
+</div>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

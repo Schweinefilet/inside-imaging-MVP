@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Inside Imaging</title>
+  
+  <!-- Pre-paint: prevent flash on load -->
+  <script>
+  (function(){
+    try {
+      var t = localStorage.getItem('theme');
+      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      var useLight = t ? (t === 'light') : preferLight;
+      if (useLight) document.documentElement.classList.add('light');
+    } catch(e){}
+  })();
+  </script>
+  
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/loader.css">
@@ -34,11 +47,12 @@
       </div>
       <nav class="nav-links">
         <a href="{{ url_for('index') }}">Dashboard</a>
-        <a href="{{ url_for('magazine') }}">Magazine Viewer</a>
+        <a href="{{ url_for('projects') }}">Projects</a>
         <a href="{{ url_for('report_status') }}">Statistics</a>
         <a href="{{ url_for('payment') }}">Payment</a>
         <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
         <a href="{{ url_for('help_page') }}">Help</a>
+        {% if session.get('username') %}<a href="{{ url_for('profile') }}">Profile</a>{% endif %}
       </nav>
       <div class="nav-auth">
 
@@ -214,7 +228,7 @@
           <h4>Navigation</h4>
           <ul>
             <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('magazine') }}">Magazine Viewer</a></li>
+            <li><a href="{{ url_for('projects') }}">Projects</a></li>
             <li><a href="{{ url_for('report_status') }}">Statistics</a></li>
             <li><a href="{{ url_for('payment') }}">Payment</a></li>
             <li><a href="{{ url_for('blogs') }}">Radiologist Blogs</a></li>
@@ -224,17 +238,17 @@
         <div class="footer-col">
           <h4>Resources</h4>
           <ul>
-            <li><a href="#">Documentation</a></li>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="#">Support</a></li>
+            <li><a href="{{ url_for('help_page') }}">Documentation</a></li>
+            <li><a href="{{ url_for('help_page') }}">FAQ</a></li>
+            <li><a href="{{ url_for('help_page') }}">Support</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Connect</h4>
           <ul>
-            <li><a href="#">Twitter</a></li>
-            <li><a href="#">LinkedIn</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="https://twitter.com">Twitter</a></li>
+            <li><a href="https://linkedin.com">LinkedIn</a></li>
+            <li><a href="{{ url_for('help_page') }}">Contact</a></li>
           </ul>
         </div>
       </div>

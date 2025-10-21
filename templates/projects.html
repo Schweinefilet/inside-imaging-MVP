@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Projects - Inside Imaging</title>
+    
+    <!-- Pre-paint: prevent flash on load -->
+    <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch(e){}
+    })();
+    </script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+<div class="page-wrapper">
+    <header class="navbar">
+        <div class="navbar-brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
+        </div>
+        <nav class="nav-links">
+            <a href="{{ url_for('index') }}">Dashboard</a>
+            <a href="{{ url_for('projects') }}" class="active">Projects</a>
+            <a href="{{ url_for('report_status') }}">Statistics</a>
+            <a href="{{ url_for('payment') }}">Payment</a>
+            <a href="{{ url_for('blogs') }}">Radiologist Blogs</a>
+            <a href="{{ url_for('help_page') }}">Help</a>
+            {% if session.get('username') %}<a href="{{ url_for('profile') }}">Profile</a>{% endif %}
+        </nav>
+        <div class="nav-auth">
+            <!-- Slider toggle -->
+            <label class="theme-switch" aria-label="Toggle theme">
+                <span class="theme-row">
+                    <span class="theme-icon" aria-hidden="true">🌙</span>
+                    <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+                    <span class="theme-switch-track" aria-hidden="true"></span>
+                    <span class="theme-icon" aria-hidden="true">☀️</span>
+                </span>
+                <span id="theme-label" class="theme-switch-text">Dark mode</span>
+            </label>
+
+            {% if session.get('username') %}
+            <span class="username-badge" aria-live="polite">Signed in as {{ session.get('username') }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+            <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="content">
+        <h1>Projects & Resources</h1>
+        <p class="tagline">Explore our educational materials, magazine archives, and video tutorials.</p>
+
+        <div class="dashboard-grid">
+            <section class="upload-section" style="grid-column: 1 / -1;">
+                <h2>📰 Inside Imaging Magazine</h2>
+                <p>Read our monthly magazine featuring the latest in radiology, AI insights, and patient education.</p>
+                <a href="{{ url_for('magazine') }}" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--mint); color: #051e14; border-radius: 8px; text-decoration: none; font-weight: 600;">Browse Magazine Archives</a>
+            </section>
+
+            <section class="reports-section" style="grid-column: 1 / -1;">
+                <h2>🎥 Online Sessions & Tutorials</h2>
+                <p>Watch educational videos about understanding medical imaging, interpreting radiology reports, and using our platform.</p>
+                
+                <div class="insight-cards" style="margin-top: 1.5rem;">
+                    <div class="insight-card">
+                        <span class="insight-icon" aria-hidden="true">📺</span>
+                        <span class="insight-label">Coming Soon</span>
+                        <span class="insight-value" style="font-size: 1.2rem;">Video Tutorials</span>
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted);">Step-by-step guides on using Inside Imaging</p>
+                    </div>
+                    
+                    <div class="insight-card">
+                        <span class="insight-icon" aria-hidden="true">🎓</span>
+                        <span class="insight-label">Coming Soon</span>
+                        <span class="insight-value" style="font-size: 1.2rem;">Webinars</span>
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted);">Live sessions with radiologists</p>
+                    </div>
+                    
+                    <div class="insight-card">
+                        <span class="insight-icon" aria-hidden="true">📚</span>
+                        <span class="insight-label">Coming Soon</span>
+                        <span class="insight-value" style="font-size: 1.2rem;">Case Studies</span>
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted);">Real-world examples and explanations</p>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 2rem; padding: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                    <strong>Note:</strong> Video content and online sessions are currently in development. Check back soon for updates, or <a href="{{ url_for('help_page') }}" style="color: var(--mint);">contact us</a> to learn more about our upcoming educational programs.
+                </p>
+            </section>
+        </div>
+    </main>
+
+    {% include '_footer.html' %}
+</div>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

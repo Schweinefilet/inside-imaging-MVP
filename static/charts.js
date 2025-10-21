@@ -52,6 +52,8 @@
     // Draw smooth line (no nodes visible)
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--mint') || '#22c55e';
     ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
 
     data.forEach((point, i) => {
@@ -61,7 +63,17 @@
       if (i === 0) {
         ctx.moveTo(x, y);
       } else {
-        ctx.lineTo(x, y);
+        // Use quadratic curves for smoothing
+        if (i < data.length - 1) {
+          const nextPoint = data[i + 1];
+          const nextX = padding + ((i + 1) / (data.length - 1)) * chartWidth;
+          const nextY = height - padding - ((nextPoint.value - min) / range) * chartHeight;
+          const cpX = (x + nextX) / 2;
+          const cpY = (y + nextY) / 2;
+          ctx.quadraticCurveTo(x, y, cpX, cpY);
+        } else {
+          ctx.lineTo(x, y);
+        }
       }
     });
     ctx.stroke();
@@ -144,8 +156,8 @@
           const percent = ((data[foundIndex].value / total) * 100).toFixed(1);
           tooltip.textContent = `${data[foundIndex].label}: ${data[foundIndex].value} (${percent}%)`;
           tooltip.style.display = 'block';
-          tooltip.style.left = (e.clientX + 10) + 'px';
-          tooltip.style.top = (e.clientY - 30) + 'px';
+          tooltip.style.left = (e.clientX + 5) + 'px';
+          tooltip.style.top = (e.clientY - 40) + 'px';
         } else {
           canvas.style.cursor = 'default';
           tooltip.style.display = 'none';

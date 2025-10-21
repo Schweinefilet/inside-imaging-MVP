@@ -1,0 +1,35 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#0d0d0d"/>
+  <text x="50" y="80" font-family="monospace" font-size="14" fill="#8a8f95">RADIOLOGY REPORT</text>
+  <text x="50" y="110" font-family="monospace" font-size="12" fill="#f2f6f4">Patient: John Doe | DOB: 01/15/1980 | MRN: 12345678</text>
+  <text x="50" y="140" font-family="monospace" font-size="12" fill="#f2f6f4">Study Date: 10/15/2024 | Modality: CT Chest</text>
+  
+  <rect x="50" y="160" width="700" height="1" fill="#1c1c1c"/>
+  
+  <text x="50" y="200" font-family="monospace" font-size="13" fill="#3ee6b0" font-weight="bold">INDICATION:</text>
+  <text x="50" y="220" font-family="monospace" font-size="11" fill="#f2f6f4">72-year-old male with dyspnea and productive cough.</text>
+  <text x="50" y="235" font-family="monospace" font-size="11" fill="#f2f6f4">Clinical concern for infectious or neoplastic process.</text>
+  
+  <text x="50" y="270" font-family="monospace" font-size="13" fill="#3ee6b0" font-weight="bold">TECHNIQUE:</text>
+  <text x="50" y="290" font-family="monospace" font-size="11" fill="#f2f6f4">Multidetector CT of the chest performed without IV contrast</text>
+  <text x="50" y="305" font-family="monospace" font-size="11" fill="#f2f6f4">enhancement. 5mm axial slices reconstructed in coronal and</text>
+  <text x="50" y="320" font-family="monospace" font-size="11" fill="#f2f6f4">sagittal planes.</text>
+  
+  <text x="50" y="355" font-family="monospace" font-size="13" fill="#3ee6b0" font-weight="bold">FINDINGS:</text>
+  <text x="50" y="375" font-family="monospace" font-size="11" fill="#f2f6f4">Lungs: Bilateral lower lobe consolidation with air</text>
+  <text x="50" y="390" font-family="monospace" font-size="11" fill="#f2f6f4">bronchograms. Ground-glass opacities noted in the right</text>
+  <text x="50" y="405" font-family="monospace" font-size="11" fill="#f2f6f4">middle lobe. No pleural effusion or pneumothorax.</text>
+  
+  <text x="50" y="425" font-family="monospace" font-size="11" fill="#f2f6f4">Mediastinum: No lymphadenopathy. Heart size normal.</text>
+  <text x="50" y="440" font-family="monospace" font-size="11" fill="#f2f6f4">Calcified granulomas in bilateral hilar regions.</text>
+  
+  <text x="50" y="475" font-family="monospace" font-size="13" fill="#3ee6b0" font-weight="bold">IMPRESSION:</text>
+  <text x="50" y="495" font-family="monospace" font-size="11" fill="#ff6b6b">1. Multifocal pneumonia with bilateral lower lobe</text>
+  <text x="50" y="510" font-family="monospace" font-size="11" fill="#ff6b6b">   consolidation and right middle lobe involvement.</text>
+  <text x="50" y="525" font-family="monospace" font-size="11" fill="#f2f6f4">2. Calcified granulomas suggesting prior granulomatous</text>
+  <text x="50" y="540" font-family="monospace" font-size="11" fill="#f2f6f4">   infection (e.g., tuberculosis, histoplasmosis).</text>
+  
+  <rect x="680" y="20" width="100" height="30" fill="#ff6b6b" opacity="0.2"/>
+  <text x="685" y="38" font-family="sans-serif" font-size="11" fill="#ff6b6b" font-weight="bold">COMPLEX</text>
+  <text x="685" y="50" font-family="sans-serif" font-size="9" fill="#ff6b6b">Medical Jargon</text>
+</svg>

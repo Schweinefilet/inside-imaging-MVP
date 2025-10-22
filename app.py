@@ -259,9 +259,12 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
     
     has_abnormality = abnormal_count > 0 and abnormal_count >= normal_count
     
-    # Organ detection
+    # Organ detection (order matters - more specific first)
     organ = None
-    if re.search(r'\b(brain|head|skull|cerebral|intracranial)\b', combined, re.I):
+    # Brain/head - but NOT "head of pancreas" or other anatomical heads
+    if re.search(r'\b(brain|skull|cerebral|intracranial|cranial)\b', combined, re.I):
+        organ = 'brain'
+    elif re.search(r'\bhead\b', combined, re.I) and not re.search(r'\bhead\s+of\s+(pancreas|femur)\b', combined, re.I):
         organ = 'brain'
     elif re.search(r'\b(lung|pulmonary|chest|thorax|bronch)\b', combined, re.I):
         organ = 'lung'
@@ -271,7 +274,7 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
         organ = 'kidney'
     elif re.search(r'\b(spine|spinal|cervical|lumbar|thoracic|vertebra)\b', combined, re.I):
         organ = 'spine'
-    elif re.search(r'\b(abdomen|abdominal|belly)\b', combined, re.I):
+    elif re.search(r'\b(abdomen|abdominal|belly|pancreas|pancreatic)\b', combined, re.I):
         organ = 'abdomen'
     elif re.search(r'\b(pelvis|pelvic)\b', combined, re.I):
         organ = 'pelvis'

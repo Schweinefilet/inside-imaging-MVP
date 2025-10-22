@@ -686,8 +686,11 @@
 
     /* Diagram highlight: SVG silhouette + clipped bands */
     var container = document.getElementById('diagram-container');
+    console.log('Body diagram - container:', container);
+    console.log('Body diagram - data-organ:', container ? container.dataset.organ : 'NO CONTAINER');
     function buildBodySVG(el){
-    el.innerHTML = `
+      console.log('buildBodySVG called with:', el);
+      el.innerHTML = `
     <svg class="body-svg" viewBox="0 0 200 500" role="img" aria-labelledby="bodyTitle">
       <title id="bodyTitle">Body region diagram</title>
 
@@ -731,12 +734,16 @@
   <use href="#h"/><use href="#t"/><use href="#la"/><use href="#ra"/><use href="#ll"/><use href="#rl"/>
       </g>
     </svg>`;
+      console.log('buildBodySVG - SVG inserted, innerHTML length:', el.innerHTML.length);
     }
 
     if(container){
+      console.log('Building body SVG...');
       buildBodySVG(container);
+      console.log('Body SVG built. Checking for SVG element:', container.querySelector('.body-svg'));
       // Robust region picker: supports "AP", "A/P", "CAP", full words, organs
       var text = (container.dataset.organ || '').toLowerCase();
+      console.log('Region detection text:', text);
       function hits(rx){ return (text.match(rx) || []).length; }
 
       var scores = {
@@ -769,6 +776,9 @@
           container.querySelector('.region-band.chest')?.classList.add('highlight');
         }
       }
+      console.log('Body diagram highlighting complete. Highlighted elements:', container.querySelectorAll('.region-band.highlight').length);
+    } else {
+      console.error('Body diagram container not found!');
     }
 
     /* Dynamic brain lesion positioning */

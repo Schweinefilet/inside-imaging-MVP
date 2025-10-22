@@ -784,8 +784,8 @@
 
     /* Dynamic brain lesion positioning */
     function parseBrainLesion() {
-      var conclusion = {{ structured.conclusion|default("", true)|tojson }}.toLowerCase().replace(/<[^>]+>/g, ' ');
-      var findings = {{ structured.findings|default("", true)|tojson }}.toLowerCase().replace(/<[^>]+>/g, ' ');
+      var conclusion = ({{ structured.conclusion|default("", true)|tojson }} || "").toLowerCase().replace(/<[^>]+>/g, ' ');
+      var findings = ({{ structured.findings|default("", true)|tojson }} || "").toLowerCase().replace(/<[^>]+>/g, ' ');
       var combinedText = conclusion + ' ' + findings;
       
       // Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]

@@ -74,6 +74,25 @@ def init_db() -> None:
         )
         """
     )
+    # Table for feedback/corrections from radiologists
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            feedback_type TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            original_text TEXT,
+            corrected_text TEXT,
+            description TEXT,
+            status TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            reviewed_at TIMESTAMP,
+            reviewed_by TEXT,
+            admin_notes TEXT
+        )
+        """
+    )
     conn.commit()
     conn.close()
 
@@ -450,3 +469,118 @@ def create_user(username: str, password_hash: str) -> None:
     )
     conn.commit()
     conn.close()
+
+
+def submit_feedback(username: str, feedback_type: str, subject: str, original: str = "", corrected: str = "", description: str = "") -> int:
+    """Submit a new feedback/correction entry."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO feedback (username, feedback_type, subject, original_text, corrected_text, description, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'pending')
+        """,
+        (username, feedback_type, subject, original, corrected, description),
+    )
+    conn.commit()
+    feedback_id = cur.lastrowid
+    conn.close()
+    return int(feedback_id)
+
+
+def get_all_feedback(status: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Retrieve all feedback submissions, optionally filtered by status."""
+    conn = get_connection()
+    cur = conn.cursor()
+    if status:
+        cur.execute(
+            """
+            SELECT id, username, feedback_type, subject, original_text, corrected_text, 
+                   description, status, created_at, reviewed_at, reviewed_by, admin_notes
+            FROM feedback
+            WHERE status = ?
+            ORDER BY created_at DESC
+            """,
+            (status,),
+        )
+    else:
+        cur.execute(
+            """
+            SELECT id, username, feedback_type, subject, original_text, corrected_text, 
+                   description, status, created_at, reviewed_at, reviewed_by, admin_notes
+            FROM feedback
+            ORDER BY created_at DESC
+            """
+        )
+    rows = cur.fetchall()
+    conn.close()
+    
+    feedback_list = []
+    for row in rows:
+        feedback_list.append({
+            "id": row[0],
+            "username": row[1],
+            "feedback_type": row[2],
+            "subject": row[3],
+            "original_text": row[4] or "",
+            "corrected_text": row[5] or "",
+            "description": row[6] or "",
+            "status": row[7],
+            "created_at": _format_timestamp(row[8]),
+            "reviewed_at": _format_timestamp(row[9]),
+            "reviewed_by": row[10] or "",
+            "admin_notes": row[11] or "",
+        })
+    return feedback_list
+
+
+def update_feedback_status(feedback_id: int, status: str, reviewed_by: str, admin_notes: str = "") -> None:
+    """Update the status of a feedback submission."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        UPDATE feedback
+        SET status = ?, reviewed_at = CURRENT_TIMESTAMP, reviewed_by = ?, admin_notes = ?
+        WHERE id = ?
+        """,
+        (status, reviewed_by, admin_notes, feedback_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_user_feedback(username: str) -> List[Dict[str, Any]]:
+    """Retrieve all feedback submissions from a specific user."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, username, feedback_type, subject, original_text, corrected_text, 
+               description, status, created_at, reviewed_at, reviewed_by, admin_notes
+        FROM feedback
+        WHERE username = ?
+        ORDER BY created_at DESC
+        """,
+        (username,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    
+    feedback_list = []
+    for row in rows:
+        feedback_list.append({
+            "id": row[0],
+            "username": row[1],
+            "feedback_type": row[2],
+            "subject": row[3],
+            "original_text": row[4] or "",
+            "corrected_text": row[5] or "",
+            "description": row[6] or "",
+            "status": row[7],
+            "created_at": _format_timestamp(row[8]),
+            "reviewed_at": _format_timestamp(row[9]),
+            "reviewed_by": row[10] or "",
+            "admin_notes": row[11] or "",
+        })
+    return feedback_list

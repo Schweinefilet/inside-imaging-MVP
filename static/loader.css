@@ -59,7 +59,7 @@
 	stroke-dashoffset: 280;
 	transform-origin: center;
 	animation: loader-dash 1.5s ease-in-out infinite;
-	filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5));
+	filter: drop-shadow(0 0 12px var(--mint)) drop-shadow(0 0 24px rgba(34, 197, 94, 0.6));
 }
 
 .loader-text {

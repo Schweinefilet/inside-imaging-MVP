@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Inside Imaging</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
   
   <!-- Pre-paint: prevent flash on load -->
   <script>
@@ -122,13 +124,13 @@
             <div class="compare-container-compact" data-mode="drag">
               <div class="compare-wrapper-compact">
                 <img 
-                  src="{{ url_for('static', filename='before-report.png') }}" 
-                  alt="Complex medical report before translation" 
+                  src="{{ url_for('static', filename='after-report.png') }}" 
+                  alt="Simplified patient-friendly report after translation" 
                   class="compare-image first"
                 />
                 <img 
-                  src="{{ url_for('static', filename='after-report.png') }}" 
-                  alt="Simplified patient-friendly report after translation" 
+                  src="{{ url_for('static', filename='before-report.png') }}" 
+                  alt="Complex medical report before translation" 
                   class="compare-image second"
                 />
                 <div class="compare-slider">

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <title>Profile & Settings - Inside Imaging</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
     
     <!-- Pre-paint: prevent flash on load -->
     <script>
@@ -75,6 +77,9 @@
                 <div style="margin: 1rem 0;">
                     <p><strong>Username:</strong> {{ session.get('username') }}</p>
                     <p><strong>Member since:</strong> 2025</p>
+                    {% if is_admin %}
+                    <p style="margin-top: 1rem;"><span style="background: var(--mint); color: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem;">ADMIN</span></p>
+                    {% endif %}
                 </div>
                 {% else %}
                 <p>Please <a href="{{ url_for('login') }}" style="color: var(--mint);">log in</a> to view your profile.</p>
@@ -96,6 +101,108 @@
                 </div>
             </section>
         </div>
+
+        {% if session.get('username') %}
+        <!-- Feedback Submission Section -->
+        <div class="dashboard-grid" style="margin-top: 2rem;">
+            <section class="upload-section" style="grid-column: span 2;">
+                <h2>Submit Feedback or Correction</h2>
+                <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1.5rem;">
+                    Help us improve! Report errors, suggest improvements, or submit corrections to medical translations.
+                </p>
+                
+                <form method="POST" action="{{ url_for('submit_feedback') }}" style="max-width: 600px;">
+                    <div style="margin-bottom: 1rem;">
+                        <label for="feedback_type" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Feedback Type</label>
+                        <select name="feedback_type" id="feedback_type" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text);">
+                            <option value="">-- Select Type --</option>
+                            <option value="translation_error">Translation Error</option>
+                            <option value="medical_term">Medical Term Definition</option>
+                            <option value="ui_bug">UI Bug</option>
+                            <option value="feature_request">Feature Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label for="subject" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Subject</label>
+                        <input type="text" name="subject" id="subject" required placeholder="Brief description" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text);">
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label for="original_text" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Original Text (if applicable)</label>
+                        <textarea name="original_text" id="original_text" rows="3" placeholder="Copy the incorrect text here" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label for="corrected_text" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Corrected Text (if applicable)</label>
+                        <textarea name="corrected_text" id="corrected_text" rows="3" placeholder="Provide the correct version" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Additional Details</label>
+                        <textarea name="description" id="description" rows="4" placeholder="Explain the issue or suggestion in detail" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); resize: vertical;"></textarea>
+                    </div>
+
+                    <button type="submit" style="background: var(--mint); color: var(--bg); padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Submit Feedback
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- User's Feedback History -->
+        {% if feedback_list %}
+        <div class="dashboard-grid" style="margin-top: 2rem;">
+            <section class="reports-section" style="grid-column: span 2;">
+                <h2>Your Feedback Submissions</h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border);">
+                                <th style="text-align: left; padding: 0.75rem; font-weight: 600;">Type</th>
+                                <th style="text-align: left; padding: 0.75rem; font-weight: 600;">Subject</th>
+                                <th style="text-align: left; padding: 0.75rem; font-weight: 600;">Status</th>
+                                <th style="text-align: left; padding: 0.75rem; font-weight: 600;">Submitted</th>
+                                <th style="text-align: left; padding: 0.75rem; font-weight: 600;">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in feedback_list %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.75rem;">{{ feedback.feedback_type.replace('_', ' ').title() }}</td>
+                                <td style="padding: 0.75rem;">{{ feedback.subject }}</td>
+                                <td style="padding: 0.75rem;">
+                                    <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;
+                                        {% if feedback.status == 'approved' %}background: #22c55e; color: #000;
+                                        {% elif feedback.status == 'implemented' %}background: #3b82f6; color: #fff;
+                                        {% elif feedback.status == 'rejected' %}background: #ef4444; color: #fff;
+                                        {% else %}background: var(--muted); color: var(--bg);{% endif %}">
+                                        {{ feedback.status.upper() }}
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; font-size: 0.9rem;">{{ feedback.created_at }}</td>
+                                <td style="padding: 0.75rem; font-size: 0.9rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {{ feedback.admin_notes or '—' }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        {% endif %}
+
+        <!-- Admin Panel Link -->
+        {% if is_admin %}
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{{ url_for('feedback_admin') }}" style="background: var(--mint); color: var(--bg); padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block;">
+                📋 Review All Feedback (Admin)
+            </a>
+        </div>
+        {% endif %}
+        {% endif %}
     </main>
 
     {% include '_footer.html' %}

@@ -627,34 +627,44 @@ Hakikisha KILA neno ni Kiswahili."""
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
 Audience: educated adult who is not a medical professional. Use clear, conversational language. Avoid patronizing tone.
 
-reason: Explain WHY the scan was ordered in 2-3 sentences. Connect to the patient's symptoms/clinical history. Be specific and empathetic.
-Example: "This MRI scan was ordered to investigate lower back pain that the patient has been experiencing. The goal was to examine the lumbar spine and identify any structural issues causing discomfort."
+CRITICAL: Extract information from the ACTUAL report provided - DO NOT copy these examples. These are templates showing the style only:
 
-technique: Explain HOW the scan was performed in 4-6 sentences. Use analogies where helpful but don't oversimplify. Include:
-- What imaging technology was used (MRI, CT, X-ray, etc.) and what makes it special
-- Which body region was examined and from what angles
-- Whether contrast was used and why it matters
+reason: Explain WHY the scan was ordered in 2-3 sentences. Extract from the "Clinical History", "Indication", or "Reason" section of the report. Connect to the patient's actual symptoms/clinical history mentioned in THIS specific report. Be specific and empathetic.
+Example STYLE (adapt to actual report): "This MRI scan was ordered to investigate lower back pain that the patient has been experiencing. The goal was to examine the lumbar spine and identify any structural issues causing discomfort."
+
+technique: Explain HOW the scan was performed in 4-6 sentences. Extract from the "Technique", "Procedure", or technical details section. Use analogies where helpful but don't oversimplify. Include:
+- What imaging technology was ACTUALLY used according to the report (MRI, CT, X-ray, ultrasound, etc.) and what makes it special
+- Which body region was ACTUALLY examined according to the report
+- Whether contrast was ACTUALLY used according to the report
 - What the technology can reveal that physical examination cannot
-Example: "An MRI (Magnetic Resonance Imaging) scan of the lumbar spine was performed using a 0.35 Tesla magnet. This technology uses powerful magnetic fields and radio waves to create detailed cross-sectional images of soft tissues, discs, and nerves. The imaging captured the spine from multiple angles—top-down (axial), side-to-side (sagittal), and front-to-back (coronal)—to build a complete 3D picture. No contrast dye was needed because the natural differences in tissue density provided clear images. This type of scan is especially good at showing disc problems, nerve compression, and spinal canal narrowing that wouldn't be visible on a regular X-ray."
+Example STYLE (adapt to actual report): "An MRI (Magnetic Resonance Imaging) scan of the lumbar spine was performed using a 0.35 Tesla magnet. This technology uses powerful magnetic fields and radio waves to create detailed cross-sectional images of soft tissues, discs, and nerves. The imaging captured the spine from multiple angles—top-down (axial), side-to-side (sagittal), and front-to-back (coronal)—to build a complete 3D picture. No contrast dye was needed because the natural differences in tissue density provided clear images. This type of scan is especially good at showing disc problems, nerve compression, and spinal canal narrowing that wouldn't be visible on a regular X-ray."
 
-findings: Present 3-5 key findings in clear bullet points. Start with NORMAL findings to provide context, then address abnormalities. Use plain language but keep anatomical precision.
-Example format:
+findings: Present 3-5 key findings from the ACTUAL report in clear bullet points. Start with NORMAL findings to provide context, then address abnormalities. Use plain language but keep anatomical precision from the actual report.
+Example STYLE format (use actual findings from the report):
 - "Most of the spine looks healthy: vertebrae are properly aligned, no fractures, and the spinal cord appears normal."
 - "L1/2 and L2/3 levels: Discs show mild wear but no bulging or herniation."
 - "L4/5 level: The disc is bulging backward, narrowing the spaces where nerves exit on both sides. This is pressing on nerve roots, more so on the right than left."
 
-conclusion: Summarize the 1-2 most important findings in plain language. Frame in terms of what it means for the patient's symptoms.
-Example: "The main finding is a bulging disc at the L4/5 level that is compressing nerve roots on both sides (more on the right). This likely explains the lower back pain and may be causing radiating pain or numbness down the legs."
+conclusion: Summarize the 1-2 most important findings from the ACTUAL "Conclusion" or "Impression" section in plain language. Frame in terms of what it means for the patient's symptoms.
+Example STYLE (adapt to actual report): "The main finding is a bulging disc at the L4/5 level that is compressing nerve roots on both sides (more on the right). This likely explains the lower back pain and may be causing radiating pain or numbness down the legs."
 
-concern: One clear sentence about next steps. Avoid alarming language but be honest.
-Example: "These findings should be discussed with your doctor to determine whether physical therapy, medication, or other treatments are appropriate."
+concern: One clear sentence about next steps appropriate for the ACTUAL findings. Avoid alarming language but be honest.
+Example STYLE (adapt to actual report): "These findings should be discussed with your doctor to determine whether physical therapy, medication, or other treatments are appropriate."
 
 CRITICAL RULES:
+- Extract ALL information from the ACTUAL report provided below - DO NOT use example text
+- Read the "Clinical History" or "Indication" section for the reason - extract the ACTUAL condition/symptoms mentioned
+- Read the "Procedure"/"Technique" section for how the scan was done - extract ACTUAL details (MRI vs CT, which body part, Tesla strength, contrast usage, etc.)
+- Read the "Findings" section for what was discovered - extract ACTUAL anatomical findings
+- Read the "Conclusion"/"Impression" for the summary - extract ACTUAL diagnostic conclusions
 - KEEP ALL NUMBERS exactly as stated: "5.4 x 5.6 x 6.7 cm" stays "5.4 x 5.6 x 6.7 cm"
 - Use medical terms when necessary but ALWAYS explain them in the same sentence
 - Write for an intelligent adult, not a child
 - Be empathetic but factual—avoid false reassurance or unnecessary alarm
-- If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in."""
+- If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in.
+
+REMEMBER: The examples above show STYLE and FORMAT only. You MUST extract content from the ACTUAL report text provided below."""
+
 
     # 1) Try Chat Completions JSON mode when supported.
     chat_model = env_model if _supports_chat_completions(env_model) else chat_fallback

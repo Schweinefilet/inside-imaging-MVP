@@ -610,7 +610,116 @@ def help_page():
 
 @app.route("/profile")
 def profile():
-    return render_template("profile.html")
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    
+    # Get user's feedback submissions
+    user_feedback = db.get_user_feedback(username)
+    
+    # Check if user is admin (for now, hardcoded check - you can enhance this)
+    is_admin = username in ["admin", "radiologist"]
+    
+    return render_template("profile.html", feedback_list=user_feedback, is_admin=is_admin)
+
+
+@app.route("/submit-feedback", methods=["POST"])
+def submit_feedback():
+    """Handle feedback submission from radiologists/users"""
+    username = session.get("username")
+    if not username:
+        flash("Please log in to submit feedback.", "error")
+        return redirect(url_for("login"))
+    
+    try:
+        feedback_type = request.form.get("feedback_type", "").strip()
+        subject = request.form.get("subject", "").strip()
+        original_text = request.form.get("original_text", "").strip()
+        corrected_text = request.form.get("corrected_text", "").strip()
+        description = request.form.get("description", "").strip()
+        
+        if not feedback_type or not subject:
+            flash("Please provide feedback type and subject.", "error")
+            return redirect(url_for("profile"))
+        
+        feedback_id = db.submit_feedback(
+            username=username,
+            feedback_type=feedback_type,
+            subject=subject,
+            original=original_text,
+            corrected=corrected_text,
+            description=description
+        )
+        
+        logging.info("Feedback #%d submitted by %s: %s - %s", feedback_id, username, feedback_type, subject)
+        flash("Thank you! Your feedback has been submitted successfully.", "success")
+        
+    except Exception as e:
+        logging.exception("Failed to submit feedback")
+        flash("Sorry, there was an error submitting your feedback. Please try again.", "error")
+    
+    return redirect(url_for("profile"))
+
+
+@app.route("/feedback-admin")
+def feedback_admin():
+    """Admin view to review all feedback submissions"""
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    
+    # Check if user is admin
+    is_admin = username in ["admin", "radiologist"]
+    if not is_admin:
+        flash("Access denied. Admin privileges required.", "error")
+        return redirect(url_for("profile"))
+    
+    # Get filter status from query params
+    status_filter = request.args.get("status", "pending")
+    if status_filter == "all":
+        all_feedback = db.get_all_feedback()
+    else:
+        all_feedback = db.get_all_feedback(status=status_filter)
+    
+    return render_template("feedback_admin.html", feedback_list=all_feedback, status_filter=status_filter)
+
+
+@app.route("/review-feedback/<int:feedback_id>", methods=["POST"])
+def review_feedback(feedback_id):
+    """Admin action to approve/reject feedback"""
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    
+    # Check if user is admin
+    is_admin = username in ["admin", "radiologist"]
+    if not is_admin:
+        flash("Access denied. Admin privileges required.", "error")
+        return redirect(url_for("feedback_admin"))
+    
+    try:
+        status = request.form.get("status", "").strip()
+        admin_notes = request.form.get("admin_notes", "").strip()
+        
+        if status not in ["approved", "rejected", "implemented"]:
+            flash("Invalid status.", "error")
+            return redirect(url_for("feedback_admin"))
+        
+        db.update_feedback_status(
+            feedback_id=feedback_id,
+            status=status,
+            reviewed_by=username,
+            admin_notes=admin_notes
+        )
+        
+        logging.info("Feedback #%d reviewed by %s: %s", feedback_id, username, status)
+        flash(f"Feedback #{feedback_id} marked as {status}.", "success")
+        
+    except Exception as e:
+        logging.exception("Failed to review feedback")
+        flash("Sorry, there was an error processing your request.", "error")
+    
+    return redirect(url_for("feedback_admin"))
 
 
 @app.route("/contact-support", methods=["POST"])

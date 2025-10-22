@@ -101,6 +101,19 @@ button:active {
   transform: translateY(1px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
+
+/* Light mode button fix */
+.light button {
+  background: var(--mint);
+  color: #000000;
+  font-weight: 700;
+  border: 1px solid color-mix(in oklab, var(--mint) 50%, #000000);
+}
+.light button:hover {
+  background: color-mix(in oklab, var(--mint) 75%, #000000);
+  box-shadow: 0 14px 34px rgba(34, 197, 94, 0.4);
+}
+
 input[type="file"] {
   display: block;
   width: 100%;
@@ -262,6 +275,14 @@ a:hover { text-decoration: underline; }
   height:66px;
   width:auto;
 }
+
+/* Fix logo visibility in light mode */
+.light .logo,
+.light .navbar-brand .logo,
+.light .navbar-brand img {
+  filter: brightness(0.15) saturate(1.2);
+}
+
 .brand{ font-size:1.5rem; font-weight:700; color:var(--text); }
 .nav a{
   color:var(--mint);

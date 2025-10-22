@@ -639,14 +639,27 @@ technique: Explain HOW the scan was performed in 4-6 sentences. Extract from the
 - What the technology can reveal that physical examination cannot
 Example STYLE (adapt to actual report): "An MRI (Magnetic Resonance Imaging) scan of the lumbar spine was performed using a 0.35 Tesla magnet. This technology uses powerful magnetic fields and radio waves to create detailed cross-sectional images of soft tissues, discs, and nerves. The imaging captured the spine from multiple angles—top-down (axial), side-to-side (sagittal), and front-to-back (coronal)—to build a complete 3D picture. No contrast dye was needed because the natural differences in tissue density provided clear images. This type of scan is especially good at showing disc problems, nerve compression, and spinal canal narrowing that wouldn't be visible on a regular X-ray."
 
-findings: Present 3-5 key findings from the ACTUAL report in clear bullet points. Start with NORMAL findings to provide context, then address abnormalities. Use plain language but keep anatomical precision from the actual report.
+findings: Present 3-5 key findings from the ACTUAL report in clear bullet points. Start with NORMAL findings to provide context, then address abnormalities. Translate complex medical language into simple, clear sentences. Each bullet should be ONE complete sentence.
+CRITICAL for findings:
+- Simplify complex medical jargon: "hypo-attenuating mass lesion" → "a darker area that appears to be a mass"
+- Remove redundant phrases: "noted in the head the patient the pancreas" → "in the head of the pancreas"
+- Each bullet point should be clear and standalone - avoid fragments
+- Start with normal/reassuring findings, then abnormalities
+- Use measurements exactly as stated but explain what they mean
 Example STYLE format (use actual findings from the report):
-- "Most of the spine looks healthy: vertebrae are properly aligned, no fractures, and the spinal cord appears normal."
-- "L1/2 and L2/3 levels: Discs show mild wear but no bulging or herniation."
-- "L4/5 level: The disc is bulging backward, narrowing the spaces where nerves exit on both sides. This is pressing on nerve roots, more so on the right than left."
+- "Most of the surrounding organs look healthy: the liver, spleen, and kidneys all appear normal."
+- "The pancreas shows a mass measuring 4.1 x 5.3 centimeters in the head region (the right side of the pancreas)."
+- "The pancreatic duct (drainage tube) is widened to 5.8 millimeters, which suggests blockage downstream."
+- "Bile ducts inside and outside the liver are dilated (swollen), indicating that bile flow is being blocked."
 
-conclusion: Summarize the 1-2 most important findings from the ACTUAL "Conclusion" or "Impression" section in plain language. Frame in terms of what it means for the patient's symptoms.
-Example STYLE (adapt to actual report): "The main finding is a bulging disc at the L4/5 level that is compressing nerve roots on both sides (more on the right). This likely explains the lower back pain and may be causing radiating pain or numbness down the legs."
+conclusion: Summarize the 1-2 most important findings from the ACTUAL "Conclusion" or "Impression" section in 2-4 clear, simple sentences. Avoid medical jargon. Explain what the findings mean in practical terms.
+CRITICAL for conclusion:
+- Rewrite ALL medical terms in plain language
+- Remove garbled phrases like "the patient the" - simplify grammar
+- Focus on what matters most to understanding the condition
+- Connect findings to likely symptoms or concerns
+- Keep sentences short and direct
+Example STYLE (adapt to actual report): "The scan shows a mass in the head of the pancreas measuring about 4 centimeters. This mass is blocking both the pancreatic duct (which drains digestive enzymes) and the bile ducts (which drain bile from the liver). The blockage is causing bile ducts to swell throughout the liver. These findings suggest a pancreatic tumor that needs urgent medical attention."
 
 concern: One clear sentence about next steps appropriate for the ACTUAL findings. Avoid alarming language but be honest.
 Example STYLE (adapt to actual report): "These findings should be discussed with your doctor to determine whether physical therapy, medication, or other treatments are appropriate."
@@ -657,8 +670,11 @@ CRITICAL RULES:
 - Read the "Procedure"/"Technique" section for how the scan was done - extract ACTUAL details (MRI vs CT, which body part, Tesla strength, contrast usage, etc.)
 - Read the "Findings" section for what was discovered - extract ACTUAL anatomical findings
 - Read the "Conclusion"/"Impression" for the summary - extract ACTUAL diagnostic conclusions
+- SIMPLIFY all medical jargon: "hypo-attenuating" → "darker area", "lesion" → "abnormal area or mass", "upstream dilatation" → "swelling upstream"
+- FIX grammatical errors: remove garbled phrases like "the patient the" or "noted mass effect on" - rewrite in clear English
+- NO fragments or incomplete sentences - every sentence must be complete and understandable
 - KEEP ALL NUMBERS exactly as stated: "5.4 x 5.6 x 6.7 cm" stays "5.4 x 5.6 x 6.7 cm"
-- Use medical terms when necessary but ALWAYS explain them in the same sentence
+- Use medical terms when necessary but ALWAYS explain them in parentheses the same sentence
 - Write for an intelligent adult, not a child
 - Be empathetic but factual—avoid false reassurance or unnecessary alarm
 - If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in.

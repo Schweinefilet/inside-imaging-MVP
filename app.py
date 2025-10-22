@@ -213,9 +213,10 @@ def _parse_brain_lesion(structured: dict) -> dict:
             best_match = loc
             best_length = len(loc)
     
+    default_coords = [145, 95, 135, 90, 155, 85]
     return {
         'location': best_match or 'right frontoparietal',
-        'coords': location_map.get(best_match, [145, 95, 135, 90, 155, 85]),
+        'coords': location_map.get(best_match) if best_match else default_coords,
         'size': int(avg_size),
         'found': best_match is not None
     }
@@ -347,22 +348,54 @@ def upload():
 
     logging.info("len(extracted)=%s", len(extracted or ""))
 
-    # Validate that this looks like a radiology report
+    # Validate that this looks like a radiology report - STRICT CHECK
     extracted_lower = (extracted or "").lower()
+    
+    # Count radiology keywords
     radiology_keywords = [
         "radiology", "radiologist", "imaging", "scan", "ct", "mri", "x-ray", "xray",
         "ultrasound", "pet", "findings", "impression", "technique", "contrast",
         "examination", "study", "patient", "indication", "conclusion", "comparison"
     ]
-    has_radiology_content = any(keyword in extracted_lower for keyword in radiology_keywords)
+    keyword_count = sum(1 for keyword in radiology_keywords if keyword in extracted_lower)
     
-    # Check minimum length and content
-    if not extracted or len(extracted.strip()) < 100:
-        flash("The uploaded file appears to be too short or empty. Please upload a valid radiology report.", "error")
-        return redirect(url_for("index"))
+    # Count medical imaging terms
+    imaging_terms = [
+        "axial", "sagittal", "coronal", "slice", "series", "acquisition",
+        "enhancement", "attenuation", "signal", "density", "opacity",
+        "artifact", "protocol", "field of view", "fov", "kvp", "mas",
+        "te", "tr", "weighted", "sequence"
+    ]
+    imaging_term_count = sum(1 for term in imaging_terms if term in extracted_lower)
     
-    if not has_radiology_content:
-        flash("The uploaded file doesn't appear to be a radiology report. Please ensure you're uploading a medical imaging report.", "error")
+    # Count anatomy terms
+    anatomy_terms = [
+        "brain", "lung", "liver", "kidney", "heart", "spine", "abdomen",
+        "pelvis", "chest", "thorax", "head", "skull", "bone", "soft tissue",
+        "vessel", "artery", "vein", "organ", "lesion", "mass", "nodule"
+    ]
+    anatomy_count = sum(1 for term in anatomy_terms if term in extracted_lower)
+    
+    # Minimum length check
+    word_count = len(extracted.split())
+    
+    # STRICT validation rules
+    is_valid_report = (
+        word_count >= 100 and  # At least 100 words
+        keyword_count >= 3 and  # At least 3 radiology keywords
+        (imaging_term_count >= 2 or anatomy_count >= 2)  # At least 2 imaging or anatomy terms
+    )
+    
+    if not is_valid_report:
+        flash(
+            "The uploaded file doesn't appear to be a valid radiology report. "
+            "Please ensure you're uploading a complete medical imaging report with proper technical details.",
+            "error"
+        )
+        logging.warning(
+            "Upload rejected: words=%d, keywords=%d, imaging=%d, anatomy=%d",
+            word_count, keyword_count, imaging_term_count, anatomy_count
+        )
         return redirect(url_for("index"))
 
     # Build structured summary

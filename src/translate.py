@@ -96,11 +96,16 @@ NEG_PHRASES = [r"mass\s+effect", r"subfalcine\s+herniation", r"midline\s+shift",
 NEG_DEFS: Dict[str, str] = {
     "mass":"an abnormal lump that can press on tissue","tumor":"a growth that forms a lump","cancer":"a harmful growth that can spread",
     "lesion":"an abnormal spot or area","adenopathy":"swollen lymph nodes","enlarged":"bigger than normal","necrotic":"dead tissue",
-    "metastasis":"spread to other areas","obstruction":"a blockage","compression":"being pressed by something","invasion":"growing into nearby tissues",
-    "perforation":"a hole or tear","ischemia":"low blood flow","fracture":"a broken bone","bleed":"bleeding","herniation":"disc material pushed out",
-    "edema":"swelling","atrophy":"shrinking of tissue","stenosis":"narrowing","anomaly":"difference from typical anatomy",
+    "metastasis":"spread to other areas","obstruction":"a blockage","compression":"being pressed or squeezed by something","invasion":"growing into nearby tissues",
+    "perforation":"a hole or tear","ischemia":"low blood flow","fracture":"a broken bone","bleed":"bleeding","herniation":"disc material pushed out of place",
+    "edema":"swelling with fluid buildup","atrophy":"shrinking or wasting of tissue","stenosis":"narrowing of a passage or canal","anomaly":"difference from typical anatomy",
     "mass effect":"pressure on brain structures","subfalcine herniation":"brain shifted under the central fold","midline shift":"brain pushed off center",
     "perilesional edema":"swelling around the lesion",
+    # spine-specific
+    "disc bulge":"disc cushion pushed out beyond normal boundaries","nerve root":"nerve branch exiting the spinal cord",
+    "foraminal narrowing":"smaller space where nerve exits the spine","spinal canal":"tunnel that protects the spinal cord",
+    "bilateral":"on both sides","unilateral":"on one side only","posterior":"toward the back","anterior":"toward the front",
+    "degenerative":"wear and tear from aging or use","vertebra":"individual spine bone","intervertebral":"between spine bones",
 }
 
 # ---------- plain-language rewrites ----------
@@ -143,11 +148,28 @@ _TERM_DEFS = [
     {"pat": r"\bventricle[s]?\b", "def": "fluid spaces inside the brain"},
     # spine
     {"pat": r"\bhypolordosis\b", "def": "reduced normal inward curve of the neck"},
-    {"pat": r"\bdisc\s+herniation\b", "def": "disc material pushed out"},
-    {"pat": r"\bforamina?\b", "def": "openings where nerves exit"},
-    {"pat": r"\bspondylosis\b", "def": "spine wear and tear"},
-    {"pat": r"\bosteophyte\b", "def": "bone spur"},
+    {"pat": r"\bdisc\s+bulge\b", "def": "disc cushion pushed outward beyond normal boundaries"},
+    {"pat": r"\bdisc\s+herniation\b", "def": "disc material pushed out of its normal position"},
+    {"pat": r"\bforamina?\b", "def": "openings where nerves exit the spinal canal"},
+    {"pat": r"\bforaminal\s+narrowing\b", "def": "smaller space where nerve exits, potentially pinching the nerve"},
+    {"pat": r"\bnerve\s+root\s+compression\b", "def": "nerve branch being squeezed as it exits the spine"},
+    {"pat": r"\bspinal\s+canal\s+stenosis\b", "def": "narrowing of the tunnel that protects the spinal cord"},
+    {"pat": r"\bspondylosis\b", "def": "spine wear and tear from aging"},
+    {"pat": r"\bosteophyte\b", "def": "bone spur - extra bone growth"},
     {"pat": r"\bcalvarium\b", "def": "skull bones over the brain"},
+    {"pat": r"\bvertebral\s+body\b", "def": "main cylindrical part of a spine bone"},
+    {"pat": r"\bintervertebral\s+disc\b", "def": "cushion between spine bones"},
+    {"pat": r"\bdegenerative\s+change", "def": "wear and tear from normal aging"},
+    {"pat": r"\bposterior\b", "def": "toward the back"},
+    {"pat": r"\banterior\b", "def": "toward the front"},
+    {"pat": r"\bbilateral\b", "def": "on both sides"},
+    {"pat": r"\bunilateral\b", "def": "on one side only"},
+    {"pat": r"\blumbar\b", "def": "lower back region"},
+    {"pat": r"\bcervical\b", "def": "neck region"},
+    {"pat": r"\bthoracic\b", "def": "mid-back region"},
+    {"pat": r"\bconus\s+medullaris\b", "def": "tapered end of the spinal cord"},
+    {"pat": r"\bligamentum\s+flavum\b", "def": "elastic ligament connecting vertebrae"},
+    {"pat": r"\bfacet\s+joint\b", "def": "small joint between spine bones"},
     {"pat": r"\buvunjaji\b", "def": "fracture"},
     # commonly missing definitions
     {"pat": r"\bhydroureteronephrosis\b", "def": "swelling of kidney and ureter from blocked urine"},
@@ -603,21 +625,36 @@ Hakikisha KILA neno ni Kiswahili."""
     else:
         instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
-Audience is a 10-year-old. Use VERY simple, SHORT sentences (5-8 words each). Use everyday words a child would know.
+Audience: educated adult who is not a medical professional. Use clear, conversational language. Avoid patronizing tone.
 
-reason: Explain WHY the scan was ordered (1-2 VERY SHORT sentences). Include the patient's symptoms or medical concern in simple terms. Example: "The scan was ordered because the patient had headaches and dizziness for 2 weeks."
+reason: Explain WHY the scan was ordered in 2-3 sentences. Connect to the patient's symptoms/clinical history. Be specific and empathetic.
+Example: "This MRI scan was ordered to investigate lower back pain that the patient has been experiencing. The goal was to examine the lumbar spine and identify any structural issues causing discomfort."
 
-technique: Explain HOW the scan was done (3-5 sentences) in plain language. Include:
-- What type of scan (MRI, CT, X-ray, Ultrasound)
-- What body part was scanned
-- How the images were taken (explain 'axial' = cross-sectional slices like bread, 'coronal' = front-to-back slices, 'sagittal' = side-to-side slices)
-- Whether contrast dye was used and why ('with contrast' = special dye injected to see organs better, 'without contrast' = no dye needed)
-- What area was covered ('from skull base to vertex' = from bottom of head to top)
-Example: "An MRI scan of the brain was performed. Cross-sectional images were taken like slicing through bread. No contrast dye was injected. The entire head was scanned from bottom to top."
+technique: Explain HOW the scan was performed in 4-6 sentences. Use analogies where helpful but don't oversimplify. Include:
+- What imaging technology was used (MRI, CT, X-ray, etc.) and what makes it special
+- Which body region was examined and from what angles
+- Whether contrast was used and why it matters
+- What the technology can reveal that physical examination cannot
+Example: "An MRI (Magnetic Resonance Imaging) scan of the lumbar spine was performed using a 0.35 Tesla magnet. This technology uses powerful magnetic fields and radio waves to create detailed cross-sectional images of soft tissues, discs, and nerves. The imaging captured the spine from multiple angles—top-down (axial), side-to-side (sagittal), and front-to-back (coronal)—to build a complete 3D picture. No contrast dye was needed because the natural differences in tissue density provided clear images. This type of scan is especially good at showing disc problems, nerve compression, and spinal canal narrowing that wouldn't be visible on a regular X-ray."
 
-findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
-KEEP ALL NUMBERS exactly as stated in the original report - do NOT round or remove them. If the report says "5.4 x 5.6 x 6.7 cm", keep it exactly like that. Double-check ALL spelling. No medical names or jargon.
-If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in."""
+findings: Present 3-5 key findings in clear bullet points. Start with NORMAL findings to provide context, then address abnormalities. Use plain language but keep anatomical precision.
+Example format:
+- "Most of the spine looks healthy: vertebrae are properly aligned, no fractures, and the spinal cord appears normal."
+- "L1/2 and L2/3 levels: Discs show mild wear but no bulging or herniation."
+- "L4/5 level: The disc is bulging backward, narrowing the spaces where nerves exit on both sides. This is pressing on nerve roots, more so on the right than left."
+
+conclusion: Summarize the 1-2 most important findings in plain language. Frame in terms of what it means for the patient's symptoms.
+Example: "The main finding is a bulging disc at the L4/5 level that is compressing nerve roots on both sides (more on the right). This likely explains the lower back pain and may be causing radiating pain or numbness down the legs."
+
+concern: One clear sentence about next steps. Avoid alarming language but be honest.
+Example: "These findings should be discussed with your doctor to determine whether physical therapy, medication, or other treatments are appropriate."
+
+CRITICAL RULES:
+- KEEP ALL NUMBERS exactly as stated: "5.4 x 5.6 x 6.7 cm" stays "5.4 x 5.6 x 6.7 cm"
+- Use medical terms when necessary but ALWAYS explain them in the same sentence
+- Write for an intelligent adult, not a child
+- Be empathetic but factual—avoid false reassurance or unnecessary alarm
+- If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in."""
 
     # 1) Try Chat Completions JSON mode when supported.
     chat_model = env_model if _supports_chat_completions(env_model) else chat_fallback

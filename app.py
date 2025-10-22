@@ -596,7 +596,22 @@ def blogs():
 @app.route("/report_status")
 def report_status():
     stats = db.get_stats()
-    return render_template("report_status.html", stats=stats)
+    
+    # Prepare JSON-safe data for JavaScript
+    stats_json = {
+        "reportsTimeSeries": stats.get("time_series", []),
+        "ageData": [{"label": label, "value": count} for label, count in stats.get("age_ranges", {}).items()],
+        "genderData": [
+            {"label": "Female", "value": stats.get("gender", {}).get("female", 0)},
+            {"label": "Male", "value": stats.get("gender", {}).get("male", 0)},
+            {"label": "Other", "value": stats.get("gender", {}).get("other", 0)}
+        ],
+        "languagesData": stats.get("languages", []),
+        "modalitiesData": stats.get("studies", []),
+        "findingsData": [{"label": entry["label"].capitalize(), "value": entry["count"]} for entry in stats.get("diseases", [])]
+    }
+    
+    return render_template("report_status.html", stats=stats, stats_json=stats_json)
 
 
 @app.route("/payment")

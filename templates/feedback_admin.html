@@ -22,6 +22,35 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .filter-btn-active {
+            background: var(--mint);
+            color: var(--bg);
+        }
+        .filter-btn-inactive {
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .status-badge-admin {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            display: inline-block;
+        }
+        .status-approved { background: #22c55e; color: #000; }
+        .status-implemented { background: #3b82f6; color: #fff; }
+        .status-rejected { background: #ef4444; color: #fff; }
+        .status-pending { background: #f59e0b; color: #000; }
+    </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -73,33 +102,23 @@
         <!-- Status Filter -->
         <div style="margin: 2rem 0; display: flex; gap: 1rem; flex-wrap: wrap;">
             <a href="{{ url_for('feedback_admin', status='pending') }}" 
-               style="padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;
-                      {% if status_filter == 'pending' %}background: var(--mint); color: var(--bg);
-                      {% else %}background: var(--panel); color: var(--text); border: 1px solid var(--border);{% endif %}">
+               class="filter-btn {% if status_filter == 'pending' %}filter-btn-active{% else %}filter-btn-inactive{% endif %}">
                 Pending
             </a>
             <a href="{{ url_for('feedback_admin', status='approved') }}" 
-               style="padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;
-                      {% if status_filter == 'approved' %}background: var(--mint); color: var(--bg);
-                      {% else %}background: var(--panel); color: var(--text); border: 1px solid var(--border);{% endif %}">
+               class="filter-btn {% if status_filter == 'approved' %}filter-btn-active{% else %}filter-btn-inactive{% endif %}">
                 Approved
             </a>
             <a href="{{ url_for('feedback_admin', status='implemented') }}" 
-               style="padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;
-                      {% if status_filter == 'implemented' %}background: var(--mint); color: var(--bg);
-                      {% else %}background: var(--panel); color: var(--text); border: 1px solid var(--border);{% endif %}">
+               class="filter-btn {% if status_filter == 'implemented' %}filter-btn-active{% else %}filter-btn-inactive{% endif %}">
                 Implemented
             </a>
             <a href="{{ url_for('feedback_admin', status='rejected') }}" 
-               style="padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;
-                      {% if status_filter == 'rejected' %}background: var(--mint); color: var(--bg);
-                      {% else %}background: var(--panel); color: var(--text); border: 1px solid var(--border);{% endif %}">
+               class="filter-btn {% if status_filter == 'rejected' %}filter-btn-active{% else %}filter-btn-inactive{% endif %}">
                 Rejected
             </a>
             <a href="{{ url_for('feedback_admin', status='all') }}" 
-               style="padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;
-                      {% if status_filter == 'all' %}background: var(--mint); color: var(--bg);
-                      {% else %}background: var(--panel); color: var(--text); border: 1px solid var(--border);{% endif %}">
+               class="filter-btn {% if status_filter == 'all' %}filter-btn-active{% else %}filter-btn-inactive{% endif %}">
                 All
             </a>
         </div>
@@ -120,11 +139,7 @@
                             </span>
                         </div>
                     </div>
-                    <span style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; white-space: nowrap;
-                        {% if feedback.status == 'approved' %}background: #22c55e; color: #000;
-                        {% elif feedback.status == 'implemented' %}background: #3b82f6; color: #fff;
-                        {% elif feedback.status == 'rejected' %}background: #ef4444; color: #fff;
-                        {% else %}background: #f59e0b; color: #000;{% endif %}">
+                    <span class="status-badge-admin status-{{ feedback.status }}">
                         {{ feedback.status.upper() }}
                     </span>
                 </div>

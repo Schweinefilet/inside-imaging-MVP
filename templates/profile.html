@@ -22,6 +22,39 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-approved {
+            background: #22c55e;
+            color: #000;
+        }
+        .status-implemented {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .status-rejected {
+            background: #ef4444;
+            color: #fff;
+        }
+        .status-pending {
+            background: var(--muted);
+            color: var(--bg);
+        }
+        .admin-badge {
+            background: var(--mint);
+            color: var(--bg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+    </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -78,7 +111,7 @@
                     <p><strong>Username:</strong> {{ session.get('username') }}</p>
                     <p><strong>Member since:</strong> 2025</p>
                     {% if is_admin %}
-                    <p style="margin-top: 1rem;"><span style="background: var(--mint); color: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem;">ADMIN</span></p>
+                    <p style="margin-top: 1rem;"><span class="admin-badge">ADMIN</span></p>
                     {% endif %}
                 </div>
                 {% else %}
@@ -173,11 +206,7 @@
                                 <td style="padding: 0.75rem;">{{ feedback.feedback_type.replace('_', ' ').title() }}</td>
                                 <td style="padding: 0.75rem;">{{ feedback.subject }}</td>
                                 <td style="padding: 0.75rem;">
-                                    <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;
-                                        {% if feedback.status == 'approved' %}background: #22c55e; color: #000;
-                                        {% elif feedback.status == 'implemented' %}background: #3b82f6; color: #fff;
-                                        {% elif feedback.status == 'rejected' %}background: #ef4444; color: #fff;
-                                        {% else %}background: var(--muted); color: var(--bg);{% endif %}">
+                                    <span class="status-badge status-{{ feedback.status }}">
                                         {{ feedback.status.upper() }}
                                     </span>
                                 </td>

@@ -186,39 +186,10 @@
       </section>
 
       <!-- Pass data to JavaScript -->
+      <script id="stats-data" type="application/json">{{ stats_json|tojson|safe }}</script>
       <script>
-        window.statsData = {
-          reportsTimeSeries: [
-            {% for entry in stats.time_series %}
-            { label: "{{ entry.label }}", value: {{ entry.value }} }{{ "," if not loop.last else "" }}
-            {% endfor %}
-          ],
-          ageData: [
-            {% for label, count in stats.age_ranges.items() %}
-            { label: "{{ label }}", value: {{ count }} }{{ "," if not loop.last else "" }}
-            {% endfor %}
-          ],
-          genderData: [
-            { label: "Female", value: {{ stats.gender.female }} },
-            { label: "Male", value: {{ stats.gender.male }} },
-            { label: "Other", value: {{ stats.gender.other }} }
-          ],
-          languagesData: [
-            {% for entry in stats.languages %}
-            { label: "{{ entry.label }}", value: {{ entry.count }} }{{ "," if not loop.last else "" }}
-            {% endfor %}
-          ],
-          modalitiesData: [
-            {% for entry in stats.studies %}
-            { label: "{{ entry.label }}", value: {{ entry.count }} }{{ "," if not loop.last else "" }}
-            {% endfor %}
-          ],
-          findingsData: [
-            {% for entry in stats.diseases %}
-            { label: "{{ entry.label|capitalize }}", value: {{ entry.count }} }{{ "," if not loop.last else "" }}
-            {% endfor %}
-          ]
-        };
+        // Parse the data from the JSON script tag
+        window.statsData = JSON.parse(document.getElementById('stats-data').textContent);
       </script>
     </main>
 

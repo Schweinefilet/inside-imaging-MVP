@@ -297,30 +297,58 @@
         </figure>
         <figure class="brain-view">
           <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Brain outline (sagittal/side view - looking from RIGHT side, so frontal is LEFT) -->
-            <!-- Corrected orientation: Frontal lobe LEFT, Occipital lobe RIGHT -->
-            <path d="M60,115 
-                     Q60,70 80,50 
-                     Q100,40 120,45 
-                     Q140,50 150,70 
-                     Q155,90 155,115 
-                     Q155,140 150,160 
-                     Q143,175 130,185
-                     L110,190
-                     Q90,188 75,180
-                     Q60,160 60,115" 
-                  class="brain-outline" fill="url(#brainGrad)"/>
-            <!-- Cerebellum (back bottom right) -->
-            <ellipse cx="145" cy="195" rx="22" ry="18" fill="rgb(160,195,210)" opacity="0.8"/>
-            <!-- Brainstem (below cerebellum) -->
-            <rect x="140" y="200" width="10" height="15" fill="rgb(140,170,185)" opacity="0.7" rx="2"/>
-            <!-- Central sulcus (mid-brain fold, slightly past center) -->
-            <path d="M105,55 Q100,75 97,95 Q95,110 95,125" stroke="rgb(100,140,155)" stroke-width="1.5" fill="none" opacity="0.7"/>
-            <!-- Lateral sulcus (Sylvian fissure, frontal-temporal boundary) -->
-            <path d="M70,110 Q80,115 95,118" stroke="rgb(100,140,155)" stroke-width="1.5" fill="none" opacity="0.6"/>
-            <!-- Parieto-occipital sulcus (back fold between parietal and occipital) -->
-            <path d="M130,105 Q127,120 125,135" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lesion position (adjusted for corrected orientation) -->
+            <!-- Sagittal/side view - anatomically accurate -->
+            <!-- Main cerebrum outline -->
+            <path d="M70,120 
+                     Q70,80 85,60 
+                     Q100,45 118,42 
+                     Q135,42 148,55
+                     Q157,70 160,90
+                     Q162,110 160,130
+                     Q157,150 148,165
+                     Q140,175 128,182
+                     L115,185
+                     Q100,183 88,175
+                     Q75,162 72,145
+                     Q70,132 70,120" 
+                  class="brain-outline" fill="url(#brainGrad)" stroke="rgb(100,130,145)" stroke-width="1"/>
+            
+            <!-- Corpus callosum (thick band connecting hemispheres) -->
+            <ellipse cx="115" cy="110" rx="35" ry="8" fill="rgb(200,215,225)" opacity="0.9"/>
+            
+            <!-- Cerebellum (detailed with folds) -->
+            <path d="M145,180 
+                     Q155,175 162,178
+                     Q168,182 168,190
+                     Q168,198 162,202
+                     Q155,205 145,202
+                     Q138,198 138,190
+                     Q138,182 145,180" 
+                  fill="rgb(175,200,215)" stroke="rgb(120,150,165)" stroke-width="0.8" opacity="0.9"/>
+            <!-- Cerebellum folds -->
+            <path d="M145,185 L145,197" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
+            <path d="M150,183 L150,199" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
+            <path d="M155,182 L155,200" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
+            <path d="M160,183 L160,198" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
+            
+            <!-- Brainstem (pons and medulla) -->
+            <rect x="140" y="200" width="14" height="22" fill="rgb(150,180,195)" rx="3" opacity="0.85"/>
+            
+            <!-- Ventricles (fluid spaces) -->
+            <ellipse cx="112" cy="95" rx="12" ry="18" fill="rgb(100,140,160)" opacity="0.4"/>
+            <ellipse cx="115" cy="125" rx="8" ry="14" fill="rgb(100,140,160)" opacity="0.4"/>
+            
+            <!-- Major sulci/gyri (brain folds) -->
+            <!-- Central sulcus -->
+            <path d="M110,55 Q105,70 102,85 Q100,100 100,115" stroke="rgb(100,130,150)" stroke-width="1.8" fill="none" opacity="0.7"/>
+            <!-- Cingulate sulcus (above corpus callosum) -->
+            <path d="M95,95 Q105,90 120,92 Q130,95 138,100" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Parieto-occipital sulcus -->
+            <path d="M135,95 Q132,110 130,125 Q128,140 127,155" stroke="rgb(100,130,150)" stroke-width="1.5" fill="none" opacity="0.7"/>
+            <!-- Calcarine sulcus -->
+            <path d="M130,130 Q138,135 145,138" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            
+            <!-- Lesion position (example) -->
             <ellipse cx="100" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
           </svg>
           <figcaption>Side View (Sagittal)</figcaption>

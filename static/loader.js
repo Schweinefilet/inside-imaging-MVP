@@ -1,6 +1,10 @@
-// static/loader.js - Spinning circle loader inspired by LoaderOne
+// static/loader.js - Spinning circle loader with consistent animation
+// LoaderFive component - Generates report loading screen
+
 (function () {
-  var DEFAULT_PRIMARY = "Working on your report...";
+  'use strict';
+
+  var DEFAULT_PRIMARY = "Generating your report...";
   var DEFAULT_SECONDARY = "This may take up to 30 seconds.";
 
   function ensureOverlay() {
@@ -8,6 +12,7 @@
     if (el) {
       return el;
     }
+
     el = document.createElement('div');
     el.id = 'global-loader';
     el.className = 'loader-overlay loader-hidden';
@@ -23,6 +28,7 @@
       '  <div class="loader-sub" data-loader-sub>' + DEFAULT_SECONDARY + '</div>',
       '</div>'
     ].join('');
+
     document.body.appendChild(el);
     return el;
   }
@@ -45,28 +51,43 @@
     overlay.classList.add('loader-hidden');
   }
 
+  // Initialize on DOM ready
   document.addEventListener('DOMContentLoaded', function () {
     ensureOverlay();
 
+    // Auto-show loader when upload form is submitted
     document.querySelectorAll('form[action$="/upload"]').forEach(function (form) {
       form.addEventListener('submit', function () {
-        show();
+        show("Generating your report...", "This may take up to 30 seconds.");
       }, { passive: true });
     });
 
+    // Allow manual trigger via data attribute
     document.querySelectorAll('[data-show-loader]').forEach(function (el) {
       el.addEventListener('click', function () {
         show();
       }, { passive: true });
     });
 
+    // Hide loader when page is shown (e.g., back button)
     window.addEventListener('pageshow', function () {
       hide();
     });
   });
 
+  // Export LoaderFive API (React-style naming as requested)
+  window.LoaderFive = {
+    show: show,
+    hide: hide,
+    text: function(primaryText, secondaryText) {
+      show(primaryText, secondaryText);
+    }
+  };
+
+  // Also export as GlobalLoader for backward compatibility
   window.GlobalLoader = {
     show: show,
     hide: hide,
   };
 })();
+

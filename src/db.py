@@ -64,6 +64,8 @@ def init_db() -> None:
         cur.execute("ALTER TABLE patients ADD COLUMN word_count INTEGER DEFAULT 0")
     if "disease_tags" not in cols:
         cur.execute("ALTER TABLE patients ADD COLUMN disease_tags TEXT")
+    if "username" not in cols:
+        cur.execute("ALTER TABLE patients ADD COLUMN username TEXT")
     # Table for users
     cur.execute(
         """
@@ -129,8 +131,8 @@ def add_patient_record(data: Dict[str, Any]) -> int:
         INSERT INTO patients (
             truncated_name, age, sex, date, hospital, study,
             reason, technique, findings, conclusion, concern, language,
-            word_count, disease_tags
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            word_count, disease_tags, username
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             truncate_name(data.get("name", "")),
@@ -147,6 +149,7 @@ def add_patient_record(data: Dict[str, Any]) -> int:
             data.get("language", ""),
             word_count,
             disease_str,
+            data.get("username", ""),
         ),
     )
     conn.commit()
@@ -194,7 +197,7 @@ def _format_tags_display(tags: List[str]) -> List[str]:
     return [t.replace("_", " ").strip().title() for t in tags if t]
 
 
-def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str) -> int:
+def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str, username: str = "") -> int:
     """Persist a summarized encounter for analytics without storing PHI."""
     text_blob = " ".join(
         filter(
@@ -223,6 +226,7 @@ def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], repo
         "language": language,
         "word_count": report_stats.get("words", 0),
         "disease_tags": disease_tags,
+        "username": username,
     }
     return add_patient_record(record)
 
@@ -584,3 +588,34 @@ def get_user_feedback(username: str) -> List[Dict[str, Any]]:
             "admin_notes": row[11] or "",
         })
     return feedback_list
+
+
+def get_user_reports(username: str, limit: int = 10) -> List[Dict[str, Any]]:
+    """Retrieve recent reports for a specific user."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, study, language, created_at, disease_tags, truncated_name
+        FROM patients
+        WHERE username = ?
+        ORDER BY datetime(created_at) DESC
+        LIMIT ?
+        """,
+        (username, limit),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    
+    reports = []
+    for row in rows:
+        tags = [t for t in (row[4] or "").split(",") if t]
+        reports.append({
+            "id": row[0],
+            "study": row[1] or "Unknown Study",
+            "language": row[2] or "English",
+            "created_at": _format_timestamp(row[3]),
+            "disease_tags": _format_tags_display(tags),
+            "patient_name": row[5] or "Patient",
+        })
+    return reports

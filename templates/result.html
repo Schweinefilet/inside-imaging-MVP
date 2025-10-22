@@ -511,7 +511,7 @@
     </section>
     {% endif %}
 
-    {% if diagnosis and diagnosis.has_abnormality and ('spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower)) %}
+    {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or 'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
     <section class="organ-visual-section">
       <h2>Spine Visualization</h2>
       <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>

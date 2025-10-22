@@ -98,6 +98,39 @@
       </div>
     </header>
 
+    <!-- Flash Messages Popup -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-container" style="position: fixed; top: 80px; right: 20px; z-index: 10000; max-width: 400px;">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}" style="background: {% if category == 'error' %}#dc2626{% else %}#22c55e{% endif %}; color: white; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.3s ease;">
+              <div style="flex: 1;">
+                <strong style="display: block; margin-bottom: 0.25rem;">{% if category == 'error' %}❌ Upload Rejected{% else %}✓ Success{% endif %}</strong>
+                <span>{{ message }}</span>
+              </div>
+              <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 0 0 1rem; opacity: 0.8;">×</button>
+            </div>
+          {% endfor %}
+        </div>
+        <style>
+          @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        </style>
+        <script>
+          // Auto-dismiss flash messages after 8 seconds
+          setTimeout(function() {
+            var container = document.getElementById('flash-container');
+            if (container) {
+              container.style.animation = 'slideOut 0.3s ease';
+              setTimeout(function() { container.remove(); }, 300);
+            }
+          }, 8000);
+        </script>
+      {% endif %}
+    {% endwith %}
+
     <main class="content">
       <h1>Dashboard</h1>
       <p>Upload, manage, and download your translated radiology reports in one place.</p>

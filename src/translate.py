@@ -577,7 +577,18 @@ def _call_openai_once(report_text: str, language: str, temperature: float, effor
         instructions = f"""Wewe ni msaidizi wa kuandika ripoti za uchunguzi wa mwili kwa lugha rahisi. Andika KILA KITU kwa Kiswahili sanifu BILA kuchanganya Kiingereza.
 Rudisha JSON object tu yenye: reason, technique, findings, conclusion, concern.
 Hadhira ni mtoto wa miaka 10. Tumia sentensi FUPI SANA (maneno 5-8 kwa kila sentensi). Tumia maneno ya kawaida ambayo mtoto anaweza kuelewa.
-reason: sentensi 1-2 FUPI SANA; technique: sentensi 2-4 zenye maelezo ya kina ya jinsi uchunguzi ulivyofanywa (eleza maneno kama 'axial', 'reconstructions', 'coverage'); findings: bullets 2-3 FUPI; conclusion: bullets 1-2 FUPI; concern: sentensi 1 FUPI.
+
+reason: Eleza KWA NINI uchunguzi ulifanywa (sentensi 1-2 FUPI SANA). Jumuisha dalili za mgonjwa kwa maneno rahisi. Mfano: "Uchunguzi uliagizwa kwa sababu mgonjwa alikuwa na maumivu ya kichwa na kizunguzungu kwa wiki 2."
+
+technique: Eleza JINSI uchunguzi ulivyofanywa (sentensi 3-5) kwa lugha rahisi. Jumuisha:
+- Aina gani ya uchunguzi (MRI, CT, X-ray, Ultrasound)
+- Sehemu gani ya mwili ilipigiwa picha
+- Jinsi picha zilivyochukuliwa (eleza 'axial' = vipande vya kukata kama mkate, 'coronal' = vipande vya mbele-hadi-nyuma, 'sagittal' = vipande vya upande-hadi-upande)
+- Kama dawa ya rangi ilitumiwa na kwa nini ('pamoja na rangi' = dawa maalum ilidukuliwa ili kuona viungo vizuri zaidi, 'bila rangi' = hakuna dawa ilihitajika)
+- Eneo gani lilipimwa ('kutoka msingi wa fuvu hadi juu' = kutoka chini ya kichwa hadi juu)
+Mfano: "Uchunguzi wa MRI wa ubongo ulifanywa. Picha za kukata zilichukuliwa kama kukata mkate. Hakuna dawa ya rangi iliyodukuliwa. Kichwa chote kilipimwa kutoka chini hadi juu."
+
+findings: bullets 2-3 FUPI; conclusion: bullets 1-2 FUPI; concern: sentensi 1 FUPI.
 WEKA NAMBA ZOTE kama zilivyo katika ripoti ya asili - USIZIPUNGUZE. Kama ripoti inasema "5.4 x 5.6 x 6.7 cm", weka sawa sawa kama hivo. Kagua tahajia YOTE. Usitumie majina ya kitaalamu au maneno ya kisayansi.
 Andika KILA KITU kwa Kiswahili sanifu bila Kiingereza:
 - "scan" → "uchunguzi" au "skani"
@@ -593,7 +604,18 @@ Hakikisha KILA neno ni Kiswahili."""
         instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
 Audience is a 10-year-old. Use VERY simple, SHORT sentences (5-8 words each). Use everyday words a child would know.
-reason: 1-2 VERY SHORT sentences; technique: 2-4 sentences with detailed plain-language explanation of HOW the scan was done (explain terms like 'axial' means cross-sectional slices, 'reconstructions' means creating different views, 'coverage from X to Y' means scanned area, 'without contrast' means no dye was used); findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
+
+reason: Explain WHY the scan was ordered (1-2 VERY SHORT sentences). Include the patient's symptoms or medical concern in simple terms. Example: "The scan was ordered because the patient had headaches and dizziness for 2 weeks."
+
+technique: Explain HOW the scan was done (3-5 sentences) in plain language. Include:
+- What type of scan (MRI, CT, X-ray, Ultrasound)
+- What body part was scanned
+- How the images were taken (explain 'axial' = cross-sectional slices like bread, 'coronal' = front-to-back slices, 'sagittal' = side-to-side slices)
+- Whether contrast dye was used and why ('with contrast' = special dye injected to see organs better, 'without contrast' = no dye needed)
+- What area was covered ('from skull base to vertex' = from bottom of head to top)
+Example: "An MRI scan of the brain was performed. Cross-sectional images were taken like slicing through bread. No contrast dye was injected. The entire head was scanned from bottom to top."
+
+findings: 2-3 SHORT bullets; conclusion: 1-2 SHORT bullets; concern: 1 SHORT sentence.
 KEEP ALL NUMBERS exactly as stated in the original report - do NOT round or remove them. If the report says "5.4 x 5.6 x 6.7 cm", keep it exactly like that. Double-check ALL spelling. No medical names or jargon.
 If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in."""
 

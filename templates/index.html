@@ -149,11 +149,37 @@
         <section class="reports-section">
           <header class="reports-section-header">
             <h2>Your Reports</h2>
-            <p>Revisit the reports you generated during this session and jump back into their summaries.</p>
+            {% if session.get('username') %}
+            <p>Your saved reports across all sessions.</p>
+            {% else %}
+            <p>Revisit the reports you generated during this session. <a href="{{ url_for('login') }}" style="color: var(--mint);">Log in</a> to save reports permanently.</p>
+            {% endif %}
           </header>
 
           <ul class="reports-history">
-            {% if recent_reports %}
+            {% if session.get('username') and user_reports %}
+              {% for item in user_reports %}
+              <li class="history-item">
+                <div class="history-info">
+                  <div class="history-primary">
+                    <strong>{{ item.study }}</strong>
+                    <span class="history-language">{{ item.language or 'English' }}</span>
+                  </div>
+                  <div class="history-meta">
+                    <span>{{ item.patient_name }} • {{ item.created_at or 'Just now' }}</span>
+                  </div>
+                  {% if item.disease_tags %}
+                  <div class="history-tags">
+                    {% for tag in item.disease_tags %}
+                    <span>{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+                <a class="history-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
+              </li>
+              {% endfor %}
+            {% elif recent_reports %}
               {% for item in recent_reports %}
               <li class="history-item">
                 <div class="history-info">
@@ -277,65 +303,65 @@
         <div class="testimonials-container">
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              Inside Imaging has revolutionized how I communicate with my patients. The plain language translations help them understand their scans without the medical jargon, leading to better compliance and less anxiety.
+              "This platform has transformed how we communicate complex medical information to our patients. [Testimonial pending pilot program completion]"
             </p>
             <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop" alt="Dr. Sarah Chen" class="testimonial-avatar">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
               <div class="testimonial-info">
-                <p class="testimonial-name">Dr. Sarah Chen, MD</p>
-                <p class="testimonial-title">Radiologist at Stanford Medical Center</p>
+                <p class="testimonial-name">Healthcare Professional</p>
+                <p class="testimonial-title">Pilot Program Participant</p>
               </div>
             </div>
           </div>
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              As a referring physician, I appreciate how Inside Imaging bridges the gap between complex imaging findings and patient understanding. It's become an essential tool in my practice for improving patient education.
+              "The multilingual support makes a real difference in our diverse patient community. [Feedback from pilot program to be added here]"
             </p>
             <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop" alt="Dr. Michael Rodriguez" class="testimonial-avatar">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
               <div class="testimonial-info">
-                <p class="testimonial-name">Dr. Michael Rodriguez, MD</p>
-                <p class="testimonial-title">Chief of Internal Medicine, Mayo Clinic</p>
+                <p class="testimonial-name">Medical Professional</p>
+                <p class="testimonial-title">Early Adopter</p>
               </div>
             </div>
           </div>
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              The multilingual support is incredible. I can now provide my diverse patient population with reports in their native language, which has dramatically improved understanding and trust.
+              "Patients appreciate receiving their reports in plain language. [Real testimonials will be collected during pilot phase]"
             </p>
             <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop" alt="Dr. Emily Watson" class="testimonial-avatar">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
               <div class="testimonial-info">
-                <p class="testimonial-name">Dr. Emily Watson, MD, PhD</p>
-                <p class="testimonial-title">Director of Radiology, Johns Hopkins</p>
+                <p class="testimonial-name">Radiology Partner</p>
+                <p class="testimonial-title">Testing Phase</p>
               </div>
             </div>
           </div>
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              Inside Imaging's accuracy and speed are remarkable. It maintains clinical precision while making reports accessible. This is the future of patient-centered radiology reporting.
+              "We're excited to be part of this innovative approach to patient care. [Testimonial content pending]"
             </p>
             <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=400&fit=crop" alt="Dr. James Kim" class="testimonial-avatar">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
               <div class="testimonial-info">
-                <p class="testimonial-name">Dr. James Kim, MD</p>
-                <p class="testimonial-title">Interventional Radiologist, Cleveland Clinic</p>
+                <p class="testimonial-name">Clinical Partner</p>
+                <p class="testimonial-title">Pilot Participant</p>
               </div>
             </div>
           </div>
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              Implementation was seamless, and patient satisfaction scores have increased significantly since we started using Inside Imaging. It's rare to find a tool that benefits both clinicians and patients so profoundly.
+              "Early results show promise for improving patient understanding. [Full review coming after pilot completion]"
             </p>
             <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop" alt="Dr. Lisa Thompson" class="testimonial-avatar">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
               <div class="testimonial-info">
-                <p class="testimonial-name">Dr. Lisa Thompson, MD, MBA</p>
-                <p class="testimonial-title">VP of Medical Technology, Mass General</p>
+                <p class="testimonial-name">Healthcare Provider</p>
+                <p class="testimonial-title">Pilot Program</p>
               </div>
             </div>
           </div>
@@ -379,20 +405,26 @@ document.addEventListener('DOMContentLoaded', function() {
   var overlay = document.getElementById('landing-overlay');
   if (!overlay) return;
   var continueBtn = document.getElementById('landing-continue');
-  var seen = localStorage.getItem('iiLandingSeen') === '1';
-
+  
+  // Check if user is navigating within site (has sessionStorage flag)
+  var isInternalNav = sessionStorage.getItem('iiInternalNav') === '1';
+  
   var disableOverlay = function(){
     overlay.classList.add('landing-hidden');
     overlay.setAttribute('aria-hidden', 'true');
-    localStorage.setItem('iiLandingSeen', '1');
     setTimeout(function(){ if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 650);
   };
 
-  if (seen) {
+  // Set flag to indicate user has navigated within site
+  sessionStorage.setItem('iiInternalNav', '1');
+
+  // Only show overlay if NOT internal navigation (i.e., fresh site entry)
+  if (isInternalNav) {
     disableOverlay();
     return;
   }
 
+  // Show intro overlay for fresh site entry
   requestAnimationFrame(function(){
     overlay.classList.remove('landing-hidden');
     overlay.setAttribute('aria-hidden', 'false');

@@ -86,23 +86,16 @@ BLOG_POSTS = [
 ]
 
 MARQUEE_IMAGES = [
-    # Radiology imaging examples - MRI, CT, X-ray samples
-    "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=500&fit=crop",  # MRI brain scan
-    "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=400&h=500&fit=crop",  # Medical imaging screen
-    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=500&fit=crop",  # CT scan
-    "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&h=500&fit=crop",  # Chest X-ray
-    "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=400&h=500&fit=crop",  # Radiology workspace
-    "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?w=400&h=500&fit=crop",  # Medical monitor
-    "https://images.unsplash.com/photo-1581093458791-9d42e4f43b80?w=400&h=500&fit=crop",  # Radiologist at work
-    "https://images.unsplash.com/photo-1581093804475-577d72e38aa0?w=400&h=500&fit=crop",  # Medical imaging equipment
-    "https://images.unsplash.com/photo-1579684453401-966b11832744?w=400&h=500&fit=crop",  # CT scanner
-    "https://images.unsplash.com/photo-1582560475093-ba66accbc424?w=400&h=500&fit=crop",  # MRI machine
-    "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=500&fit=crop",  # Medical analysis
-    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=500&fit=crop",  # Spine X-ray
-    "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=500&fit=crop",  # Medical consultation
-    "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?w=400&h=500&fit=crop",  # Digital radiology
-    "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&h=500&fit=crop",  # Lung scan
-    "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=500&fit=crop",  # Brain imaging
+    # Placeholder images for pilot program
+    # Real radiology examples will be added after IRB approval
+    "https://via.placeholder.com/400x500/22c55e/ffffff?text=MRI+Scan",
+    "https://via.placeholder.com/400x500/14b8a6/ffffff?text=CT+Scan",
+    "https://via.placeholder.com/400x500/10b981/ffffff?text=X-Ray",
+    "https://via.placeholder.com/400x500/059669/ffffff?text=Ultrasound",
+    "https://via.placeholder.com/400x500/047857/ffffff?text=PET+Scan",
+    "https://via.placeholder.com/400x500/065f46/ffffff?text=MRI+Imaging",
+    "https://via.placeholder.com/400x500/22c55e/ffffff?text=Radiology",
+    "https://via.placeholder.com/400x500/14b8a6/ffffff?text=Medical+Imaging",
 ]
 
 # Initialize database
@@ -309,7 +302,18 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
 def index():
     stats = db.get_stats()
     recent_reports = session.get("recent_reports", [])
-    return render_template("index.html", stats=stats, languages=LANGUAGES, recent_reports=recent_reports)
+    
+    # Get user's persistent reports if logged in
+    username = session.get("username")
+    user_reports = []
+    if username:
+        try:
+            user_reports = db.get_user_reports(username, limit=5)
+        except Exception:
+            logging.exception("Failed to fetch user reports")
+    
+    return render_template("index.html", stats=stats, languages=LANGUAGES, 
+                         recent_reports=recent_reports, user_reports=user_reports)
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -342,6 +346,24 @@ def upload():
             logging.exception("file handling failed; extracted empty")
 
     logging.info("len(extracted)=%s", len(extracted or ""))
+
+    # Validate that this looks like a radiology report
+    extracted_lower = (extracted or "").lower()
+    radiology_keywords = [
+        "radiology", "radiologist", "imaging", "scan", "ct", "mri", "x-ray", "xray",
+        "ultrasound", "pet", "findings", "impression", "technique", "contrast",
+        "examination", "study", "patient", "indication", "conclusion", "comparison"
+    ]
+    has_radiology_content = any(keyword in extracted_lower for keyword in radiology_keywords)
+    
+    # Check minimum length and content
+    if not extracted or len(extracted.strip()) < 100:
+        flash("The uploaded file appears to be too short or empty. Please upload a valid radiology report.", "error")
+        return redirect(url_for("index"))
+    
+    if not has_radiology_content:
+        flash("The uploaded file doesn't appear to be a radiology report. Please ensure you're uploading a medical imaging report.", "error")
+        return redirect(url_for("index"))
 
     # Build structured summary
     try:
@@ -400,7 +422,8 @@ def upload():
 
     report_id = None
     try:
-        report_id = db.store_report_event(patient, structured, report_stats, lang)
+        username = session.get("username", "")
+        report_id = db.store_report_event(patient, structured, report_stats, lang, username)
     except Exception:
         logging.exception("Failed to persist report analytics.")
 

@@ -265,7 +265,8 @@
       <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
     </section>
 
-    {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' %}
+    {% set study_lower = (patient.study|default('', true)|lower) %}
+    {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' and ('brain' in study_lower or 'head' in study_lower or 'skull' in study_lower or 'cerebral' in study_lower or 'cranial' in study_lower) %}
     <section class="brain-visual-section">
       <h2>Brain Visualization</h2>
       <p class="brain-summary">A simplified diagram showing the approximate location of key findings mentioned in the report. This is for illustrative purposes only.</p>
@@ -783,8 +784,8 @@
 
     /* Dynamic brain lesion positioning */
     function parseBrainLesion() {
-      var conclusion = '{{ structured.conclusion|default("", true)|safe }}'.toLowerCase().replace(/<[^>]+>/g, ' ');
-      var findings = '{{ structured.findings|default("", true)|safe }}'.toLowerCase().replace(/<[^>]+>/g, ' ');
+      var conclusion = {{ structured.conclusion|default("", true)|tojson }}.toLowerCase().replace(/<[^>]+>/g, ' ');
+      var findings = {{ structured.findings|default("", true)|tojson }}.toLowerCase().replace(/<[^>]+>/g, ' ');
       var combinedText = conclusion + ' ' + findings;
       
       // Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]

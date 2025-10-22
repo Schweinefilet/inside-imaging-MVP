@@ -55,20 +55,22 @@
   .body-svg{display:block;margin:1rem auto;width:100%;height:100%;max-width:200px}
   .body-base use{fill:var(--body-fill);stroke:var(--border);stroke-width:0.5}
   .body-outline use{fill:none;stroke:color-mix(in oklab, var(--border) 45%, #000);stroke-width:1.6}
-  .region-band{fill:transparent;opacity:1;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
+  .region-band{fill:transparent;opacity:0;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
   /* Highlighted regions with fallback colors */
   .region-band.highlight{
-    fill:#22c55e;/* fallback */
-    fill:color-mix(in srgb, var(--mint) 80%, #ffffff 20%);
-    opacity:.75;
-    stroke:#0f766e;/* fallback */
-    stroke:color-mix(in oklab, var(--mint) 70%, #0f766e);
-    stroke-width:2.2;
+    fill:#22c55e !important;/* fallback - force visibility */
+    fill:color-mix(in srgb, var(--mint) 80%, #ffffff 20%) !important;
+    opacity:.85 !important;
+    stroke:#0f766e !important;/* fallback */
+    stroke:color-mix(in oklab, var(--mint) 70%, #0f766e) !important;
+    stroke-width:2.5;
   }
   .light .region-band.highlight{
-    fill:#14b8a6;/* fallback */
-    fill:color-mix(in srgb, var(--mint) 80%, #000000 20%);
-    stroke-width:2.6;
+    fill:#14b8a6 !important;/* fallback */
+    fill:color-mix(in srgb, var(--mint) 80%, #000000 20%) !important;
+    opacity:.8 !important;
+    stroke:#047857 !important;
+    stroke-width:2.8;
   }
 
 
@@ -295,31 +297,31 @@
         </figure>
         <figure class="brain-view">
           <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Brain outline (sagittal/side view - looking from left side) -->
-            <!-- Frontal lobe (front) to Occipital lobe (back) -->
-            <path d="M85,115 
-                     Q85,70 105,50 
-                     Q125,40 145,45 
-                     Q165,50 175,70 
-                     Q180,90 180,115 
-                     Q180,140 175,160 
-                     Q168,175 155,185
-                     L135,190
-                     Q115,188 100,180
-                     Q85,160 85,115" 
+            <!-- Brain outline (sagittal/side view - looking from RIGHT side, so frontal is LEFT) -->
+            <!-- Corrected orientation: Frontal lobe LEFT, Occipital lobe RIGHT -->
+            <path d="M60,115 
+                     Q60,70 80,50 
+                     Q100,40 120,45 
+                     Q140,50 150,70 
+                     Q155,90 155,115 
+                     Q155,140 150,160 
+                     Q143,175 130,185
+                     L110,190
+                     Q90,188 75,180
+                     Q60,160 60,115" 
                   class="brain-outline" fill="url(#brainGrad)"/>
-            <!-- Cerebellum (back bottom) -->
-            <ellipse cx="140" cy="195" rx="22" ry="18" fill="rgb(160,195,210)" opacity="0.8"/>
-            <!-- Brainstem -->
-            <rect x="135" y="200" width="10" height="15" fill="rgb(140,170,185)" opacity="0.7" rx="2"/>
-            <!-- Central sulcus (mid-brain fold) -->
-            <path d="M130,55 Q125,75 122,95 Q120,110 120,125" stroke="rgb(100,140,155)" stroke-width="1.5" fill="none" opacity="0.7"/>
-            <!-- Lateral sulcus (Sylvian fissure) -->
-            <path d="M105,110 Q115,115 130,118" stroke="rgb(100,140,155)" stroke-width="1.5" fill="none" opacity="0.6"/>
-            <!-- Parieto-occipital sulcus (back fold) -->
-            <path d="M165,105 Q162,120 160,135" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lesion position -->
-            <ellipse cx="135" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
+            <!-- Cerebellum (back bottom right) -->
+            <ellipse cx="145" cy="195" rx="22" ry="18" fill="rgb(160,195,210)" opacity="0.8"/>
+            <!-- Brainstem (below cerebellum) -->
+            <rect x="140" y="200" width="10" height="15" fill="rgb(140,170,185)" opacity="0.7" rx="2"/>
+            <!-- Central sulcus (mid-brain fold, slightly past center) -->
+            <path d="M105,55 Q100,75 97,95 Q95,110 95,125" stroke="rgb(100,140,155)" stroke-width="1.5" fill="none" opacity="0.7"/>
+            <!-- Lateral sulcus (Sylvian fissure, frontal-temporal boundary) -->
+            <path d="M70,110 Q80,115 95,118" stroke="rgb(100,140,155)" stroke-width="1.5" fill="none" opacity="0.6"/>
+            <!-- Parieto-occipital sulcus (back fold between parietal and occipital) -->
+            <path d="M130,105 Q127,120 125,135" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <!-- Lesion position (adjusted for corrected orientation) -->
+            <ellipse cx="100" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
           </svg>
           <figcaption>Side View (Sagittal)</figcaption>
         </figure>
@@ -752,22 +754,22 @@
       
       // Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]
       var locationMap = {
-        'right frontoparietal': [145, 95, 135, 90, 155, 85],
-        'left frontoparietal': [95, 95, 135, 90, 85, 85],
-        'right frontal': [140, 85, 125, 75, 150, 75],
-        'left frontal': [100, 85, 125, 75, 90, 75],
-        'right parietal': [150, 100, 140, 95, 160, 90],
-        'left parietal': [90, 100, 140, 95, 80, 90],
-        'right temporal': [155, 115, 145, 110, 165, 105],
-        'left temporal': [85, 115, 145, 110, 75, 105],
-        'right occipital': [155, 125, 155, 130, 165, 120],
-        'left occipital': [85, 125, 155, 130, 75, 120],
-        'sphenoid wing': [130, 105, 120, 100, 135, 100],
-        'greater sphenoid wing': [135, 105, 120, 100, 140, 100],
-        'cerebellum': [120, 145, 80, 165, 120, 165],
-        'brainstem': [120, 155, 90, 175, 120, 175],
-        'thalamus': [120, 110, 115, 110, 120, 110],
-        'basal ganglia': [115, 110, 115, 105, 115, 105]
+        'right frontoparietal': [145, 95, 100, 90, 155, 85],  // sagittal adjusted for corrected view
+        'left frontoparietal': [95, 95, 100, 90, 85, 85],
+        'right frontal': [140, 85, 85, 75, 150, 75],  // frontal is on left in sagittal view
+        'left frontal': [100, 85, 85, 75, 90, 75],
+        'right parietal': [150, 100, 110, 95, 160, 90],
+        'left parietal': [90, 100, 110, 95, 80, 90],
+        'right temporal': [155, 115, 105, 110, 165, 105],
+        'left temporal': [85, 115, 105, 110, 75, 105],
+        'right occipital': [155, 125, 135, 130, 165, 120],  // occipital is on right in sagittal
+        'left occipital': [85, 125, 135, 130, 75, 120],
+        'sphenoid wing': [130, 105, 95, 100, 135, 100],
+        'greater sphenoid wing': [135, 105, 95, 100, 140, 100],
+        'cerebellum': [120, 145, 145, 165, 120, 165],  // cerebellum moved right in sagittal
+        'brainstem': [120, 155, 145, 175, 120, 175],
+        'thalamus': [120, 110, 95, 110, 120, 110],
+        'basal ganglia': [115, 110, 95, 105, 115, 105]
       };
       
       // Parse size (e.g., "5.4 x 5.6 x 6.7 cm" or "measures 2.5 cm")

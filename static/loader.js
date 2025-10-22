@@ -1,5 +1,5 @@
-// static/loader.js - Spinning circle loader with consistent animation
-// LoaderFive component - Generates report loading screen
+// static/loader.js - Enhanced LoaderFive-style component (vanilla JS)
+// Mimics Aceternity LoaderFive aesthetic without React dependency
 
 (function () {
   'use strict';
@@ -19,10 +19,12 @@
     el.setAttribute('role', 'status');
     el.innerHTML = [
       '<div class="loader-card">',
-      '  <div class="loader-one" aria-hidden="true">',
-      '    <svg class="loader-one-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">',
-      '      <circle class="loader-one-circle" cx="50" cy="50" r="45"/>',
-      '    </svg>',
+      '  <div class="loader-five-container" aria-hidden="true">',
+      '    <!-- Multiple spinning rings for depth effect -->',
+      '    <div class="loader-ring loader-ring-1"></div>',
+      '    <div class="loader-ring loader-ring-2"></div>',
+      '    <div class="loader-ring loader-ring-3"></div>',
+      '    <div class="loader-core"></div>',
       '  </div>',
       '  <div class="loader-text" data-loader-text>' + DEFAULT_PRIMARY + '</div>',
       '  <div class="loader-sub" data-loader-sub>' + DEFAULT_SECONDARY + '</div>',
@@ -75,7 +77,7 @@
     });
   });
 
-  // Export LoaderFive API (React-style naming as requested)
+  // Export LoaderFive API (React-style naming)
   window.LoaderFive = {
     show: show,
     hide: hide,
@@ -90,4 +92,3 @@
     hide: hide,
   };
 })();
-

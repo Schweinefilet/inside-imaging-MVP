@@ -114,6 +114,16 @@ _JARGON_MAP = [
     (re.compile(r"\bperilesional\b", re.I), "around the lesion"),
     (re.compile(r"\bparenchymal\b", re.I), "brain tissue"),
     (re.compile(r"\bavid(ly)?\s+enhanc(?:ing|ement)\b|\bavid(ly)?\s+enhacing\b", re.I), "enhances with contrast dye"),
+    (re.compile(r"\bhyperintense\b", re.I), "brighter on the scan"),
+    (re.compile(r"\bhypointense\b", re.I), "darker on the scan"),
+    (re.compile(r"\bhyperdense\b", re.I), "brighter on the scan"),
+    (re.compile(r"\bhypodense\b", re.I), "darker on the scan"),
+    (re.compile(r"\benhancing\b", re.I), "lighting up after dye"),
+    (re.compile(r"\bnon[-\s]?enhancing\b", re.I), "not lighting up after dye"),
+    (re.compile(r"\bheterogene(?:ous|ity)\b", re.I), "mixed appearance"),
+    (re.compile(r"\bfoci\b", re.I), "spots"),
+    (re.compile(r"\bnodular\b", re.I), "lumpy"),
+    (re.compile(r"\blesion\b", re.I), "lesion (abnormal area)"),
     (re.compile(r"\bextra[-\s]?axial\b", re.I), "outside the brain tissue"),
     (re.compile(r"\beffaced?\b", re.I), "pressed"),
     (re.compile(r"\bdilated\b", re.I), "widened"),
@@ -130,6 +140,10 @@ _JARGON_MAP = [
     (re.compile(r"\bcervical\b", re.I), "neck"),
     (re.compile(r"\bforamina?\b", re.I), "nerve openings"),
     (re.compile(r"\buvunjaji\b", re.I), "fracture"),
+    (re.compile(r"\bischemi(?:a|c)\b", re.I), "low blood flow"),
+    (re.compile(r"\bperfusion\b", re.I), "blood flow"),
+    (re.compile(r"\bembol(?:us|i|ism)\b", re.I), "blood clot"),
+    (re.compile(r"\bstenosis\b", re.I), "narrowing"),
 ]
 def _rewrite_jargon(s: str) -> str:
     out = s or ""
@@ -925,6 +939,12 @@ def _translate_to_kiswahili(text: str, context: str = "") -> str:
         "The scan was done to look for a problem in the area.": "Uchunguzi ulifanywa kutafuta tatizo katika eneo.",
         " and swollen lymph nodes.": " na lymph nodes zilizovimba.",
         "The goal was to find a simple cause for the symptoms.": "Lengo lilikuwa kupata sababu rahisi ya dalili.",
+    "The scan was ordered to investigate a mass.": "Uchunguzi uliagizwa kuchunguza uvimbe.",
+    "The scan was ordered to evaluate the head.": "Uchunguzi uliagizwa kuchunguza kichwa.",
+    "The scan was ordered to evaluate the neck.": "Uchunguzi uliagizwa kuchunguza shingo.",
+    "The scan was ordered to evaluate the abdomen.": "Uchunguzi uliagizwa kuchunguza tumbo.",
+    "The scan was ordered to evaluate the area.": "Uchunguzi uliagizwa kuchunguza eneo hili.",
+    "Doctors wanted to understand what is causing the current symptoms.": "Madaktari walitaka kuelewa kinachosababisha dalili za sasa.",
         "Technique not described.": "Mbinu haijaeleweshwa.",
         "Not described.": "Haijaeleweshwa.",
         "No major problems were seen.": "Hakuna matatizo makubwa yaliyoonekana.",
@@ -946,11 +966,39 @@ def _translate_to_kiswahili(text: str, context: str = "") -> str:
     return result
 
 def _infer_reason(text: str, seed: str, language: str = "English") -> str:
-    src = seed or ""
-    if not src or src.strip().lower() == "not provided.":
-        m = re.search(r"(?im)^\s*(indication|reason|history)\s*:\s*(.+)$", text or "")
-        if m:
-            src = m.group(2).strip()
+    src = (seed or "").strip()
+    if not src or src.lower() == "not provided.":
+        match = re.search(r"(?im)^\s*(indication|reason|history)\s*:\s*(.+)$", text or "")
+        if match:
+            src = match.group(2).strip()
+
+    cleaned_seed = _strip_labels(src)
+    cleaned_seed = re.sub(r"(?i)\b(history|clinical\s+history)\s*:\s*", "", cleaned_seed).strip()
+
+    if cleaned_seed:
+        bullets = _normalize_listish(cleaned_seed)
+        sentences: List[str] = []
+        if bullets:
+            for item in bullets[:2]:
+                simple = _simplify(item, None)
+                if not simple:
+                    continue
+                simple = simple.strip()
+                if simple and not simple.endswith('.'):
+                    simple += '.'
+                sentences.append(simple)
+        else:
+            simple = _simplify(cleaned_seed, None)
+            if simple:
+                simple = simple.strip()
+                if simple and not simple.endswith('.'):
+                    simple += '.'
+                sentences = _split_sentences(simple) or [simple]
+        if sentences:
+            reason = " ".join(sentences[:2]).strip()
+            if language.lower() in ["kiswahili", "swahili"]:
+                reason = _clean_kiswahili_text(reason)
+            return reason
 
     low_all = (text or "").lower() + " " + (src or "").lower()
 
@@ -962,17 +1010,16 @@ def _infer_reason(text: str, seed: str, language: str = "English") -> str:
     has_mass = bool(re.search(r"\b(mass|lesion|tumou?r|nodule|cyst)\b", low_all))
     has_nodes = bool(re.search(r"\b(adenopathy|lymph\s*node|lymphaden)\b", low_all))
 
-    p1 = "The scan was done to check for a mass." if has_mass else f"The scan was done to look for a problem in the {region}."
+    part1 = "The scan was ordered to investigate a mass." if has_mass else f"The scan was ordered to evaluate the {region}."
     if has_nodes:
-        p1 = p1.rstrip(".") + " and swollen lymph nodes."
-    p2 = "The goal was to find a simple cause for the symptoms."
-    result = f"{p1} {p2}"
-    
-    # Translate to Kiswahili if needed
+        part1 = part1.rstrip('.') + " and swollen lymph nodes."
+    part2 = "Doctors wanted to understand what is causing the current symptoms."
+    fallback = f"{part1} {part2}".strip()
+
     if language.lower() in ["kiswahili", "swahili"]:
-        result = _translate_to_kiswahili(result)
-    
-    return result
+        fallback = _translate_to_kiswahili(fallback)
+
+    return fallback
 
 
 # ---------- dedupe and pruning ----------

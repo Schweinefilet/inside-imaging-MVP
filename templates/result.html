@@ -397,8 +397,8 @@
     </section>
     {% endif %}
 
-    {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'lung' or 'lung' in (patient.study|default('', true)|lower) or 'chest' in (patient.study|default('', true)|lower)) %}
-    <section class="organ-visual-section">
+      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'lung' or 'lung' in (patient.study|default('', true)|lower) or 'chest' in (patient.study|default('', true)|lower)) %}
+      <section class="organ-visual-section" data-organ="lung">
       <h2>Chest/Lung Visualization</h2>
       <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
       <div class="brain-diagrams">
@@ -447,8 +447,8 @@
     </section>
     {% endif %}
 
-    {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'liver' or 'liver' in (patient.study|default('', true)|lower) or 'abdomen' in (patient.study|default('', true)|lower)) %}
-    <section class="organ-visual-section">
+      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'liver' or 'liver' in (patient.study|default('', true)|lower) or 'abdomen' in (patient.study|default('', true)|lower)) %}
+      <section class="organ-visual-section" data-organ="liver">
       <h2>Liver Visualization</h2>
       <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
       <div class="brain-diagrams">
@@ -492,8 +492,8 @@
     </section>
     {% endif %}
 
-    {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'kidney' or 'kidney' in (patient.study|default('', true)|lower) or 'renal' in (patient.study|default('', true)|lower)) %}
-    <section class="organ-visual-section">
+      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'kidney' or 'kidney' in (patient.study|default('', true)|lower) or 'renal' in (patient.study|default('', true)|lower)) %}
+      <section class="organ-visual-section" data-organ="kidney">
       <h2>Kidney Visualization</h2>
       <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
       <div class="brain-diagrams">
@@ -540,8 +540,8 @@
     </section>
     {% endif %}
 
-    {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or 'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
-    <section class="organ-visual-section">
+      {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or 'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
+      <section class="organ-visual-section" data-organ="spine">
       <h2>Spine Visualization</h2>
       <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
       <div class="brain-diagrams">
@@ -667,6 +667,8 @@
 </div>
 
 <script>
+  var organFocus = JSON.parse('{{ (diagnosis.focus if diagnosis and diagnosis.focus else {})|tojson|safe }}');
+
   document.addEventListener('DOMContentLoaded', function(){
     /* Theme toggle that switches class and persists */
     var toggle = document.getElementById('theme-toggle');
@@ -983,7 +985,8 @@
       if(target) hideTip();
     }, {passive:true});
 
-    annotateSimpleOutputTerms();
+  annotateSimpleOutputTerms();
+  applyOrganFocus(organFocus);
 
     /* Modal controls */
     var organModal = document.getElementById('organ-modal');
@@ -1009,6 +1012,132 @@
       }
     });
   });
+
+  function applyOrganFocus(focus){
+    if(!focus || !focus.organ) return;
+    if(focus.organ === 'lung') updateLungDiagrams(focus);
+    if(focus.organ === 'liver') updateLiverDiagrams(focus);
+    if(focus.organ === 'kidney') updateKidneyDiagrams(focus);
+    if(focus.organ === 'spine') updateSpineDiagrams(focus);
+  }
+
+  function updateLungDiagrams(focus){
+    var section = document.querySelector('.organ-visual-section[data-organ="lung"]');
+    if(!section) return;
+    var laterality = focus.laterality || 'right';
+    var zone = focus.zone || '';
+    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+    if(axial){
+      var cx = laterality === 'left' ? 95 : laterality === 'bilateral' ? 120 : 145;
+      var cy = zone === 'upper' ? 100 : zone === 'lower' ? 140 : 115;
+      var radius = laterality === 'bilateral' ? 28 : 14;
+      axial.setAttribute('cx', cx);
+      axial.setAttribute('cy', cy);
+      axial.setAttribute('r', radius);
+    }
+    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+    if(sagittal){
+      var sagCy = zone === 'upper' ? 105 : zone === 'lower' ? 145 : 125;
+      sagittal.setAttribute('cy', sagCy);
+      sagittal.setAttribute('rx', laterality === 'bilateral' ? 18 : 15);
+    }
+    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+    if(coronal){
+      var corCx = laterality === 'left' ? 85 : laterality === 'bilateral' ? 120 : 155;
+      var corCy = zone === 'upper' ? 95 : zone === 'lower' ? 130 : 110;
+      coronal.setAttribute('cx', corCx);
+      coronal.setAttribute('cy', corCy);
+      coronal.setAttribute('rx', laterality === 'bilateral' ? 24 : 14);
+    }
+  }
+
+  function updateKidneyDiagrams(focus){
+    var section = document.querySelector('.organ-visual-section[data-organ="kidney"]');
+    if(!section) return;
+    var laterality = focus.laterality || 'right';
+    var zone = focus.zone || '';
+    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+    if(axial){
+      var axialCxMap = {left: 80, right: 160, bilateral: 120};
+      var cx = axialCxMap[laterality] || 160;
+      var cy = zone === 'upper' ? 108 : zone === 'lower' ? 135 : 120;
+      var r = laterality === 'bilateral' ? 24 : 10;
+      axial.setAttribute('cx', cx);
+      axial.setAttribute('cy', cy);
+      axial.setAttribute('r', r);
+    }
+    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+    if(sagittal){
+      var sagCy = zone === 'upper' ? 110 : zone === 'lower' ? 138 : 125;
+      sagittal.setAttribute('cy', sagCy);
+      sagittal.setAttribute('rx', laterality === 'bilateral' ? 14 : 8);
+      sagittal.setAttribute('cx', laterality === 'left' ? 102 : 108);
+    }
+    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+    if(coronal){
+      var corCxMap = {left: 80, right: 160, bilateral: 120};
+      var corCx = corCxMap[laterality] || 160;
+      var corCy = zone === 'upper' ? 100 : zone === 'lower' ? 132 : 110;
+      coronal.setAttribute('cx', corCx);
+      coronal.setAttribute('cy', corCy);
+      coronal.setAttribute('rx', laterality === 'bilateral' ? 22 : 7);
+    }
+  }
+
+  function updateLiverDiagrams(focus){
+    var section = document.querySelector('.organ-visual-section[data-organ="liver"]');
+    if(!section) return;
+    var laterality = focus.laterality || focus.segment_group || 'right';
+    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+    if(axial){
+      var cx = laterality === 'left' ? 105 : laterality === 'bilateral' ? 125 : laterality === 'caudate' ? 120 : 145;
+      axial.setAttribute('cx', cx);
+      axial.setAttribute('r', laterality === 'bilateral' ? 22 : 13);
+    }
+    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+    if(sagittal){
+      sagittal.setAttribute('cx', laterality === 'left' ? 110 : laterality === 'caudate' ? 122 : 135);
+      sagittal.setAttribute('cy', laterality === 'caudate' ? 120 : 110);
+      sagittal.setAttribute('rx', laterality === 'bilateral' ? 18 : 12);
+    }
+    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+    if(coronal){
+      var corCx = laterality === 'left' ? 105 : laterality === 'bilateral' ? 125 : laterality === 'caudate' ? 120 : 150;
+      coronal.setAttribute('cx', corCx);
+      coronal.setAttribute('rx', laterality === 'bilateral' ? 20 : 12);
+    }
+  }
+
+  function updateSpineDiagrams(focus){
+    var section = document.querySelector('.organ-visual-section[data-organ="spine"]');
+    if(!section) return;
+    var region = (focus.region || '').toLowerCase();
+    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+    var axialCyMap = {cervical: 90, thoracic: 120, lumbar: 150, sacral: 170};
+    var sagittalCyMap = {cervical: 85, thoracic: 120, lumbar: 155, sacral: 175};
+    var coronalYMap = {cervical: 70, thoracic: 110, lumbar: 145, sacral: 165};
+    if(!region && Array.isArray(focus.levels) && focus.levels.length){
+      var firstLevel = String(focus.levels[0] || '').trim();
+      if(firstLevel){
+        var code = firstLevel[0].toLowerCase();
+        region = {c: 'cervical', t: 'thoracic', l: 'lumbar', s: 'sacral'}[code] || '';
+      }
+    }
+    var regionKey = region || 'thoracic';
+    if(axial){
+      axial.setAttribute('cy', axialCyMap[regionKey] || 120);
+    }
+    if(sagittal){
+      var sagCy = sagittalCyMap[regionKey] || 120;
+      sagittal.setAttribute('cy', sagCy);
+    }
+    if(coronal){
+      var corY = coronalYMap[regionKey] || 110;
+      coronal.setAttribute('y', corY);
+    }
+  }
 </script>
 
 <script src="{{ url_for('static', filename='theme.js') }}"></script>

@@ -20,22 +20,24 @@ def test_triage_accepts_radiology_report():
 
     ok, diagnostics = _triage_radiology_report(radiology_text)
     assert ok, diagnostics
+    assert diagnostics.get("reason") == "ok"
+    assert len(diagnostics.get("sections", [])) >= 3
+    assert len(diagnostics.get("modalities", [])) >= 1
+    assert diagnostics.get("measurement_count", 0) >= 1
 
 
 def test_triage_rejects_non_medical_document():
     from app import _triage_radiology_report
 
     syllabus_text = (
-        "Course Syllabus for Advanced Creative Writing\n"
-        "Course Description: This semester we explore narrative forms and workshop peer drafts.\n"
-        "Title IX statements, grading policy, office hours, and assignment schedule are included."
+        "Course Syllabus for Advanced Creative Writing. "
+        "This syllabus outlines the semester schedule, homework circles, and weekly assignments for students. "
+        "The professor emphasizes grading policy, Title IX statements, and thoughtful workshop habits for the campus community. "
+        "Office hours take place in a quiet studio where the course description is reviewed alongside reading responses. "
+        "Students collaborate on narrative exercises, peer feedback journals, and creative prompts unrelated to hospital workflows or technical laboratories. "
+        "The canvas site lists course hours, classroom etiquette guidelines, and final exam requirements for the cohort."
     )
 
     ok, diagnostics = _triage_radiology_report(syllabus_text)
     assert not ok
-    assert diagnostics.get("reason") in {
-        "non_medical_tokens",
-        "insufficient_radiology_markers",
-        "low_confidence",
-        "too_short",
-    }
+    assert diagnostics.get("reason") == "non_medical_tokens"

@@ -11,9 +11,11 @@ parse reports, build structured summaries and persist patient records.
   metadata extraction and SQLite database helpers.  This is the
   authoritative implementation for summarising reports.
 * `templates/` and `static/` – the HTML, CSS and JavaScript used by
-  the Flask app.  The `result.html` template contains a Three.js
-  viewer that highlights the approximate location of the organ being
-  scanned based on the study name passed from the server.
+  the Flask app.  The `result.html` template renders inline SVG
+  diagrams for the body and brain, with in-template scripts such as
+  `buildBodySVG`, `parseBrainLesion` and `updateBrainDiagrams` that
+  highlight study-specific regions and position lesion overlays based
+  on the structured report data passed from the server.
 * `data/` – CSV files for the lay glossary and the SQLite database.
 * `docs/` – the lightweight static marketing page that GitHub Pages
   serves.  A workflow keeps the assets in `docs/static/` aligned with

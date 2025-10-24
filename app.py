@@ -222,6 +222,114 @@ def _parse_brain_lesion(structured: dict) -> dict:
     }
 
 
+_TRIAGE_SECTION_RX = re.compile(
+    r"(?im)^\s*(findings|impression|conclusion|technique|history|clinical\s+history|"
+    r"indication|comparison|procedure|exam(?:ination)?|study|details)\s*[:\-]"
+)
+_TRIAGE_MODALITY_TOKENS = [
+    "ct", "mri", "x-ray", "xray", "ultrasound", "pet", "spect", "angiogram",
+    "fluoroscopy", "mammo", "mammogram", "cect", "mra", "cta", "doppler",
+]
+_TRIAGE_IMAGING_TERMS = [
+    "lesion", "mass", "nodule", "enhancement", "attenuation", "hyperdense",
+    "hypodense", "hyperintense", "hypointense", "density", "signal", "axial",
+    "sagittal", "coronal", "sequence", "cm", "mm", "vertebra", "lobar",
+    "hepatic", "renal", "ventricle", "parenchyma", "impression", "findings",
+    "technique", "study", "comparison", "contrast",
+]
+_TRIAGE_NEGATIVE_TOKENS = [
+    "syllabus", "semester", "homework", "assignment", "professor", "student",
+    "lecture", "quiz", "final exam", "midterm", "credit hours", "office hours",
+    "course objectives", "course description", "grading policy", "title ix",
+    "canvas site", "attendance policy",
+]
+
+
+def _triage_radiology_report(text: str) -> tuple[bool, dict]:
+    """Quick heuristic to reject non-radiology uploads before hitting the LLM."""
+
+    sample = (text or "").strip()
+    if not sample:
+        return False, {"reason": "empty"}
+
+    snippet = sample[:20000]
+    lower = snippet.lower()
+
+    # Basic counts
+    words = re.findall(r"\b\w+\b", snippet)
+    word_count = len(words)
+    section_hits = {match.group(1).lower() for match in _TRIAGE_SECTION_RX.finditer(snippet)}
+    modality_hits = [token for token in _TRIAGE_MODALITY_TOKENS if token in lower]
+    imaging_hits = [token for token in _TRIAGE_IMAGING_TERMS if token in lower]
+    measurement_count = len(re.findall(r"\b\d+(?:\.\d+)?\s*(?:mm|cm)\b", lower))
+    negative_hits = [token for token in _TRIAGE_NEGATIVE_TOKENS if token in lower]
+
+    # Legacy keyword heuristics to preserve prior thresholds
+    radiology_keywords = [
+        "radiology", "radiologist", "imaging", "scan", "ct", "mri", "x-ray", "xray",
+        "ultrasound", "pet", "findings", "impression", "technique", "contrast",
+        "examination", "study", "patient", "indication", "conclusion", "comparison",
+    ]
+    anatomy_terms = [
+        "brain", "lung", "liver", "kidney", "heart", "spine", "abdomen", "pelvis",
+        "chest", "thorax", "head", "skull", "bone", "soft tissue", "vessel", "artery",
+        "vein", "organ", "lesion", "mass", "nodule",
+    ]
+    radiology_keyword_count = sum(1 for keyword in radiology_keywords if keyword in lower)
+    anatomy_count = sum(1 for term in anatomy_terms if term in lower)
+
+    score = 0
+    if word_count >= 90:
+        score += 1
+    if len(section_hits) >= 2:
+        score += 2
+    elif len(section_hits) == 1:
+        score += 1
+    if radiology_keyword_count >= 3:
+        score += 1
+    if anatomy_count >= 2 or len(imaging_hits) >= 4:
+        score += 1
+    if modality_hits:
+        score += 2
+    if measurement_count >= 3:
+        score += 2
+    elif measurement_count >= 1:
+        score += 1
+    if "impression" in section_hits:
+        score += 1
+    if "findings" in section_hits:
+        score += 1
+
+    diagnostics = {
+        "word_count": word_count,
+        "sections": sorted(section_hits),
+        "modalities": modality_hits,
+        "imaging_hits": imaging_hits[:10],
+        "radiology_keyword_count": radiology_keyword_count,
+        "anatomy_count": anatomy_count,
+        "measurement_count": measurement_count,
+        "negative_hits": negative_hits,
+        "score": score,
+    }
+
+    # Hard rejection conditions
+    if word_count < 80 and not (len(section_hits) >= 3 and modality_hits):
+        diagnostics["reason"] = "too_short"
+        return False, diagnostics
+    if negative_hits and score < 6:
+        diagnostics["reason"] = "non_medical_tokens"
+        return False, diagnostics
+    if not modality_hits and len(section_hits) < 2 and len(imaging_hits) < 5:
+        diagnostics["reason"] = "insufficient_radiology_markers"
+        return False, diagnostics
+    if score < 5:
+        diagnostics["reason"] = "low_confidence"
+        return False, diagnostics
+
+    diagnostics["reason"] = "ok"
+    return True, diagnostics
+
+
 def _extract_focus_details(raw_text: str, organ: str | None) -> dict:
     if not organ:
         return {}
@@ -470,54 +578,14 @@ def upload():
 
     logging.info("len(extracted)=%s", len(extracted or ""))
 
-    # Validate that this looks like a radiology report - STRICT CHECK
-    extracted_lower = (extracted or "").lower()
-    
-    # Count radiology keywords
-    radiology_keywords = [
-        "radiology", "radiologist", "imaging", "scan", "ct", "mri", "x-ray", "xray",
-        "ultrasound", "pet", "findings", "impression", "technique", "contrast",
-        "examination", "study", "patient", "indication", "conclusion", "comparison"
-    ]
-    keyword_count = sum(1 for keyword in radiology_keywords if keyword in extracted_lower)
-    
-    # Count medical imaging terms
-    imaging_terms = [
-        "axial", "sagittal", "coronal", "slice", "series", "acquisition",
-        "enhancement", "attenuation", "signal", "density", "opacity",
-        "artifact", "protocol", "field of view", "fov", "kvp", "mas",
-        "te", "tr", "weighted", "sequence"
-    ]
-    imaging_term_count = sum(1 for term in imaging_terms if term in extracted_lower)
-    
-    # Count anatomy terms
-    anatomy_terms = [
-        "brain", "lung", "liver", "kidney", "heart", "spine", "abdomen",
-        "pelvis", "chest", "thorax", "head", "skull", "bone", "soft tissue",
-        "vessel", "artery", "vein", "organ", "lesion", "mass", "nodule"
-    ]
-    anatomy_count = sum(1 for term in anatomy_terms if term in extracted_lower)
-    
-    # Minimum length check
-    word_count = len(extracted.split())
-    
-    # STRICT validation rules
-    is_valid_report = (
-        word_count >= 100 and  # At least 100 words
-        keyword_count >= 3 and  # At least 3 radiology keywords
-        (imaging_term_count >= 2 or anatomy_count >= 2)  # At least 2 imaging or anatomy terms
-    )
-    
-    if not is_valid_report:
-        flash(
-            "The uploaded file doesn't appear to be a valid radiology report. "
-            "Please ensure you're uploading a complete medical imaging report with proper technical details.",
-            "error"
+    triage_ok, triage_diag = _triage_radiology_report(extracted)
+    if not triage_ok:
+        message = (
+            "The uploaded file doesn't appear to be a radiology report. "
+            "Please upload a full imaging report (with sections like Findings and Impression)."
         )
-        logging.warning(
-            "Upload rejected: words=%d, keywords=%d, imaging=%d, anatomy=%d",
-            word_count, keyword_count, imaging_term_count, anatomy_count
-        )
+        flash(message, "error")
+        logging.warning("Upload triage rejected: %s", triage_diag)
         return redirect(url_for("index"))
 
     # Build structured summary

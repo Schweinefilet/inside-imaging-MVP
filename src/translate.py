@@ -1201,4 +1201,4 @@ def build_structured(
         "patient": patient_bundle,
     }
 
-__all__ = ["Glossary", "build_structured"]
+__all__ = ["Glossary", "build_structured", "simplify_to_layman", "parse_metadata", "sections_from_text"]

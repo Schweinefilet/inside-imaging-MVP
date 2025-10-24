@@ -144,84 +144,6 @@ _JARGON_MAP = [
     (re.compile(r"\bperfusion\b", re.I), "blood flow"),
     (re.compile(r"\bembol(?:us|i|ism)\b", re.I), "blood clot"),
     (re.compile(r"\bstenosis\b", re.I), "narrowing"),
-    # Spine level auto-explanations
-    (re.compile(r"\bL4/L?5\b", re.I), "L4/5 (between the 4th and 5th bones in your lower back)"),
-    (re.compile(r"\bL5/S1\b", re.I), "L5/S1 (between the lowest back bone and your tailbone)"),
-    (re.compile(r"\bL3/L?4\b", re.I), "L3/4 (between the 3rd and 4th bones in your lower back)"),
-    (re.compile(r"\bL2/L?3\b", re.I), "L2/3 (between the 2nd and 3rd bones in your lower back)"),
-    (re.compile(r"\bL1/L?2\b", re.I), "L1/2 (between the 1st and 2nd bones in your lower back)"),
-    (re.compile(r"\bC5/C?6\b", re.I), "C5/6 (between the 5th and 6th bones in your neck)"),
-    (re.compile(r"\bC6/C?7\b", re.I), "C6/7 (between the 6th and 7th bones in your neck)"),
-    (re.compile(r"\bC4/C?5\b", re.I), "C4/5 (between the 4th and 5th bones in your neck)"),
-    (re.compile(r"\bC3/C?4\b", re.I), "C3/4 (between the 3rd and 4th bones in your neck)"),
-    # Brain regions and lobes
-    (re.compile(r"\bright\s+frontal\s+lobe\b", re.I), "right frontal lobe (front-right part of the brain, controls movement and planning)"),
-    (re.compile(r"\bleft\s+frontal\s+lobe\b", re.I), "left frontal lobe (front-left part of the brain, controls movement and speech)"),
-    (re.compile(r"\bright\s+parietal\s+lobe\b", re.I), "right parietal lobe (top-right part of the brain, processes touch and spatial awareness)"),
-    (re.compile(r"\bleft\s+parietal\s+lobe\b", re.I), "left parietal lobe (top-left part of the brain, processes touch and calculations)"),
-    (re.compile(r"\bright\s+temporal\s+lobe\b", re.I), "right temporal lobe (side-right part of the brain, processes sounds and memory)"),
-    (re.compile(r"\bleft\s+temporal\s+lobe\b", re.I), "left temporal lobe (side-left part of the brain, processes language and memory)"),
-    (re.compile(r"\bright\s+occipital\s+lobe\b", re.I), "right occipital lobe (back-right part of the brain, processes vision)"),
-    (re.compile(r"\bleft\s+occipital\s+lobe\b", re.I), "left occipital lobe (back-left part of the brain, processes vision)"),
-    (re.compile(r"\bfrontal\s+lobe\b", re.I), "frontal lobe (front part of the brain, controls movement and decision-making)"),
-    (re.compile(r"\bparietal\s+lobe\b", re.I), "parietal lobe (top part of the brain, processes touch and spatial awareness)"),
-    (re.compile(r"\btemporal\s+lobe\b", re.I), "temporal lobe (side part of the brain, processes hearing and memory)"),
-    (re.compile(r"\boccipital\s+lobe\b", re.I), "occipital lobe (back part of the brain, processes vision)"),
-    (re.compile(r"\bbasal\s+ganglia\b", re.I), "basal ganglia (deep brain structures that control movement)"),
-    (re.compile(r"\bthalamus\b", re.I), "thalamus (relay station in the center of the brain)"),
-    (re.compile(r"\bcerebellum\b", re.I), "cerebellum (back lower part of the brain that controls balance and coordination)"),
-    (re.compile(r"\bbrainstem\b", re.I), "brainstem (connects the brain to the spinal cord, controls breathing and heart rate)"),
-    (re.compile(r"\bpons\b", re.I), "pons (middle part of the brainstem)"),
-    (re.compile(r"\bmedulla\s+oblongata\b", re.I), "medulla oblongata (lower part of the brainstem)"),
-    # Liver segments (Couinaud system)
-    (re.compile(r"\bsegment\s+VIII\b", re.I), "segment VIII (top-right portion of the liver)"),
-    (re.compile(r"\bsegment\s+VII\b", re.I), "segment VII (back-right portion of the liver)"),
-    (re.compile(r"\bsegment\s+VI\b", re.I), "segment VI (lower-right portion of the liver)"),
-    (re.compile(r"\bsegment\s+V\b", re.I), "segment V (front-right portion of the liver)"),
-    (re.compile(r"\bsegment\s+IV\b", re.I), "segment IV (middle-left portion of the liver)"),
-    (re.compile(r"\bsegment\s+III\b", re.I), "segment III (front-left portion of the liver)"),
-    (re.compile(r"\bsegment\s+II\b", re.I), "segment II (upper-left portion of the liver)"),
-    (re.compile(r"\bsegment\s+I\b", re.I), "segment I (back portion of the liver, next to the spine)"),
-    (re.compile(r"\bright\s+hepatic\s+lobe\b", re.I), "right lobe of the liver (larger right portion)"),
-    (re.compile(r"\bleft\s+hepatic\s+lobe\b", re.I), "left lobe of the liver (smaller left portion)"),
-    # Lung anatomy
-    (re.compile(r"\bright\s+upper\s+lobe\b", re.I), "right upper lobe (top part of the right lung)"),
-    (re.compile(r"\bright\s+middle\s+lobe\b", re.I), "right middle lobe (middle part of the right lung)"),
-    (re.compile(r"\bright\s+lower\s+lobe\b", re.I), "right lower lobe (bottom part of the right lung)"),
-    (re.compile(r"\bleft\s+upper\s+lobe\b", re.I), "left upper lobe (top part of the left lung)"),
-    (re.compile(r"\bleft\s+lower\s+lobe\b", re.I), "left lower lobe (bottom part of the left lung)"),
-    (re.compile(r"\blingula\b", re.I), "lingula (tongue-like projection of the left upper lobe)"),
-    (re.compile(r"\bapical\s+segment\b", re.I), "apical segment (topmost part of the lung)"),
-    (re.compile(r"\bbasal\s+segment\b", re.I), "basal segment (bottommost part of the lung)"),
-    # Kidney anatomy
-    (re.compile(r"\bright\s+kidney\b", re.I), "right kidney (kidney on your right side)"),
-    (re.compile(r"\bleft\s+kidney\b", re.I), "left kidney (kidney on your left side)"),
-    (re.compile(r"\bupper\s+pole\b", re.I), "upper pole (top part of the kidney)"),
-    (re.compile(r"\blower\s+pole\b", re.I), "lower pole (bottom part of the kidney)"),
-    (re.compile(r"\brenal\s+cortex\b", re.I), "renal cortex (outer layer of the kidney that filters blood)"),
-    (re.compile(r"\brenal\s+medulla\b", re.I), "renal medulla (inner part of the kidney)"),
-    (re.compile(r"\brenal\s+pelvis\b", re.I), "renal pelvis (funnel that collects urine before it goes to the bladder)"),
-    # Pancreas anatomy
-    (re.compile(r"\bhead\s+of\s+(?:the\s+)?pancreas\b", re.I), "head of the pancreas (right side of the pancreas, near the small intestine)"),
-    (re.compile(r"\bbody\s+of\s+(?:the\s+)?pancreas\b", re.I), "body of the pancreas (middle portion of the pancreas)"),
-    (re.compile(r"\btail\s+of\s+(?:the\s+)?pancreas\b", re.I), "tail of the pancreas (left side of the pancreas, near the spleen)"),
-    (re.compile(r"\bpancreatic\s+head\b", re.I), "pancreatic head (right side of the pancreas)"),
-    (re.compile(r"\bpancreatic\s+body\b", re.I), "pancreatic body (middle portion)"),
-    (re.compile(r"\bpancreatic\s+tail\b", re.I), "pancreatic tail (left side)"),
-    # Heart chambers
-    (re.compile(r"\bright\s+atrium\b", re.I), "right atrium (upper-right chamber of the heart that receives blood from the body)"),
-    (re.compile(r"\bleft\s+atrium\b", re.I), "left atrium (upper-left chamber of the heart that receives blood from the lungs)"),
-    (re.compile(r"\bright\s+ventricle\b", re.I), "right ventricle (lower-right chamber that pumps blood to the lungs)"),
-    (re.compile(r"\bleft\s+ventricle\b", re.I), "left ventricle (lower-left chamber that pumps blood to the body)"),
-    # Directional/positional terms
-    (re.compile(r"\bproximal\b", re.I), "proximal (closer to the center of the body)"),
-    (re.compile(r"\bdistal\b", re.I), "distal (further from the center of the body)"),
-    (re.compile(r"\bsuperior\b", re.I), "superior (upper or above)"),
-    (re.compile(r"\binferior\b", re.I), "inferior (lower or below)"),
-    (re.compile(r"\bmedial\b", re.I), "medial (toward the middle)"),
-    (re.compile(r"\blateral\b", re.I), "lateral (toward the side)"),
-    (re.compile(r"\bventral\b", re.I), "ventral (toward the front)"),
-    (re.compile(r"\bdorsal\b", re.I), "dorsal (toward the back)"),
 ]
 def _rewrite_jargon(s: str) -> str:
     out = s or ""
@@ -843,63 +765,67 @@ Andika KILA KITU kwa Kiswahili sanifu bila Kiingereza:
 - "fracture" → "mfupa umevunjika"
 Hakikisha KILA neno ni Kiswahili."""
     else:
-        instructions = f"""You summarize medical imaging reports for the public. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
+        instructions = f"""You summarize medical imaging reports for patients and their families. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
 Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
-Audience: educated adult who is not a medical professional. Use clear, conversational language. Avoid patronizing tone.
+Audience: Anyone age 12 and up. Use SIMPLE, SHORT sentences (10-15 words each). Use everyday words. Explain medical terms immediately when you use them.
 
 CRITICAL: Extract information from the ACTUAL report provided - DO NOT copy these examples. These are templates showing the style only:
 
-reason: Explain WHY the scan was ordered in 2-3 sentences. Extract from the "Clinical History", "Indication", or "Reason" section of the report. Connect to the patient's actual symptoms/clinical history mentioned in THIS specific report. Be specific and empathetic.
-Example STYLE (adapt to actual report): "This MRI scan was ordered to investigate lower back pain that the patient has been experiencing. The goal was to examine the lumbar spine and identify any structural issues causing discomfort."
+reason: Explain WHY the scan was ordered in 1-2 SHORT sentences. Use the "Clinical History", "Indication", or "Reason" section. Use simple words.
+Example STYLE (adapt to actual report): "This scan was done to check your lower back pain. The doctor wanted to see what might be causing it."
 
-technique: Explain HOW the scan was performed in 4-6 sentences. Extract from the "Technique", "Procedure", or technical details section. Use analogies where helpful but don't oversimplify. Include:
-- What imaging technology was ACTUALLY used according to the report (MRI, CT, X-ray, ultrasound, etc.) and what makes it special
-- Which body region was ACTUALLY examined according to the report
-- Whether contrast was ACTUALLY used according to the report
-- What the technology can reveal that physical examination cannot
-Example STYLE (adapt to actual report): "An MRI (Magnetic Resonance Imaging) scan of the lumbar spine was performed using a 0.35 Tesla magnet. This technology uses powerful magnetic fields and radio waves to create detailed cross-sectional images of soft tissues, discs, and nerves. The imaging captured the spine from multiple angles—top-down (axial), side-to-side (sagittal), and front-to-back (coronal)—to build a complete 3D picture. No contrast dye was needed because the natural differences in tissue density provided clear images. This type of scan is especially good at showing disc problems, nerve compression, and spinal canal narrowing that wouldn't be visible on a regular X-ray."
+technique: Explain HOW the scan was done in 1-2 SHORT sentences. Keep it simple.
+Example STYLE (adapt to actual report): "MRI of the lower back."
 
-findings: Present 3-5 key findings from the ACTUAL report in clear bullet points. Start with NORMAL findings to provide context, then address abnormalities. Translate complex medical language into simple, clear sentences. Each bullet should be ONE complete sentence.
+findings: List 2-4 key findings in SHORT, SIMPLE bullet points. Start with good news, then problems. Each bullet = ONE short sentence (10-15 words).
 CRITICAL for findings:
-- Simplify complex medical jargon: "hypo-attenuating mass lesion" → "a darker area that appears to be a mass"
-- Remove redundant phrases: "noted in the head the patient the pancreas" → "in the head of the pancreas"
-- Each bullet point should be clear and standalone - avoid fragments
-- Start with normal/reassuring findings, then abnormalities
-- Use measurements exactly as stated but explain what they mean
-Example STYLE format (use actual findings from the report):
-- "Most of the surrounding organs look healthy: the liver, spleen, and kidneys all appear normal."
-- "The pancreas shows a mass measuring 4.1 x 5.3 centimeters in the head region (the right side of the pancreas)."
-- "The pancreatic duct (drainage tube) is widened to 5.8 millimeters, which suggests blockage downstream."
-- "Bile ducts inside and outside the liver are dilated (swollen), indicating that bile flow is being blocked."
+- Use SIMPLE words: "mass" → "lump", "lesion" → "abnormal spot", "dilated" → "wider than normal"
+- SHORT sentences: Break long sentences into 2-3 short ones
+- Explain as you go: "disc bulge (cushion between bones is pushed out)"
+- Cut extra words: "noted in" → just say where it is
+Example STYLE format (use actual findings):
+- "Your spine bones look healthy and properly lined up."
+- "The cushions between your back bones show wear from aging."
+- "At L4/5, a cushion is bulging out and pressing on nerves, especially on the right side."
+- "Other areas look normal."
 
-conclusion: Summarize the 1-2 most important findings from the ACTUAL "Conclusion" or "Impression" section in 2-4 clear, simple sentences. Avoid medical jargon. Explain what the findings mean in practical terms.
+conclusion: Summarize the MAIN finding in 1-3 SHORT sentences. Use simple words. Explain what it means.
 CRITICAL for conclusion:
-- Rewrite ALL medical terms in plain language
-- Remove garbled phrases like "the patient the" - simplify grammar
-- Focus on what matters most to understanding the condition
-- Connect findings to likely symptoms or concerns
-- Keep sentences short and direct
-Example STYLE (adapt to actual report): "The scan shows a mass in the head of the pancreas measuring about 4 centimeters. This mass is blocking both the pancreatic duct (which drains digestive enzymes) and the bile ducts (which drain bile from the liver). The blockage is causing bile ducts to swell throughout the liver. These findings suggest a pancreatic tumor that needs urgent medical attention."
+- Use everyday words only
+- Very SHORT sentences (10-15 words each)
+- Say what the problem is in plain language
+- No medical jargon unless you explain it immediately: "stenosis (narrowing)"
+Example STYLE (adapt to actual report): "The scan shows a bulging cushion at L4/5. It is pressing on nerves, more on the right. This can cause pain down your leg."
 
-concern: One clear sentence about next steps appropriate for the ACTUAL findings. Avoid alarming language but be honest.
-Example STYLE (adapt to actual report): "These findings should be discussed with your doctor to determine whether physical therapy, medication, or other treatments are appropriate."
+concern: One SHORT sentence about next steps.
+Example STYLE (adapt to actual report): "Talk to your doctor about treatment options like physical therapy or medication."
 
-CRITICAL RULES:
-- Extract ALL information from the ACTUAL report provided below - DO NOT use example text
-- Read the "Clinical History" or "Indication" section for the reason - extract the ACTUAL condition/symptoms mentioned
-- Read the "Procedure"/"Technique" section for how the scan was done - extract ACTUAL details (MRI vs CT, which body part, Tesla strength, contrast usage, etc.)
-- Read the "Findings" section for what was discovered - extract ACTUAL anatomical findings
-- Read the "Conclusion"/"Impression" for the summary - extract ACTUAL diagnostic conclusions
-- SIMPLIFY all medical jargon: "hypo-attenuating" → "darker area", "lesion" → "abnormal area or mass", "upstream dilatation" → "swelling upstream"
-- FIX grammatical errors: remove garbled phrases like "the patient the" or "noted mass effect on" - rewrite in clear English
-- NO fragments or incomplete sentences - every sentence must be complete and understandable
-- KEEP ALL NUMBERS exactly as stated: "5.4 x 5.6 x 6.7 cm" stays "5.4 x 5.6 x 6.7 cm"
-- Use medical terms when necessary but ALWAYS explain them in parentheses the same sentence
-- Write for an intelligent adult, not a child
-- Be empathetic but factual—avoid false reassurance or unnecessary alarm
-- If language is "{language}", write EVERYTHING in pure {language} with NO English words mixed in.
+CRITICAL RULES FOR SIMPLE LANGUAGE:
+- VERY SHORT sentences: 10-15 words maximum
+- Use SIMPLE words a 12-year-old knows:
+  * "mass/lesion" → "lump" or "abnormal spot"
+  * "dilated" → "wider" or "swollen"
+  * "compression" → "pressing on" or "squeezing"
+  * "degeneration" → "wear and tear"
+  * "bilateral" → "both sides"
+  * "unilateral" → "one side"
+  * "demonstrate" → "show"
+  * "visualized" → "seen"
+  * "unremarkable" → "normal" or "looks healthy"
+  * "intervertebral disc" → "cushion between bones"
+  * "vertebral body" → "back bone"
+  * "foraminal narrowing" → "less space for nerves"
+  * "nerve root compression" → "nerve is being squeezed"
+- If you MUST use a medical word, explain it RIGHT AWAY in the same sentence:
+  * Good: "stenosis (narrowing of the space)"
+  * Bad: "stenosis" (then explain later)
+- NO complex grammar - use simple subject-verb-object structure
+- Break long sentences into 2-3 short ones
+- KEEP numbers as stated but explain size: "4 cm (about the size of a grape)"
+- Extract ACTUAL content from report - these are just style examples
+- Be kind and clear - no scary words, no medical jargon
 
-REMEMBER: The examples above show STYLE and FORMAT only. You MUST extract content from the ACTUAL report text provided below."""
+REMEMBER: Write like you're explaining to a smart 12-year-old or someone whose first language isn't {language}. Short sentences. Simple words. Explain as you go."""
 
 
     # 1) Try Chat Completions JSON mode when supported.

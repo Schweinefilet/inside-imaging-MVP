@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450">404: Not Found
+  <defs>
+    <linearGradient id="lungGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffb3ba;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff8a95;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Left lung -->
+  <path d="M100,120 Q80,140 80,180 Q80,240 85,280 Q90,320 100,350 Q110,340 120,320 Q130,280 130,240 Q130,180 120,140 Q110,120 100,120 Z" 
+        fill="url(#lungGrad)" stroke="#cc6666" stroke-width="3"/>
+  
+  <!-- Left lung lobes -->
+  <line x1="85" y1="200" x2="125" y2="205" stroke="#cc6666" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="85" y1="260" x2="125" y2="265" stroke="#cc6666" stroke-width="1.5" stroke-dasharray="5,3"/>
+  
+  <!-- Right lung -->
+  <path d="M300,120 Q320,140 320,180 Q320,240 315,280 Q310,320 300,350 Q290,340 280,320 Q270,280 270,240 Q270,180 280,140 Q290,120 300,120 Z" 
+        fill="url(#lungGrad)" stroke="#cc6666" stroke-width="3"/>
+  
+  <!-- Right lung lobes -->
+  <line x1="275" y1="185" x2="315" y2="180" stroke="#cc6666" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="275" y1="245" x2="315" y2="240" stroke="#cc6666" stroke-width="1.5" stroke-dasharray="5,3"/>
+  
+  <!-- Trachea and bronchi -->
+  <rect x="195" y="60" width="10" height="70" fill="#d4a5a5" stroke="#aa6666" stroke-width="2"/>
+  <path d="M200,130 Q180,145 160,155" fill="none" stroke="#aa6666" stroke-width="3"/>
+  <path d="M200,130 Q220,145 240,155" fill="none" stroke="#aa6666" stroke-width="3"/>
+  
+  <!-- Heart space in middle -->
+  <ellipse cx="200" cy="240" rx="45" ry="60" fill="#f0f0f0" stroke="#999" stroke-width="2" stroke-dasharray="4,2" opacity="0.6"/>
+  
+  <!-- Labels -->
+  <text x="105" y="240" font-size="16" fill="#fff" font-weight="700" text-anchor="middle">LEFT</text>
+  <text x="295" y="240" font-size="16" fill="#fff" font-weight="700" text-anchor="middle">RIGHT</text>
+  <text x="30" y="240" font-size="12" fill="#333">Left Lung</text>
+  <text x="330" y="240" font-size="12" fill="#333">Right Lung</text>
+  <text x="200" y="245" font-size="10" fill="#666" text-anchor="middle">Heart</text>
+  
+  <!-- Title -->
+  <text x="200" y="35" font-size="20" fill="#333" font-weight="700" text-anchor="middle">LUNG ANATOMY</text>
+  <text x="200" y="420" font-size="11" fill="#666" text-anchor="middle">Respiratory System</text>
+</svg>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450">404: Not Found
+  <defs>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e89999;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#cc6666;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Pericardium (heart sac) -->
+  <ellipse cx="200" cy="240" rx="120" ry="155" fill="none" stroke="#6699cc" stroke-width="3" stroke-dasharray="10,5" opacity="0.5"/>
+  
+  <!-- Heart chambers -->
+  <g>
+    <!-- Right atrium -->
+    <path d="M150,130 L120,160 L120,210 L150,250 L180,230 L180,150 Z" fill="url(#heartGrad)" stroke="#aa4444" stroke-width="2.5" opacity="0.9"/>
+    
+    <!-- Left atrium -->
+    <path d="M250,130 L220,150 L220,230 L250,250 L280,210 L280,160 Z" fill="url(#heartGrad)" stroke="#aa4444" stroke-width="2.5" opacity="0.9"/>
+    
+    <!-- Right ventricle -->
+    <path d="M120,220 L140,260 L140,350 L110,320 L110,240 Z" fill="url(#heartGrad)" stroke="#aa4444" stroke-width="3" opacity="0.95"/>
+    
+    <!-- Left ventricle -->
+    <path d="M260,260 L280,220 L290,240 L290,320 L260,350 Z" fill="url(#heartGrad)" stroke="#aa4444" stroke-width="3" opacity="0.95"/>
+  </g>
+  
+  <!-- Labels -->
+  <text x="150" y="190" font-size="18" fill="#fff" font-weight="700" text-anchor="middle">RA</text>
+  <text x="250" y="190" font-size="18" fill="#fff" font-weight="700" text-anchor="middle">LA</text>
+  <text x="125" y="285" font-size="18" fill="#fff" font-weight="700" text-anchor="middle">RV</text>
+  <text x="275" y="305" font-size="18" fill="#fff" font-weight="700" text-anchor="middle">LV</text>
+  
+  <text x="50" y="185" font-size="13" fill="#333">Right Atrium</text>
+  <text x="310" y="185" font-size="13" fill="#333">Left Atrium</text>
+  <text x="30" y="295" font-size="13" fill="#333">Right Ventricle</text>
+  <text x="310" y="315" font-size="13" fill="#333">Left Ventricle</text>
+  
+  <!-- Title -->
+  <text x="200" y="35" font-size="20" fill="#333" font-weight="700" text-anchor="middle">HEART ANATOMY</text>
+  <text x="200" y="430" font-size="11" fill="#6699cc" text-anchor="middle">Pericardium (protective sac)</text>
+</svg>

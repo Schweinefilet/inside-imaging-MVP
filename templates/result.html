@@ -172,6 +172,90 @@
     .brain-notes{margin:1rem 0 0; padding-left:1.3rem; color:var(--muted); list-style-type:disc;}
     .brain-notes li{margin:0.4rem 0; line-height:1.5;}
 
+    /* Anatomy image-based visualization */
+    .anatomy-image-container{
+      background:var(--panel-2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1.5rem;
+      margin:1rem auto;
+      max-width:600px;
+      box-shadow:var(--shadow);
+    }
+    .anatomy-image-wrapper{
+      position:relative;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:0 auto;
+    }
+    .spine-diagram-svg{
+      width:100%;
+      max-width:300px;
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 2px 6px rgba(0,0,0,0.15));
+    }
+    .organ-diagram-svg{
+      width:100%;
+      max-width:350px;
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 2px 6px rgba(0,0,0,0.15));
+    }
+    .spine-highlight{
+      stroke:#fff;
+      stroke-width:2.5;
+    }
+    /* Removed .organ-highlight and pulse-highlight animation */
+    .light .spine-diagram-svg text{
+      fill:#1a1a1a !important;
+    }
+    .light .organ-diagram-svg text{
+      fill:#1a1a1a !important;
+    }
+    .light .spine-diagram-svg .spine-highlight{
+      stroke:#000;
+    }
+    .anatomy-legend{
+      margin-top:1rem;
+      text-align:center;
+      color:var(--muted);
+      font-size:0.9rem;
+    }
+    .legend-circle{
+      display:inline-block;
+      width:14px;
+      height:14px;
+      background:#ef4444;
+      border:2px solid #fff;
+      border-radius:50%;
+      vertical-align:middle;
+      margin-right:6px;
+    }
+    .legend-highlight-line{
+      display:inline-block;
+      width:20px;
+      height:3px;
+      background:#ef4444;
+      border-radius:2px;
+      vertical-align:middle;
+      margin-right:6px;
+    }
+    .legend-highlight-area{
+      display:inline-block;
+      width:14px;
+      height:14px;
+      background:#ef4444;
+      border-radius:3px;
+      vertical-align:middle;
+      margin-right:6px;
+      opacity:0.7;
+    }
+    .light .legend-circle{
+      border-color:#000;
+    }
+
     /* Modal */
     .organ-modal{ position:fixed; inset:0; z-index:9997; display:none; align-items:center; justify-content:center;
       background:rgba(0,0,0,.45); backdrop-filter:saturate(120%) blur(2px); }
@@ -265,327 +349,348 @@
       <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
     </section>
 
-    {% set study_lower = (patient.study|default('', true)|lower) %}
-    {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' and ('brain' in study_lower or 'head' in study_lower or 'skull' in study_lower or 'cerebral' in study_lower or 'cranial' in study_lower) %}
-    <section class="brain-visual-section">
-      <h2>Brain Visualization</h2>
-      <p class="brain-summary">A simplified diagram showing the approximate location of key findings mentioned in the report. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="brainGrad" cx="50%" cy="50%">
-                <stop offset="0%" style="stop-color:rgb(190,220,230);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(140,180,195);stop-opacity:1" />
-              </radialGradient>
-            </defs>
-            <!-- Brain outline (axial/top view) -->
-            <ellipse cx="120" cy="120" rx="85" ry="90" class="brain-outline" fill="url(#brainGrad)"/>
-            <!-- Longitudinal fissure -->
-            <path d="M120,30 Q120,60 120,120 Q120,180 120,210" stroke="rgb(100,140,155)" stroke-width="2.5" fill="none"/>
-            <!-- Left hemisphere sulci -->
-            <path d="M60,80 Q50,90 45,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M50,115 Q45,125 42,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M70,60 Q65,70 60,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Right hemisphere sulci -->
-            <path d="M180,80 Q190,90 195,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M190,115 Q195,125 198,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M170,60 Q175,70 180,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lesion in right frontoparietal region -->
-            <ellipse cx="145" cy="95" rx="18" ry="22" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal/side view - anatomically accurate -->
-            <!-- Main cerebrum outline -->
-            <path d="M70,120 
-                     Q70,80 85,60 
-                     Q100,45 118,42 
-                     Q135,42 148,55
-                     Q157,70 160,90
-                     Q162,110 160,130
-                     Q157,150 148,165
-                     Q140,175 128,182
-                     L115,185
-                     Q100,183 88,175
-                     Q75,162 72,145
-                     Q70,132 70,120" 
-                  class="brain-outline" fill="url(#brainGrad)" stroke="rgb(100,130,145)" stroke-width="1"/>
-            
-            <!-- Corpus callosum (thick band connecting hemispheres) -->
-            <ellipse cx="115" cy="110" rx="35" ry="8" fill="rgb(200,215,225)" opacity="0.9"/>
-            
-            <!-- Cerebellum (detailed with folds) -->
-            <path d="M145,180 
-                     Q155,175 162,178
-                     Q168,182 168,190
-                     Q168,198 162,202
-                     Q155,205 145,202
-                     Q138,198 138,190
-                     Q138,182 145,180" 
-                  fill="rgb(175,200,215)" stroke="rgb(120,150,165)" stroke-width="0.8" opacity="0.9"/>
-            <!-- Cerebellum folds -->
-            <path d="M145,185 L145,197" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            <path d="M150,183 L150,199" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            <path d="M155,182 L155,200" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            <path d="M160,183 L160,198" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            
-            <!-- Brainstem (pons and medulla) -->
-            <rect x="140" y="200" width="14" height="22" fill="rgb(150,180,195)" rx="3" opacity="0.85"/>
-            
-            <!-- Ventricles (fluid spaces) -->
-            <ellipse cx="112" cy="95" rx="12" ry="18" fill="rgb(100,140,160)" opacity="0.4"/>
-            <ellipse cx="115" cy="125" rx="8" ry="14" fill="rgb(100,140,160)" opacity="0.4"/>
-            
-            <!-- Major sulci/gyri (brain folds) -->
-            <!-- Central sulcus -->
-            <path d="M110,55 Q105,70 102,85 Q100,100 100,115" stroke="rgb(100,130,150)" stroke-width="1.8" fill="none" opacity="0.7"/>
-            <!-- Cingulate sulcus (above corpus callosum) -->
-            <path d="M95,95 Q105,90 120,92 Q130,95 138,100" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Parieto-occipital sulcus -->
-            <path d="M135,95 Q132,110 130,125 Q128,140 127,155" stroke="rgb(100,130,150)" stroke-width="1.5" fill="none" opacity="0.7"/>
-            <!-- Calcarine sulcus -->
-            <path d="M130,130 Q138,135 145,138" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            
-            <!-- Lesion position (example) -->
-            <ellipse cx="100" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Brain outline (coronal/front view - looking at face) -->
-            <!-- Left and right hemispheres with longitudinal fissure in middle -->
-            <path d="M60,115 
-                     Q60,65 85,50 
-                     Q105,42 120,42 
-                     L120,185
-                     Q105,192 85,185
-                     Q70,172 65,150
-                     Q60,130 60,115" 
-                  class="brain-outline" fill="url(#brainGrad)"/>
-            <path d="M180,115 
-                     Q180,65 155,50 
-                     Q135,42 120,42 
-                     L120,185
-                     Q135,192 155,185
-                     Q170,172 175,150
-                     Q180,130 180,115" 
-                  class="brain-outline" fill="url(#brainGrad)"/>
-            <!-- Longitudinal fissure (separates left/right) -->
-            <line x1="120" y1="42" x2="120" y2="185" stroke="rgb(100,140,155)" stroke-width="2" opacity="0.8"/>
-            <!-- Corpus callosum hint (connects hemispheres) -->
-            <ellipse cx="120" cy="110" rx="35" ry="8" fill="rgb(180,200,210)" opacity="0.5"/>
-            <!-- Lateral sulcus lines (left) -->
-            <path d="M75,90 Q70,105 68,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M85,75 Q80,88 78,100" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lateral sulcus lines (right) -->
-            <path d="M165,90 Q170,105 172,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M155,75 Q160,88 162,100" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lesion in right hemisphere -->
-            <ellipse cx="155" cy="85" rx="17" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-      <ul class="brain-notes">
-        <li>The red area indicates a lesion consistent with the findings mentioned in the report.</li>
-        <li>Diagram shows approximate location for illustrative purposes only.</li>
-      </ul>
-    </section>
-    {% endif %}
-
-      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'lung' or 'lung' in (patient.study|default('', true)|lower) or 'chest' in (patient.study|default('', true)|lower)) %}
-      <section class="organ-visual-section" data-organ="lung">
-      <h2>Chest/Lung Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="lungGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(220,190,190);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(180,140,140);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <!-- Axial/Top View (cross-section) -->
-            <ellipse cx="70" cy="120" rx="45" ry="50" class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <ellipse cx="170" cy="120" rx="45" ry="50" class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <rect x="105" y="95" width="30" height="50" fill="rgb(200,180,180)" opacity="0.6" rx="5"/>
-            <text x="120" y="75" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
-            <circle cx="145" cy="100" r="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal/Side View -->
-            <path d="M60,70 Q80,60 120,60 Q160,65 180,80 L180,180 Q160,190 120,190 Q80,185 60,175 Z" 
-                  class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <path d="M90,90 Q120,85 150,95" stroke="rgb(100,100,100)" stroke-width="2" fill="none" opacity="0.4"/>
-            <path d="M90,130 Q120,125 150,135" stroke="rgb(100,100,100)" stroke-width="2" fill="none" opacity="0.4"/>
-            <text x="120" y="55" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
-            <ellipse cx="135" cy="110" rx="15" ry="18" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal/Front View -->
-            <path d="M50,80 Q55,65 75,60 Q95,58 120,58 Q145,58 165,60 Q185,65 190,80 L190,175 Q185,185 165,188 Q145,190 120,190 Q95,190 75,188 Q55,185 50,175 Z" 
-                  class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <ellipse cx="85" cy="120" rx="25" ry="45" fill="rgb(200,170,170)" opacity="0.5"/>
-            <ellipse cx="155" cy="120" rx="25" ry="45" fill="rgb(200,170,170)" opacity="0.5"/>
-            <text x="120" y="50" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
-            <ellipse cx="155" cy="105" rx="14" ry="16" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
-
-      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'liver' or 'liver' in (patient.study|default('', true)|lower) or 'abdomen' in (patient.study|default('', true)|lower)) %}
-      <section class="organ-visual-section" data-organ="liver">
-      <h2>Liver Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="liverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(180,120,100);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(140,90,70);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <!-- Axial View -->
-            <path d="M60,120 Q70,80 100,70 L140,70 Q170,75 180,95 Q185,115 175,140 Q160,155 120,155 Q80,150 65,135 Q55,125 60,120 Z" 
-                  class="brain-outline" fill="url(#liverGrad)" opacity="0.8"/>
-            <text x="120" y="60" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
-            <circle cx="145" cy="105" r="13" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal View -->
-            <path d="M70,90 Q90,75 120,75 Q150,80 165,95 L160,140 Q150,155 120,160 Q90,155 75,140 Z" 
-                  class="brain-outline" fill="url(#liverGrad)" opacity="0.8"/>
-            <text x="120" y="65" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
-            <ellipse cx="135" cy="110" rx="12" ry="15" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal View -->
-            <path d="M50,100 Q60,80 80,75 Q110,72 140,72 Q170,75 185,85 Q195,100 190,120 Q180,140 160,148 Q130,152 100,148 Q70,142 55,125 Q45,110 50,100 Z" 
-                  class="brain-outline" fill="url(#liverGrad)" opacity="0.8"/>
-            <text x="120" y="65" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
-            <circle cx="150" cy="110" r="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
-
-      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'kidney' or 'kidney' in (patient.study|default('', true)|lower) or 'renal' in (patient.study|default('', true)|lower)) %}
-      <section class="organ-visual-section" data-organ="kidney">
-      <h2>Kidney Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="kidneyGrad">
-                <stop offset="0%" style="stop-color:rgb(160,120,120);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(120,80,80);stop-opacity:1" />
-              </radialGradient>
-            </defs>
-            <!-- Axial View - both kidneys -->
-            <ellipse cx="80" cy="120" rx="22" ry="28" class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <ellipse cx="160" cy="120" rx="22" ry="28" class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <text x="120" y="70" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
-            <circle cx="165" cy="115" r="10" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal View -->
-            <path d="M90,90 Q100,85 115,88 Q125,92 130,105 Q130,125 125,140 Q115,152 100,152 Q85,148 82,135 Q80,115 85,100 Q88,90 90,90 Z" 
-                  class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <ellipse cx="105" cy="115" rx="8" ry="10" fill="rgb(140,100,100)" opacity="0.6"/>
-            <text x="120" y="75" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
-            <ellipse cx="108" cy="125" rx="8" ry="10" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal View -->
-            <path d="M70,85 Q75,80 85,82 Q92,85 95,95 L95,145 Q90,155 80,156 Q70,153 68,143 L68,95 Q70,85 70,85 Z" 
-                  class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <path d="M145,85 Q150,80 160,82 Q167,85 170,95 L170,145 Q165,155 155,156 Q145,153 143,143 L143,95 Q145,85 145,85 Z" 
-                  class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <text x="120" y="70" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
-            <ellipse cx="160" cy="110" rx="7" ry="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
+    {# Old 3-plane reconstruction visualizations removed - using universal organ detection system below #}
 
       {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or 'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
       <section class="organ-visual-section" data-organ="spine">
       <h2>Spine Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <p class="organ-summary">An anatomical diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper">
+          <!-- Simple built-in spine diagram using SVG -->
+          <svg class="spine-diagram-svg" viewBox="0 0 300 600" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="spineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(220,220,230);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(180,180,200);stop-opacity:1" />
+              <linearGradient id="vertebraGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#e0e7ee;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#b8c5d3;stop-opacity:1" />
               </linearGradient>
             </defs>
-            <!-- Axial View - cross section of vertebra -->
-            <ellipse cx="120" cy="120" rx="40" ry="35" class="brain-outline" fill="url(#spineGrad)" opacity="0.8"/>
-            <ellipse cx="120" cy="120" rx="18" ry="16" fill="rgb(150,150,170)" opacity="0.6"/>
-            <circle cx="135" cy="110" r="9" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
+            
+            <!-- Spinal column background -->
+            <path d="M150,20 Q145,300 150,580" stroke="#8899aa" stroke-width="35" fill="none" opacity="0.3"/>
+            
+            <!-- Cervical spine (neck) - C1-C7 -->
+            <g id="cervical">
+              <text x="30" y="45" font-size="14" fill="var(--muted)" font-weight="600">Cervical</text>
+              <text x="30" y="62" font-size="11" fill="var(--muted)">(Neck)</text>
+              
+              <rect x="120" y="50" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="62" font-size="10" fill="var(--text)">C1</text>
+              
+              <rect x="120" y="72" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="84" font-size="10" fill="var(--text)">C2</text>
+              
+              <rect x="120" y="94" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="106" font-size="10" fill="var(--text)">C3</text>
+              
+              <rect x="120" y="116" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="128" font-size="10" fill="var(--text)">C4</text>
+              
+              <rect x="120" y="138" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="150" font-size="10" fill="var(--text)">C5</text>
+              
+              <rect x="120" y="160" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="172" font-size="10" fill="var(--text)">C6</text>
+              
+              <rect x="120" y="182" width="60" height="18" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="194" font-size="10" fill="var(--text)">C7</text>
+            </g>
+            
+            <!-- Thoracic spine (mid-back) - T1-T12 -->
+            <g id="thoracic">
+              <text x="30" y="225" font-size="14" fill="var(--muted)" font-weight="600">Thoracic</text>
+              <text x="30" y="242" font-size="11" fill="var(--muted)">(Mid-back)</text>
+              
+              <rect x="120" y="210" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="220" font-size="9" fill="var(--text)">T1-T12</text>
+              <rect x="120" y="228" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="246" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="264" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="282" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="300" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="318" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="336" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="354" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="372" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="390" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <rect x="120" y="408" width="60" height="16" rx="3" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+            </g>
+            
+            <!-- Lumbar spine (lower back) - L1-L5 -->
+            <g id="lumbar">
+              <text x="30" y="450" font-size="14" fill="var(--muted)" font-weight="600">Lumbar</text>
+              <text x="30" y="467" font-size="11" fill="var(--muted)">(Lower back)</text>
+              
+              <rect x="120" y="435" width="60" height="20" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="448" font-size="10" fill="var(--text)">L1</text>
+              
+              <rect x="120" y="458" width="60" height="20" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="471" font-size="10" fill="var(--text)">L2</text>
+              
+              <rect x="120" y="481" width="60" height="20" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="494" font-size="10" fill="var(--text)">L3</text>
+              
+              <rect x="120" y="504" width="60" height="20" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="517" font-size="10" fill="var(--text)">L4</text>
+              
+              <rect x="120" y="527" width="60" height="20" rx="4" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="540" font-size="10" fill="var(--text)">L5</text>
+            </g>
+            
+            <!-- Sacrum (tailbone) -->
+            <g id="sacrum">
+              <text x="30" y="565" font-size="14" fill="var(--muted)" font-weight="600">Sacrum</text>
+              <text x="30" y="582" font-size="11" fill="var(--muted)">(Tailbone)</text>
+              
+              <path d="M120,550 L120,580 Q150,590 180,580 L180,550 Z" fill="url(#vertebraGrad)" stroke="#7788aa" stroke-width="1.5"/>
+              <text x="185" y="568" font-size="10" fill="var(--text)">S1</text>
+            </g>
+            
+            <!-- Dynamic highlight overlays based on findings -->
+            {% set findings_lower = (structured.findings|default('', true)|lower) %}
+            {% set conclusion_lower = (structured.conclusion|default('', true)|lower) %}
+            
+            <!-- Cervical highlights -->
+            {% if 'c3/4' in findings_lower or 'c3/c4' in findings_lower or 'c3/4' in conclusion_lower %}
+            <circle cx="210" cy="107" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="112" font-size="12" fill="#ef4444" font-weight="700">C3/4</text>
+            {% endif %}
+            {% if 'c4/5' in findings_lower or 'c4/c5' in findings_lower or 'c4/5' in conclusion_lower %}
+            <circle cx="210" cy="129" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="134" font-size="12" fill="#ef4444" font-weight="700">C4/5</text>
+            {% endif %}
+            {% if 'c5/6' in findings_lower or 'c5/c6' in findings_lower or 'c5/6' in conclusion_lower %}
+            <circle cx="210" cy="151" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="156" font-size="12" fill="#ef4444" font-weight="700">C5/6</text>
+            {% endif %}
+            {% if 'c6/7' in findings_lower or 'c6/c7' in findings_lower or 'c6/7' in conclusion_lower %}
+            <circle cx="210" cy="173" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="178" font-size="12" fill="#ef4444" font-weight="700">C6/7</text>
+            {% endif %}
+            
+            <!-- Lumbar highlights -->
+            {% if 'l1/2' in findings_lower or 'l1/l2' in findings_lower or 'l1/2' in conclusion_lower %}
+            <circle cx="210" cy="448" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="453" font-size="12" fill="#ef4444" font-weight="700">L1/2</text>
+            {% endif %}
+            {% if 'l2/3' in findings_lower or 'l2/l3' in findings_lower or 'l2/3' in conclusion_lower %}
+            <circle cx="210" cy="471" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="476" font-size="12" fill="#ef4444" font-weight="700">L2/3</text>
+            {% endif %}
+            {% if 'l3/4' in findings_lower or 'l3/l4' in findings_lower or 'l3/4' in conclusion_lower %}
+            <circle cx="210" cy="494" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="499" font-size="12" fill="#ef4444" font-weight="700">L3/4</text>
+            {% endif %}
+            {% if 'l4/5' in findings_lower or 'l4/l5' in findings_lower or 'l4/5' in conclusion_lower %}
+            <circle cx="210" cy="517" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="522" font-size="12" fill="#ef4444" font-weight="700">L4/5</text>
+            {% endif %}
+            {% if 'l5/s1' in findings_lower or 'l5/s1' in conclusion_lower %}
+            <circle cx="210" cy="540" r="16" class="spine-highlight" fill="#ef4444" opacity="0.8"/>
+            <text x="235" y="545" font-size="12" fill="#ef4444" font-weight="700">L5/S1</text>
+            {% endif %}
           </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal View - side view of spine column -->
-            <path d="M110,50 L110,190" stroke="rgb(180,180,200)" stroke-width="12" fill="none" opacity="0.8"/>
-            <circle cx="110" cy="70" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="95" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="120" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="145" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="170" r="8" fill="url(#spineGrad)"/>
-            <ellipse cx="110" cy="120" rx="12" ry="14" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal View - front view -->
-            <path d="M120,50 L120,190" stroke="rgb(180,180,200)" stroke-width="14" fill="none" opacity="0.8"/>
-            <rect x="108" y="65" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="90" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="115" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="140" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="165" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="115" width="24" height="12" class="brain-highlight" fill="#e74c3c" opacity="0.85" rx="2"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
+        </div>
+        
+        <div class="anatomy-legend">
+          <p><span class="legend-circle"></span> = Problem area mentioned in your report</p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {# Universal Organ Visualization System - Using Real Medical Images #}
+    {% set findings_text = (structured.findings|default('', true) + ' ' + structured.conclusion|default('', true))|lower %}
+    {% set study_text = (patient.study|default('', true))|lower %}
+    
+    {# Detect which organs are mentioned #}
+    {% set show_heart = ('heart' in findings_text or 'cardiac' in findings_text or 'pericardial' in findings_text or 'myocardial' in findings_text or 'heart' in study_text) %}
+    {% set show_lungs = ('lung' in findings_text or 'pulmonary' in findings_text or 'pleural' in findings_text or 'chest' in study_text or 'thorax' in study_text) %}
+    {% set show_liver = ('liver' in findings_text or 'hepatic' in findings_text or 'liver' in study_text) %}
+    {% set show_kidneys = ('kidney' in findings_text or 'renal' in findings_text or 'kidney' in study_text or 'renal' in study_text) %}
+    {% set show_pancreas = ('pancreas' in findings_text or 'pancreatic' in findings_text) %}
+    {% set show_abdomen = ('abdomen' in findings_text or 'abdominal' in study_text or 'pelvis' in study_text) %}
+    {% set show_brain = ('brain' in findings_text or 'cerebral' in findings_text or 'head' in study_text or 'brain' in study_text) %}
+    
+    {# Heart Visualization #}
+    {% if show_heart %}
+    <section class="organ-visual-section" data-organ="heart">
+      <h2>Heart Anatomy</h2>
+      <p class="organ-summary">Medical diagram showing the heart structure mentioned in your report.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper" style="position: relative; max-width: 600px; margin: 0 auto;">
+          <img src="{{ url_for('static', filename='images/anatomy/heart.svg') }}" 
+               alt="Heart anatomy diagram" 
+               style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          {# Problem indicators overlay #}
+          {% if 'pericardial effusion' in findings_text %}
+          <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Pericardial effusion (fluid around heart)
+          </div>
+          {% endif %}
+          {% if 'cardiomegaly' in findings_text or 'enlarged heart' in findings_text %}
+          <div style="position: absolute; top: 30px; right: 20px; background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Enlarged heart
+          </div>
+          {% endif %}
+        </div>
+        <div class="anatomy-legend" style="margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.95rem;">
+          <p><strong>Medical reference diagram</strong> - Red warnings show issues from your report</p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+    
+    {# Lungs Visualization #}
+    {% if show_lungs %}
+    <section class="organ-visual-section" data-organ="lungs">
+      <h2>Lung Anatomy</h2>
+      <p class="organ-summary">Medical diagram showing the lung structure mentioned in your report.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper" style="position: relative; max-width: 600px; margin: 0 auto;">
+          <img src="{{ url_for('static', filename='images/anatomy/lungs.svg') }}" 
+               alt="Lung anatomy diagram" 
+               style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          {# Problem indicators overlay - always visible #}
+          {% if 'pleural effusion' in findings_text %}
+          <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Pleural effusion (fluid around lungs)
+          </div>
+          {% endif %}
+          {% if 'pneumonia' in findings_text or 'consolidation' in findings_text %}
+          <div style="position: absolute; top: 30px; right: 20px; background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Pneumonia/Consolidation
+          </div>
+          {% endif %}
+          {% if 'nodule' in findings_text %}
+          <div style="position: absolute; top: 30px; left: 20px; background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Lung nodule detected
+          </div>
+          {% endif %}
+        </div>
+        <div class="anatomy-legend" style="margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.95rem;">
+          <p><strong>Medical reference diagram</strong> - Red warnings show issues from your report</p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {# Liver Visualization #}
+    {% if show_liver %}
+    <section class="organ-visual-section" data-organ="liver">
+      <h2>Liver Anatomy</h2>
+      <p class="organ-summary">Medical diagram showing the liver structure mentioned in your report.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper" style="position: relative; max-width: 600px; margin: 0 auto;">
+          <img src="{{ url_for('static', filename='images/anatomy/liver.svg') }}" 
+               alt="Liver anatomy diagram" 
+               style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          {# Problem indicators overlay - always visible #}
+          {% if 'lesion' in findings_text or 'mass' in findings_text %}
+          <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Liver lesion/mass detected
+          </div>
+          {% endif %}
+          {% if 'cirrhosis' in findings_text or 'fatty' in findings_text %}
+          <div style="position: absolute; top: 30px; right: 20px; background: rgba(239, 68, 68, 0.95); color: white; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 3px solid white; z-index: 10;">
+            ⚠️ Liver changes detected
+          </div>
+          {% endif %}
+        </div>
+        <div class="anatomy-legend" style="margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.95rem;">
+          <p><strong>Medical reference diagram</strong> - Red warnings show issues from your report</p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {# Kidneys Visualization #}
+    {% if show_kidneys %}
+    <section class="organ-visual-section" data-organ="kidneys">
+      <h2>Kidney Anatomy</h2>
+      <p class="organ-summary">Medical diagram showing the kidney structure mentioned in your report.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper" style="position: relative; max-width: 600px; margin: 0 auto;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Blausen_0592_KidneyAnatomy_02.png" 
+               alt="Kidney anatomy diagram" 
+               style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+               onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/2/27/Kidney_nephron_molar_09.svg';">
+          
+          {# Problem indicators overlay - always visible #}
+          {% if 'stone' in findings_text or 'calculus' in findings_text %}
+          <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid white;">
+            ⚠️ Kidney stone detected
+          </div>
+          {% endif %}
+          {% if 'cyst' in findings_text %}
+          <div style="position: absolute; top: 20px; right: 20px; background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid white;">
+            ⚠️ Kidney cyst detected
+          </div>
+          {% endif %}
+        </div>
+        <div class="anatomy-legend" style="margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.95rem;">
+          <p><strong>Reference diagram</strong> - Red warnings show issues from your report</p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {# Brain Visualization #}
+    {% if show_brain %}
+    <section class="organ-visual-section" data-organ="brain">
+      <h2>Brain Anatomy</h2>
+      <p class="organ-summary">Medical diagram showing the brain structure mentioned in your report.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper" style="position: relative; max-width: 600px; margin: 0 auto;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Blausen_0114_BrainStructures.png" 
+               alt="Brain anatomy diagram" 
+               style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+               onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/a/a4/Human_brain_diagram.svg';">
+          
+          {# Problem indicators overlay - always visible #}
+          {% if 'lesion' in findings_text or 'mass' in findings_text %}
+          <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid white;">
+            ⚠️ Brain lesion detected
+          </div>
+          {% endif %}
+          {% if 'stroke' in findings_text or 'infarct' in findings_text %}
+          <div style="position: absolute; top: 20px; right: 20px; background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid white;">
+            ⚠️ Stroke/Infarct detected
+          </div>
+          {% endif %}
+        </div>
+        <div class="anatomy-legend" style="margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.95rem;">
+          <p><strong>Reference diagram</strong> - Red warnings show issues from your report</p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {# Abdominal Overview - Only if pancreas or general abdomen mentioned but not specific organs #}
+    {% if (show_pancreas or show_abdomen) and not (show_liver or show_kidneys) %}
+    <section class="organ-visual-section" data-organ="abdomen">
+      <h2>Abdominal Anatomy</h2>
+      <p class="organ-summary">Medical diagram showing the abdominal organs mentioned in your report.</p>
+      <div class="anatomy-image-container">
+        <div class="anatomy-image-wrapper" style="position: relative; max-width: 600px; margin: 0 auto;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Blausen_0013_AbdominalOrgans_Lateral.png" 
+               alt="Abdominal organs anatomy diagram" 
+               style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+               onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/8/85/Surface_projections_of_the_organs_of_the_trunk.png';">
+          
+          {# Problem indicators overlay - always visible #}
+          {% if 'pancreas' in findings_text and ('mass' in findings_text or 'tumor' in findings_text) %}
+          <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid white;">
+            ⚠️ Pancreatic mass detected
+          </div>
+          {% endif %}
+        </div>
+        <div class="anatomy-legend" style="margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.95rem;">
+          <p><strong>Reference diagram</strong> - Red warnings show issues from your report</p>
+        </div>
       </div>
     </section>
     {% endif %}

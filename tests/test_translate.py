@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.translate import Glossary, build_structured
+from src.translate import Glossary, build_structured, simplify_to_layman
 
 
 def _sample_report() -> str:
@@ -38,3 +38,55 @@ def test_build_structured_converts_highlights_to_markup():
     result = build_structured(_sample_report(), glossary)
 
     assert "<strong class=\"negative\">Mass</strong>" in result["findings"]
+
+
+def test_build_structured_marks_positive_highlights():
+    glossary = Glossary()
+    report = (
+        "NAIROBI RADIOLOGY HOSPITAL\n"
+        "NAME: John Doe\n"
+        "AGE: 55\n"
+        "SEX: Male\n"
+        "DATE: 02/02/2025\n"
+        "CT CHEST WITH CONTRAST\n"
+        "\n"
+        "HISTORY: Screening exam.\n"
+        "TECHNIQUE: Contrast enhanced CT scan of the chest.\n"
+        "FINDINGS: **No mass** or suspicious nodule is seen.\n"
+    )
+
+    result = build_structured(report, glossary)
+
+    assert "<strong class=\"positive\">No mass</strong>" in result["findings"]
+
+
+def test_build_structured_generates_concern_when_keywords_present():
+    glossary = Glossary()
+    report = (
+        "KISUMU IMAGING CENTER\n"
+        "NAME: Sam Smith\n"
+        "AGE: 33\n"
+        "SEX: M\n"
+        "DATE: 03/01/2025\n"
+        "CT ABDOMEN WITH CONTRAST\n"
+        "\n"
+        "FINDINGS: There is obstruction of the bowel leading to dilation.\n"
+    )
+
+    result = build_structured(report, glossary)
+
+    assert "obstruction" in result["concern"].lower()
+    assert result["reason"] == "Not provided."
+    assert result["technique"] == "Not provided."
+    assert "obstruction" in result["conclusion"].lower()
+
+
+def test_simplify_to_layman_respects_glossary_and_units():
+    glossary = Glossary({"hepatomegaly": "enlarged liver"})
+    text = "Hepatomegaly measuring 5 cm with 12 mm lesion."
+
+    simplified = simplify_to_layman(text, glossary)
+
+    assert "enlarged liver" in simplified.lower()
+    assert "centimeters" in simplified
+    assert "millimeters" in simplified

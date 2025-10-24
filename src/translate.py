@@ -314,11 +314,11 @@ def build_structured(
     def _classify_highlight(match: re.Match) -> str:
         content = match.group(1)
         lower = content.lower()
+        negative_hits = sum(term in lower for term in negative_terms)
+        positive_hits = sum(term in lower for term in positive_terms)
         css_class = "positive"
-        if any(term in lower for term in negative_terms):
+        if negative_hits > positive_hits:
             css_class = "negative"
-        elif any(term in lower for term in positive_terms):
-            css_class = "positive"
         return f"<strong class=\"{css_class}\">{content}</strong>"
 
     simplified_findings = re.sub(r"\*\*(.*?)\*\*", _classify_highlight, simplified_findings)

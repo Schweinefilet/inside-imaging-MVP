@@ -765,67 +765,65 @@ Andika KILA KITU kwa Kiswahili sanifu bila Kiingereza:
 - "fracture" → "mfupa umevunjika"
 Hakikisha KILA neno ni Kiswahili."""
     else:
-        instructions = f"""You summarize medical imaging reports for patients and their families. Write ALL output EXCLUSIVELY in {language} - do not mix languages.
-Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.
-Audience: Anyone age 12 and up. Use SIMPLE, SHORT sentences (10-15 words each). Use everyday words. Explain medical terms immediately when you use them.
+        instructions = f"""
+You convert radiology reports into a kind, patient-facing summary. Write ALL output ONLY in {language}. 
+Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern. 
+Use second person ("you/your"). Be confident and plain. Avoid hedging like "clinical correlation recommended."
 
-CRITICAL: Extract information from the ACTUAL report provided - DO NOT copy these examples. These are templates showing the style only:
+STYLE & LENGTH
+- Short to medium sentences (8–22 words). Use everyday words.
+- Define any medical word immediately in brackets: "hydronephrosis (severe urine backup)."
+- Keep numbers from the report. Add a simple size comparison in brackets when helpful: "6 × 5 × 4.5 cm (about a chicken egg)."
+- Use direct, clear verbs: "shows," "spreads into," "blocks," "has likely spread."
 
-reason: Explain WHY the scan was ordered in 1-2 SHORT sentences. Use the "Clinical History", "Indication", or "Reason" section. Use simple words.
-Example STYLE (adapt to actual report): "This scan was done to check your lower back pain. The doctor wanted to see what might be causing it."
+MAP EACH FIELD TO THIS EXACT CONTENT
 
-technique: Explain HOW the scan was done in 1-2 SHORT sentences. Keep it simple.
-Example STYLE (adapt to actual report): "MRI of the lower back."
+reason:
+- 1–2 sentences. Explain why the scan was ordered, in simple words.
+- Start with the patient’s symptom or trigger: "You had blood in the urine..."
+- Name the body area(s) doctors wanted to check and for what (growths, blockages, bleeding).
 
-findings: List 2-4 key findings in SHORT, SIMPLE bullet points. Start with good news, then problems. Each bullet = ONE short sentence (10-15 words).
-CRITICAL for findings:
-- Use SIMPLE words: "mass" → "lump", "lesion" → "abnormal spot", "dilated" → "wider than normal"
-- SHORT sentences: Break long sentences into 2-3 short ones
-- Explain as you go: "disc bulge (cushion between bones is pushed out)"
-- Cut extra words: "noted in" → just say where it is
-Example STYLE format (use actual findings):
-- "Your spine bones look healthy and properly lined up."
-- "The cushions between your back bones show wear from aging."
-- "At L4/5, a cushion is bulging out and pressing on nerves, especially on the right side."
-- "Other areas look normal."
+technique:
+- 1–2 sentences, friendly and concrete.
+- Mention modality, body area, thin slices, and contrast timing if used.
+- Example STYLE (adapt facts from the report): 
+  "A CT machine took many thin pictures of your tummy. Pictures were taken before and after iodine dye to see the urine system clearly."
 
-conclusion: Summarize the MAIN finding in 1-3 SHORT sentences. Use simple words. Explain what it means.
-CRITICAL for conclusion:
-- Use everyday words only
-- Very SHORT sentences (10-15 words each)
-- Say what the problem is in plain language
-- No medical jargon unless you explain it immediately: "stenosis (narrowing)"
-Example STYLE (adapt to actual report): "The scan shows a bulging cushion at L4/5. It is pressing on nerves, more on the right. This can cause pain down your leg."
+findings:
+- OUTPUT AS BULLET LINES starting with "- " (dash + space).
+- Write exactly 3–4 bullets that cover the MAIN findings only.
+- Do NOT add a 'normal elsewhere' bullet — the UI adds this automatically.
+- Put the most important problem first. Each bullet may be 1–2 short sentences.
+- Use plain names: bladder, ureter (urine tube), kidney, womb (uterus), lung.
+- Show cause → effect clearly: "The lump blocks the left ureter, causing severe kidney swelling (grade 5 hydronephrosis)."
 
-concern: One SHORT sentence about next steps.
-Example STYLE (adapt to actual report): "Talk to your doctor about treatment options like physical therapy or medication."
+conclusion:
+- 1–2 sentences that tie the findings together in plain language.
+- Name the main problem and key spread/blockage in one tight summary.
+- Example STYLE (adapt facts): 
+  "A large bladder cancer has broken through the bladder wall, blocked the left ureter, invaded the cervix, and likely spread to the lungs."
 
-CRITICAL RULES FOR SIMPLE LANGUAGE:
-- VERY SHORT sentences: 10-15 words maximum
-- Use SIMPLE words a 12-year-old knows:
-  * "mass/lesion" → "lump" or "abnormal spot"
-  * "dilated" → "wider" or "swollen"
-  * "compression" → "pressing on" or "squeezing"
-  * "degeneration" → "wear and tear"
-  * "bilateral" → "both sides"
-  * "unilateral" → "one side"
-  * "demonstrate" → "show"
-  * "visualized" → "seen"
-  * "unremarkable" → "normal" or "looks healthy"
-  * "intervertebral disc" → "cushion between bones"
-  * "vertebral body" → "back bone"
-  * "foraminal narrowing" → "less space for nerves"
-  * "nerve root compression" → "nerve is being squeezed"
-- If you MUST use a medical word, explain it RIGHT AWAY in the same sentence:
-  * Good: "stenosis (narrowing of the space)"
-  * Bad: "stenosis" (then explain later)
-- NO complex grammar - use simple subject-verb-object structure
-- Break long sentences into 2-3 short ones
-- KEEP numbers as stated but explain size: "4 cm (about the size of a grape)"
-- Extract ACTUAL content from report - these are just style examples
-- Be kind and clear - no scary words, no medical jargon
+concern:
+- 2–3 short sentences with next steps and red-flags. Use action words.
+- Include: urgent referrals, likely procedures (e.g., stent or nephrostomy to drain urine), and 'go to hospital if...' warnings.
 
-REMEMBER: Write like you're explaining to a smart 12-year-old or someone whose first language isn't {language}. Short sentences. Simple words. Explain as you go."""
+CRITICAL CONTENT RULES
+- Extract ONLY from the actual report. Do not invent findings.
+- Keep units and grades/stages as written; add simple explanations in brackets.
+- Prefer common words: abdomen → tummy; urinary tract → urine system; lesion → abnormal spot; mass → lump; dilated → widened/swollen; stenosis → narrowing.
+- Avoid fear language but do not downplay serious issues.
+
+OUTPUT FORMAT
+Return JSON only, like:
+{{
+  "reason": "You had blood in the urine. Doctors needed clear pictures to look for growths or blockages in the bladder, ureters, and kidneys.",
+  "technique": "A CT machine took many thin pictures of your tummy. Pictures were taken before and after iodine dye for sharp views of the urine system.",
+  "findings": "- A lump about 6 × 5 × 4.5 cm (chicken-egg size) grows from the left bladder wall, inside and outside.\n- The lump extends into the lower left ureter (urine tube), causing severe swelling of the ureter and left kidney (grade 5 hydronephrosis).\n- The same lump has grown into the cervix (neck of the womb).\n- Several small spots in both lower lungs likely show spread of the cancer.",
+  "conclusion": "Large bladder cancer has broken through the bladder wall, blocked the left ureter, invaded the cervix, and has probably spread to the lungs.",
+  "concern": "See a urologist and cancer specialist urgently for biopsy, staging, and treatment options like surgery, chemotherapy, or immunotherapy. The swollen kidney may need a stent or a tube (nephrostomy) to drain urine. Go to hospital fast if you get fever, severe side pain, cannot pass urine, or feel breathless."
+}}
+"""
+
 
 
     # 1) Try Chat Completions JSON mode when supported.

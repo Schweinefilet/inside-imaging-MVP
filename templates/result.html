@@ -300,7 +300,7 @@
       <a href="{{ url_for('index') }}">Dashboard</a>
       <a href="{{ url_for('projects') }}">Projects</a>
       <a href="{{ url_for('report_status') }}">Statistics</a>
-      <a href="{{ url_for('payment') }}">Payment</a>
+      <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
@@ -352,7 +352,8 @@
     </section>
 
     {# Old 3-plane reconstruction visualizations removed - using universal organ detection system below #}
-
+    {# ANATOMY DIAGRAMS DISABLED - Uncomment sections below to re-enable #}
+    {% if false %}
       {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or 'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
       <section class="organ-visual-section" data-organ="spine">
       <h2>Spine Visualization</h2>
@@ -500,8 +501,10 @@
       </div>
     </section>
     {% endif %}
+    {% endif %}
 
     {# Universal Organ Visualization System - Using Real Medical Images #}
+    {% if false %}
     {% set findings_text = (structured.findings|default('', true) + ' ' + structured.conclusion|default('', true))|lower %}
     {% set study_text = (patient.study|default('', true))|lower %}
     
@@ -695,6 +698,7 @@
         </div>
       </div>
     </section>
+    {% endif %}
     {% endif %}
 
     {% set lang_lower = (language or 'English')|lower %}

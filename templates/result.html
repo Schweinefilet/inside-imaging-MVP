@@ -697,7 +697,9 @@
     </section>
     {% endif %}
 
-    {% if language and language != 'English' %}
+    {% set lang_lower = (language or 'English')|lower %}
+    {% set is_sw = lang_lower in ['kiswahili','swahili'] %}
+    {% if language and (language != 'English' and not is_sw) %}
       <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
     {% endif %}
 
@@ -725,24 +727,24 @@
 
     <div class="report">
       <section>
-        <h3>Reason for the Scan</h3>
+        <h3>{{ 'Sababu ya Uchunguzi' if is_sw else 'Reason for the Scan' }}</h3>
         <p class="simple-output">{{ structured.reason|default('', true)|safe }}</p>
       </section>
       <section>
-        <h3>Procedure Details</h3>
+        <h3>{{ 'Maelezo ya Utaratibu' if is_sw else 'Procedure Details' }}</h3>
         <p class="simple-output">{{ structured.technique|default('', true)|safe }}</p>
       </section>
       <section class="important-findings">
-        <h3>Important Findings</h3>
+        <h3>{{ 'Matokeo Muhimu' if is_sw else 'Important Findings' }}</h3>
         <div class="simple-output">{{ structured.findings|default('', true)|safe }}</div>
       </section>
       <section>
-        <h3>Conclusion</h3>
+        <h3>{{ 'Hitimisho' if is_sw else 'Conclusion' }}</h3>
         <div class="simple-output">{{ structured.conclusion|default('', true)|safe }}</div>
       </section>
       {% if structured.concern %}
       <section class="warn">
-        <h3>Note of Concern</h3>
+        <h3>{{ 'Tahadhari' if is_sw else 'Note of Concern' }}</h3>
         <p class="simple-output">{{ structured.concern|safe }}</p>
       </section>
       {% endif %}

@@ -116,6 +116,149 @@ def _simplify_for_layperson(text: str) -> str:
 
 
 # -----------------------
+# Kiswahili fallback
+# -----------------------
+def _is_kiswahili(language: str | None) -> bool:
+    lang = (language or "").strip().lower()
+    return lang in ("kiswahili", "swahili")
+
+
+def _to_kiswahili(text: str) -> str:
+    """Very lightweight phrase/word replacement to Kiswahili.
+
+    This is used only in non-LLM fallback mode to keep parity of behavior
+    when the user selects Kiswahili. It intentionally favors clarity over
+    perfect grammar.
+    """
+    if not text:
+        return ""
+
+    # Phrase-level replacements first (order matters)
+    repl_phrase: List[Tuple[str, str]] = [
+        ("urine system", "mfumo wa mkojo"),
+        ("urine tube", "mrija wa mkojo"),
+        ("urine tubes", "mirija ya mkojo"),
+        ("womb (uterus)", "mfuko wa uzazi (uterasi)"),
+        ("womb", "mfuko wa uzazi"),
+        ("hydronephrosis (severe urine backup)", "hidronefrosisi (kuziba kwa mkojo kwa kiwango kikubwa)"),
+        ("widened/swollen", "imepanuka/imevimba"),
+        ("iodine dye", "dawa ya rangi (iodini)"),
+        ("spread of the cancer", "kusambaa kwa saratani"),
+        ("abnormal spot", "eneo lisilo la kawaida"),
+        ("You have", "Una"),
+        ("you have", "una"),
+        ("There is", "Kuna"),
+        ("there is", "kuna"),
+        ("This needs", "Hii inahitaji"),
+        ("Go to the hospital now if", "Nenda hospitali sasa ikiwa"),
+        ("See a neurosurgeon urgently", "Muone daktari wa upasuaji wa ubongo haraka"),
+        ("brain shift", "mchepuko wa ubongo"),
+        ("mass effect", "shinikizo la uvimbe"),
+        ("fronto-parietal", "fronto-parietal (eneo la mbele na upande wa kati)"),
+        ("outside the brain tissue but inside the skull", "nje ya tishu za ubongo lakini ndani ya fuvu"),
+        ("thin slices", "vipande vyembamba"),
+        ("Contrast dye", "Dawa ya rangi"),
+        ("contrast dye", "dawa ya rangi"),
+        ("was done", "ilifanyika"),
+        ("were done", "zilifanyika"),
+        ("No evidence of", "Hakuna ushahidi wa"),
+        ("No significant", "Hakuna kilicho kikubwa"),
+        ("pleural effusion", "majimaji kwenye ganda la mapafu"),
+        ("midline shift", "mchepuko wa mstari wa kati"),
+        ("subfalcine herniation", "kuingia kwa ubongo chini ya pindo la kati"),
+        ("herniation", "kuingia kwa tishu mahali pasipo"),
+        ("lymph nodes", "tezi za limfu"),
+        ("lymph node", "tezi ya limfu"),
+        ("pulmonary embolism", "gandu la damu kwenye mshipa wa mapafu"),
+        ("pulmonary edema", "uvimbe wa maji kwenye mapafu"),
+        ("atelectasis", "kupungua kwa upanuzi wa sehemu ya pafu"),
+        ("consolidation", "muungano wa tishu za pafu"),
+        ("enhancement", "kuonekana zaidi baada ya dawa ya rangi"),
+        ("enhances", "huonekana zaidi baada ya dawa ya rangi"),
+        ("enhanced", "imeonekana zaidi baada ya dawa ya rangi"),
+        ("nodule", "kijivimbe"),
+        ("calcification", "ugumu wa chokaa"),
+        ("metastatic", "iliyosanbaa"),
+    ]
+
+    # Single-word/shorter token replacements
+    repl_word: List[Tuple[str, str]] = [
+        ("tummy", "tumbo"),
+        ("abdomen", "tumbo"),
+        ("abdominal", "tumboni"),
+        ("ureter", "mrija wa mkojo"),
+        ("ureters", "mirija ya mkojo"),
+        ("kidneys", "figo"),
+        ("kidney", "figo"),
+        ("bladder", "kibofu"),
+        ("liver", "ini"),
+        ("brain", "ubongo"),
+        ("head", "kichwa"),
+        ("skull", "fuvu"),
+        ("lung", "pafu"),
+        ("lungs", "mapafu"),
+        ("cervix", "seviksi"),
+        ("lesions", "maeneo yasiyo ya kawaida"),
+        ("lesion", "eneo lisilo la kawaida"),
+        ("mass", "uvimbe"),
+        ("lump", "uvimbe"),
+        ("benign", "siyo saratani"),
+        ("malignant", "saratani"),
+        ("cancer", "saratani"),
+        ("metastases", "maeneo ya saratani iliyosambaa"),
+        ("metastasis", "kusambaa kwa saratani"),
+        ("indeterminate", "haijabainika"),
+        ("dilated", "imepanuka"),
+        ("dilation", "upanuzi"),
+        ("stenosis", "kubana"),
+        ("contrast", "dawa ya rangi"),
+        ("shows", "inaonyesha"),
+        ("spreads", "inasambaa"),
+        ("blocks", "inaziba"),
+        ("blocked", "imeziba"),
+        ("likely", "huenda"),
+        ("scan", "skani"),
+        ("treatment", "matibabu"),
+        ("surgery", "upasuaji"),
+        ("neurosurgeon", "daktari wa upasuaji wa ubongo"),
+        ("headaches", "maumivu ya kichwa"),
+        ("weakness", "udhaifu"),
+        ("confusion", "kuchanganyikiwa"),
+        ("right", "kulia"),
+        ("left", "kushoto"),
+        ("area", "eneo"),
+        ("upper", "juu"),
+        ("lower", "chini"),
+        ("anterior", "ya mbele"),
+        ("posterior", "ya nyuma"),
+        ("superior", "ya juu"),
+        ("inferior", "ya chini"),
+        ("lobe", "sehemu"),
+        ("segment", "sehemu"),
+    ]
+
+    out = text
+    # Normalize simple ASCII quotes to avoid oddities
+    out = out.replace("\u2019", "'")
+
+    for a, b in repl_phrase:
+        out = re.sub(rf"\b{re.escape(a)}\b", b, out, flags=re.I)
+
+    for a, b in repl_word:
+        out = re.sub(rf"\b{re.escape(a)}\b", b, out, flags=re.I)
+
+    # Very light pronoun/tense shifts when present
+    out = re.sub(r"\byour\b", "yako", out, flags=re.I)
+    out = re.sub(r"\byou\b", "wewe", out, flags=re.I)
+    out = re.sub(r"(?m)^\s*-\s+No\b", "- Hakuna", out, flags=re.I)
+    out = re.sub(r"\bNo\b", "Hakuna", out, flags=re.I)
+
+    # Clean extra spaces produced by replacements
+    out = re.sub(r"\s+", " ", out).strip()
+    return out
+
+
+# -----------------------
 # GPT‑5 call + parsing
 # -----------------------
 REFERENCE_STYLE = (
@@ -167,6 +310,14 @@ def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -
         "Write ALL output ONLY in {language}. Do not include any personal identifiers."
     ).replace("{language}", language or "English")
 
+    # When Kiswahili is selected, strongly forbid mixed language output
+    if _is_kiswahili(language):
+        system += (
+            " Use pure, everyday East African Kiswahili. Do NOT mix with English. "
+            "Avoid English words entirely. You may keep standard acronyms (CT, MRI, IV, X-ray) "
+            "but explain them once in Kiswahili in brackets the first time they appear."
+        )
+
     developer = (
         "Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.\n"
         "Use second person (you/your). Be confident and plain. Avoid hedging.\n"
@@ -215,6 +366,17 @@ def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -
         "STRICT JSON RULES: Valid JSON, no trailing commas, close all quotes/brackets/braces, and STOP after the final }.\n"
         "TOTAL BUDGET: Keep the entire JSON under 1200 characters."
     )
+
+    if _is_kiswahili(language):
+        developer += (
+            "\n\nSTRICT KISWAHILI RULES\n"
+            "- Andika kila neno kwa Kiswahili fasaha; usichanganye na Kiingereza.\n"
+            "- Badili istilahi za kitabibu kuwa Kiswahili (mfano: mass  uvimbe; lesion  eneo lisilo la kawaida;\n"
+            "  consolidation  muungano wa tishu za pafu; effusion  majimaji kwenye ganda la mapafu;\n"
+            "  enhancement  kuonekana zaidi baada ya dawa ya rangi).\n"
+            "- Ruhusu vifupisho vya kawaida tu (CT, MRI, IV, X-ray) na toa maelezo ya Kiswahili ndani ya mabano mara ya kwanza.\n"
+            "- Usitumie maneno kama 'mass', 'lesion', 'contrast', 'enhancement', 'consolidation', 'effusion' kwa Kiingereza.\n"
+        )
 
     user = (
         f"Study: {study or 'Unknown'}\n\n"
@@ -293,6 +455,69 @@ def _call_gpt5(messages: List[dict]) -> str:
         preview = raw if len(raw) <= 4000 else raw[:4000] + "…[truncated]"
         logger.info("GPT-5 raw output:%s\n%s", " (truncated)" if len(raw) > 4000 else "", preview)
     return raw
+
+
+def _translate_parts_via_llm(parts: Dict[str, object], *, language: str) -> Optional[Dict[str, object]]:
+    """Ask the LLM to translate already-parsed parts into the target language.
+
+    Returns a dict with keys reason, technique, findings, conclusion, concern
+    or None if the call is disabled/fails.
+    """
+    allow = os.getenv("INSIDEIMAGING_ALLOW_LLM", "0").strip()
+    if allow not in ("1", "true", "True", "yes", "YES"):
+        return None
+
+    system = (
+        "You translate patient-facing medical text into {language} ONLY. "
+        "Use a warm, clear, supportive tone."
+    ).replace("{language}", language or "Kiswahili")
+
+    if _is_kiswahili(language):
+        system += (
+            " Use pure Kiswahili; do NOT mix languages. Avoid English words entirely. "
+            "You may keep CT/MRI/IV/X-ray acronyms but explain them in Kiswahili in brackets the first time."
+        )
+
+    developer = (
+        "Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern.\n"
+        "RULES:\n"
+        "- Translate content fully into the target language; no English words (for Kiswahili: hakikisha hakuna Kiingereza).\n"
+        "- Keep numbers, units, grades/stages as-is (e.g., 5 mm, cm).\n"
+        "- Keep acronyms (CT, MRI) but explain in the target language the first time in brackets.\n"
+        "- findings must be either (A) an array of bullet strings, each starting with '- ', or (B) a single string of dash bullets.\n"
+        "- Do not add or remove bullets; preserve the count as much as reasonable.\n"
+        "- Do not include any extra keys, headings, or prose. JSON only."
+    )
+
+    user = (
+        "Translate the following JSON fields into the target language, preserving structure and bullets.\n"
+        + json.dumps({
+            "reason": parts.get("reason", ""),
+            "technique": parts.get("technique", ""),
+            "findings": parts.get("findings", []),
+            "conclusion": parts.get("conclusion", ""),
+            "concern": parts.get("concern", ""),
+        }, ensure_ascii=False)
+    )
+
+    raw = _call_gpt5([
+        {"role": "system", "content": system},
+        {"role": "developer", "content": developer},
+        {"role": "user", "content": user},
+    ])
+    if not raw:
+        return None
+
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            # Ensure keys exist
+            for k in ("reason", "technique", "findings", "conclusion", "concern"):
+                obj.setdefault(k, "")
+            return obj
+    except Exception:
+        logger.exception("JSON parse failed for LLM translation output")
+    return None
 
 
 def _split_sections(raw: str) -> Dict[str, str]:
@@ -439,10 +664,23 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
             pts = re.split(r"(?<=[.!?])\s+", s)
             return [p.strip() for p in pts if p.strip()][:n]
 
-        reason_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in sentences(fallback["reason"], 2)))
-        tech_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in sentences(fallback["technique"], 2)))
-        find_ul = _dashes_to_ul("\n".join(f"- {_simplify_for_layperson(s)}" for s in sentences(fallback["findings"], 6)))
-        concl_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in sentences(fallback["conclusion"], 2)))
+        # Build simplified English chunks first
+        reason_parts = [_simplify_for_layperson(x) for x in sentences(fallback["reason"], 2)]
+        tech_parts = [_simplify_for_layperson(x) for x in sentences(fallback["technique"], 2)]
+        find_parts = [_simplify_for_layperson(s) for s in sentences(fallback["findings"], 6)]
+        concl_parts = [_simplify_for_layperson(x) for x in sentences(fallback["conclusion"], 2)]
+
+        # If Kiswahili is selected, translate these simplified parts
+        if _is_kiswahili(language):
+            reason_parts = [_to_kiswahili(p) for p in reason_parts]
+            tech_parts = [_to_kiswahili(p) for p in tech_parts]
+            find_parts = [_to_kiswahili(p) for p in find_parts]
+            concl_parts = [_to_kiswahili(p) for p in concl_parts]
+
+        reason_txt = html.escape(" ".join(reason_parts))
+        tech_txt = html.escape(" ".join(tech_parts))
+        find_ul = _dashes_to_ul("\n".join(f"- {s}" for s in find_parts))
+        concl_txt = html.escape(" ".join(concl_parts))
         concern_txt = ""
     else:
         # Expect strict JSON; if not, fall back to section splitter
@@ -450,15 +688,24 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
             parts_raw = json.loads(raw)
             if not isinstance(parts_raw, dict):
                 raise ValueError("not a JSON object")
-            parts = {k: (parts_raw.get(k) or "") for k in ("reason", "technique", "findings", "conclusion", "concern")}
+            parts: Dict[str, object] = {k: (parts_raw.get(k) or "") for k in ("reason", "technique", "findings", "conclusion", "concern")}
         except Exception:
             logger.exception("Failed to parse JSON from GPT-5 output; attempting salvage of partial JSON")
             salvaged = _salvage_json_like(raw)
             if any(bool(salvaged.get(k)) for k in ("reason", "technique", "findings", "conclusion", "concern")):
-                parts = salvaged
+                parts = salvaged  # type: ignore[assignment]
             else:
                 logger.info("Salvage unsuccessful; falling back to section splitter")
                 parts = _split_sections(raw)
+
+        # If Kiswahili required, try an LLM translation pass on the parsed parts first
+        if _is_kiswahili(language):
+            try:
+                translated = _translate_parts_via_llm(parts, language="Kiswahili")
+                if translated:
+                    parts = translated
+            except Exception:
+                logger.exception("LLM translation pass failed; will apply local mapping")
 
         def _as_text(v: object) -> str:
             if isinstance(v, list):
@@ -521,6 +768,52 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
                     concern_txt = html.escape(refined)
             except Exception:
                 logger.exception("Concern refinement call failed; keeping salvaged text")
+
+        # If any sections are empty, backfill from raw report sections heuristically
+        def _sentences(s: str, n: int = 5) -> List[str]:
+            pts = re.split(r"(?<=[.!?])\s+", s or "")
+            return [p.strip() for p in pts if p.strip()][:n]
+
+        if not _strip_html(reason_txt):
+            reason_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("reason", ""), 2)))
+        if not _strip_html(tech_txt):
+            tech_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("technique", ""), 2)))
+        if not _strip_html(find_ul):
+            fb = _sentences(secs.get("findings", ""), 4)
+            find_ul = _dashes_to_ul("\n".join(f"- {_simplify_for_layperson(s)}" for s in fb))
+        if not _strip_html(concl_txt):
+            concl_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("impression", ""), 2)))
+
+        # If Kiswahili requested, enforce Kiswahili on the structured strings.
+        if _is_kiswahili(language):
+            def _to_sw_html_text(s: str) -> str:
+                # s is already html-escaped; unescape -> translate -> escape again
+                return html.escape(_to_kiswahili(html.unescape(s)))
+
+            def _to_sw_findings(html_or_text: str) -> str:
+                body = html_or_text or ""
+                if body.strip().lower().startswith("<ul"):
+                    # Translate each <li>...</li> item
+                    def repl(m: re.Match) -> str:
+                        inner = m.group(1) or ""
+                        translated = html.escape(_to_kiswahili(html.unescape(inner)))
+                        return f"<li>{translated}</li>"
+                    return re.sub(r"<li>(.*?)</li>", repl, body, flags=re.S|re.I)
+                # Otherwise treat as dash-text and rebuild UL
+                lines = []
+                for ln in (body.splitlines()):
+                    ln = ln.rstrip()
+                    if ln.strip().startswith("- "):
+                        content = ln.strip()[2:]
+                        lines.append("- " + _to_kiswahili(content))
+                return _dashes_to_ul("\n".join(lines) if lines else _to_kiswahili(body))
+
+            reason_txt = _to_sw_html_text(reason_txt)
+            tech_txt = _to_sw_html_text(tech_txt)
+            find_ul = _to_sw_findings(find_ul)
+            concl_txt = _to_sw_html_text(concl_txt)
+            if concern_txt:
+                concern_txt = _to_sw_html_text(concern_txt)
 
     # Patient block: omit name/identifiers; keep generic study fields
     patient = {

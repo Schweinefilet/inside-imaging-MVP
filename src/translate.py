@@ -337,34 +337,38 @@ def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -
         "- Avoid fear language. Be honest but reassuring.\n\n"
         "MAP EACH FIELD TO THIS EXACT CONTENT\n\n"
         "reason:\n"
-        "- 1–2 sentences. Explain why the scan was ordered in simple words.\n"
+        "- 1–2 sentences (100–150 chars). Explain why the scan was ordered in simple words.\n"
         "- Start with the patient's symptom or trigger.\n"
         "- Name body area(s) to check and for what (growths, blockages, bleeding).\n\n"
         "technique:\n"
-        "- 1–2 sentences, friendly and concrete.\n"
+        "- 1–2 sentences (100–180 chars), friendly and concrete.\n"
         "- Mention modality, body area, thin slices, and contrast timing if used.\n\n"
         "findings:\n"
         "- Return either (A) a single string composed of bullet lines that each start with '- ', or (B) an array of bullet strings where each item starts with '- '.\n"
-        "- Write exactly 3–4 bullets that cover the MAIN findings only.\n"
+        "- Write exactly 3–4 bullets that cover the MAIN findings only (200–350 chars total).\n"
         "- Do NOT add a 'normal elsewhere' bullet — the UI adds this automatically.\n"
         "- Put the most important problem first. Each bullet may be 1–2 short sentences.\n"
         "- Use plain names (bladder, ureter (urine tube), kidney, womb (uterus), lung).\n"
         "- Show cause → effect clearly.\n\n"
         "conclusion:\n"
-        "- 1–2 sentences that tie the findings together in plain language.\n"
-        "- Name the main problem and key spread/blockage in one tight summary.\n\n"
+        "- 1–2 sentences (80–150 chars) that tie the findings together in plain language.\n"
+        "- Name the main problem and key spread/blockage in one tight summary.\n"
+        "- MUST NOT be empty; always provide a summary.\n\n"
         "concern:\n"
-        "- 2–3 short sentences with next steps and red-flags. Use action words.\n"
-        "- Include urgent referrals, likely procedures (e.g., stent or nephrostomy), and 'go to hospital if...' warnings.\n\n"
+        "- 2–3 short sentences (150–300 chars) with next steps and red-flags. Use action words.\n"
+        "- Include urgent referrals, likely procedures (e.g., stent or nephrostomy), and 'go to hospital if...' warnings.\n"
+        "- MUST NOT be empty; always provide next steps.\n\n"
         "CRITICAL CONTENT RULES\n"
         "- Extract ONLY from the actual report. Do not invent findings.\n"
         "- Keep units and grades/stages as written; add simple explanations in brackets.\n"
         "- Prefer common words: abdomen → tummy; urinary tract → urine system; lesion → abnormal spot; mass → lump;\n"
-        "  dilated → widened/swollen; stenosis → narrowing. Avoid fear language but do not downplay serious issues.\n\n"
+        "  dilated → widened/swollen; stenosis → narrowing. Avoid fear language but do not downplay serious issues.\n"
+        "- ALL five fields (reason, technique, findings, conclusion, concern) MUST have content. Do not leave any field empty.\n\n"
         "OUTPUT FORMAT\n"
         "Return JSON only. No prose, no markdown, no headings, no prefix/suffix—just the object.\n"
         "STRICT JSON RULES: Valid JSON, no trailing commas, close all quotes/brackets/braces, and STOP after the final }.\n"
-        "TOTAL BUDGET: Keep the entire JSON under 1200 characters."
+        "COMPLETE ALL FIELDS: Ensure conclusion and concern are NOT empty strings.\n"
+        "TOTAL BUDGET: Keep the entire JSON under 1200 characters, but prioritize completeness over brevity."
     )
 
     if _is_kiswahili(language):
@@ -401,7 +405,7 @@ def _call_gpt5(messages: List[dict]) -> str:
     Honors environment variables:
       - OPENAI_MODEL (default: gpt-5)
       - INSIDEIMAGING_ALLOW_LLM (must be truthy to call)
-      - OPENAI_MAX_OUTPUT_TOKENS (default: 256)
+      - OPENAI_MAX_OUTPUT_TOKENS (default: 512)
       - OPENAI_TIMEOUT (seconds; default: 60)
     """
     allow = os.getenv("INSIDEIMAGING_ALLOW_LLM", "0").strip()
@@ -417,7 +421,7 @@ def _call_gpt5(messages: List[dict]) -> str:
         return ""
 
     model = os.getenv("OPENAI_MODEL", "gpt-5").strip() or "gpt-5"
-    max_out = int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "256") or 256)
+    max_out = int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "512") or 512)
     timeout_s = int(os.getenv("OPENAI_TIMEOUT", "60") or 60)
 
     # Some deployments pin verbosity low to encourage brevity
@@ -649,6 +653,20 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
     messages = _compose_prompt(meta, secs, language)
     raw = _call_gpt5(messages)
 
+    # If we got truncated JSON (common with complex Kiswahili), retry with higher token limit
+    retry_attempted = False
+    if raw and not raw.strip().endswith("}"):
+        logger.warning("GPT-5 output appears truncated (doesn't end with }); attempting retry with higher token limit")
+        # Temporarily boost max tokens for retry
+        original_max = os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "512")
+        os.environ["OPENAI_MAX_OUTPUT_TOKENS"] = "800"
+        retry_raw = _call_gpt5(messages)
+        os.environ["OPENAI_MAX_OUTPUT_TOKENS"] = original_max
+        if retry_raw and len(retry_raw) > len(raw):
+            raw = retry_raw
+            retry_attempted = True
+            logger.info("Retry successful; using longer output")
+
     if not raw:
         # Fallback: build simple, layperson text directly from sections
         logger.warning("LLM output empty; using heuristic fallback")
@@ -731,24 +749,49 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
         concl_txt = html.escape(_as_text(parts.get("conclusion")))
         concern_txt = html.escape(_as_text(parts.get("concern")))
 
+        # Log the lengths of each section for debugging
+        logger.info(
+            "Parsed section lengths: reason=%d, technique=%d, findings=%d, conclusion=%d, concern=%d",
+            len(_strip_html(reason_txt)),
+            len(_strip_html(tech_txt)),
+            len(_strip_html(find_ul)),
+            len(_strip_html(concl_txt)),
+            len(_strip_html(concern_txt))
+        )
+
         # If concern looks truncated or missing, attempt a focused completion
         if len(_strip_html(concern_txt)) < 60:
             try:
+                system_content = (
+                    "You write short, patient-facing next-step advice. "
+                    "Use second person. Avoid identifiers. Write ONLY in {language}."
+                ).replace("{language}", language or "English")
+                
+                if _is_kiswahili(language):
+                    system_content += (
+                        " Andika kwa Kiswahili safi tu; usichanganye na Kiingereza. "
+                        "Tumia maneno rahisi ya kila siku."
+                    )
+                
+                developer_content = (
+                    "Return ONLY the Note of Concern text: 2–3 short sentences (<= 300 characters total). "
+                    "Include urgent referrals, likely procedures, and clear red-flags (go to hospital if ...). "
+                    "No markdown. No quotes. No JSON."
+                )
+                
+                if _is_kiswahili(language):
+                    developer_content += (
+                        " LAZIMA kuwa Kiswahili tu; hakuna Kiingereza kabisa."
+                    )
+                
                 small_messages = [
                     {
                         "role": "system",
-                        "content": (
-                            "You write short, patient-facing next-step advice. "
-                            "Use second person. Avoid identifiers. Write ONLY in {language}."
-                        ).replace("{language}", language or "English"),
+                        "content": system_content,
                     },
                     {
                         "role": "developer",
-                        "content": (
-                            "Return ONLY the Note of Concern text: 2–3 short sentences (<= 300 characters total). "
-                            "Include urgent referrals, likely procedures, and clear red-flags (go to hospital if ...). "
-                            "No markdown. No quotes. No JSON."
-                        ),
+                        "content": developer_content,
                     },
                     {
                         "role": "user",
@@ -766,8 +809,23 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
                 refined = _call_gpt5(small_messages).strip()
                 if refined:
                     concern_txt = html.escape(refined)
+                else:
+                    logger.warning("Concern refinement returned empty; will use generic fallback")
             except Exception:
                 logger.exception("Concern refinement call failed; keeping salvaged text")
+        
+        # If concern is still empty after refinement, provide a generic fallback
+        if not _strip_html(concern_txt):
+            if _is_kiswahili(language):
+                concern_txt = html.escape(
+                    "Muone daktari wako haraka kupanga hatua za matibabu. "
+                    "Nenda hospitali ikiwa una maumivu makali, homa, au dalili zinazoongezeka."
+                )
+            else:
+                concern_txt = html.escape(
+                    "See your doctor urgently to plan next steps for treatment. "
+                    "Go to hospital if you have severe pain, fever, or worsening symptoms."
+                )
 
         # If any sections are empty, backfill from raw report sections heuristically
         def _sentences(s: str, n: int = 5) -> List[str]:
@@ -775,14 +833,20 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
             return [p.strip() for p in pts if p.strip()][:n]
 
         if not _strip_html(reason_txt):
-            reason_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("reason", ""), 2)))
+            simplified_reason = " ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("reason", ""), 2))
+            reason_txt = html.escape(_to_kiswahili(simplified_reason) if _is_kiswahili(language) else simplified_reason)
         if not _strip_html(tech_txt):
-            tech_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("technique", ""), 2)))
+            simplified_tech = " ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("technique", ""), 2))
+            tech_txt = html.escape(_to_kiswahili(simplified_tech) if _is_kiswahili(language) else simplified_tech)
         if not _strip_html(find_ul):
             fb = _sentences(secs.get("findings", ""), 4)
-            find_ul = _dashes_to_ul("\n".join(f"- {_simplify_for_layperson(s)}" for s in fb))
+            simplified_findings = [_simplify_for_layperson(s) for s in fb]
+            if _is_kiswahili(language):
+                simplified_findings = [_to_kiswahili(s) for s in simplified_findings]
+            find_ul = _dashes_to_ul("\n".join(f"- {s}" for s in simplified_findings))
         if not _strip_html(concl_txt):
-            concl_txt = html.escape(" ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("impression", ""), 2)))
+            simplified_concl = " ".join(_simplify_for_layperson(x) for x in _sentences(secs.get("impression", ""), 2))
+            concl_txt = html.escape(_to_kiswahili(simplified_concl) if _is_kiswahili(language) else simplified_concl)
 
         # If Kiswahili requested, enforce Kiswahili on the structured strings.
         if _is_kiswahili(language):
@@ -842,5 +906,15 @@ def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, l
     )
     out["word_count"] = len(blob.split())
     out["sentence_count"] = len(re.findall(r"[.!?]+", blob))
+
+    # Log summary lengths for debugging
+    logger.info(
+        "summary_keys={'reason': %d, 'technique': %d, 'findings': %d, 'conclusion': %d, 'concern': %d}",
+        len(_strip_html(reason_txt)),
+        len(_strip_html(tech_txt)),
+        len(_strip_html(find_ul)),
+        len(_strip_html(concl_txt)),
+        len(_strip_html(concern_txt))
+    )
 
     return out

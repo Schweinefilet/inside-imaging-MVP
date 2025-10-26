@@ -39,3 +39,18 @@ in `requirements.txt` and start the Flask server:
 pip install -r requirements.txt
 FLASK_APP=app.py flask run
 ```
+
+### OCR for images
+
+Image uploads (PNG/JPG/TIFF/WEBP/BMP) are OCRed into text and then passed to the translator.
+Prerequisites:
+
+- Install the Tesseract OCR engine on your system (e.g., Windows installer from UB Mannheim, macOS via `brew install tesseract`, Linux via your package manager).
+- Ensure `pytesseract` is installed (included in `requirements.txt`).
+- If Tesseract isn’t on your PATH, set `TESSERACT_CMD` to the full path of the executable, for example on Windows:
+
+```
+set TESSERACT_CMD=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+```
+
+The app will auto-detect image files on upload and extract text via Tesseract before summarization.

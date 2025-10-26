@@ -1,1334 +1,355 @@
-﻿# src/translate.py
-from __future__ import annotations
+"""
+Patient-friendly translation and structuring for radiology reports.
 
-import csv, re, os, json, logging, time
-from dataclasses import dataclass
-from typing import Dict, List, Tuple
-from openai import BadRequestError, NotFoundError
-import ast
-
-# ---------- logging ----------
-logger = logging.getLogger("insideimaging")
-if not logger.handlers:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-
-# ---------- parse import with safe fallbacks ----------
-try:
-    from .parse import parse_metadata, sections_from_text
-except Exception:
-    logger.warning("parse.py unavailable; using robust fallbacks")
-
-    def parse_metadata(text: str) -> Dict[str, str]:
-        t = text or ""
-        def grab(rx, default=""):
-            m = re.search(rx, t, flags=re.I | re.M)
-            return (m.group(1).strip() if m else default)
-        name = grab(r"^\s*NAME\s*:\s*([^\n]+)")
-        age = grab(r"^\s*AGE\s*:\s*([0-9]{1,3})")
-        sex_raw = grab(r"^\s*SEX\s*:\s*([MF]|Male|Female)")
-        sex = {"m":"M","f":"F","male":"M","female":"F"}.get(sex_raw.lower(), sex_raw) if sex_raw else ""
-        date = grab(r"^\s*DATE\s*:\s*([0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4})")
-        study = grab(r"^\s*((?:MRI|CT|X-?RAY|ULTRASOUND|USG)[^\n]*)")
-        hospital = grab(r"^[^\n]*HOSPITAL[^\n]*$")
-        return {"name": name, "age": age, "sex": sex, "hospital": hospital, "date": date, "study": study}
-
-    def sections_from_text(text: str) -> Dict[str, str]:
-        t = (text or "")
-        pat = re.compile(
-            r"(?im)^\s*(clinical\s*history|history|indication|reason|technique|procedure(?:\s+and\s+findings)?|findings?|impression|conclusion|summary)\s*:\s*"
-        )
-        parts: Dict[str, str] = {"reason":"", "technique":"", "findings":"", "impression":""}
-        hits = [(m.group(1).lower(), m.start(), m.end()) for m in pat.finditer(t)]
-        if not hits:
-            return parts | {"findings": t.strip()}
-        hits.append(("__END__", len(t), len(t)))
-        for i in range(len(hits)-1):
-            label, _, end = hits[i]
-            next_start = hits[i+1][1]
-            body = t[end:next_start].strip()
-            if not body:
-                continue
-            if label in ("clinical history","history","indication","reason"):
-                parts["reason"] = (parts["reason"] + " " + body).strip()
-            elif label.startswith("technique"):
-                parts["technique"] = (parts["technique"] + " " + body).strip()
-            elif label.startswith("procedure") or label.startswith("finding"):
-                parts["findings"] = (parts["findings"] + " " + body).strip()
-            elif label in ("impression","conclusion","summary"):
-                parts["impression"] = (parts["impression"] + " " + body).strip()
-        return {k:v.strip() for k,v in parts.items()}
-
-# ---------- glossary ----------
-@dataclass
-class Glossary:
-    mapping: Dict[str, str]
-    @classmethod
-    def load(cls, path: str) -> "Glossary":
-        m: Dict[str, str] = {}
-        try:
-            with open(path, newline="", encoding="utf-8-sig") as f:
-                for row in csv.reader(f):
-                    if len(row) >= 2:
-                        k = (row[0] or "").strip().lower()
-                        v = (row[1] or "").strip()
-                        if k:
-                            m[k] = v
-        except Exception:
-            logger.exception("glossary load failed")
-        return cls(m)
-    def replace_terms(self, text: str) -> str:
-        if not text:
-            return ""
-        out = text
-        for k, v in self.mapping.items():
-            out = re.sub(rf"\b{re.escape(k)}\b", v, out, flags=re.I)
-        return out
-
-# ---------- vocab ----------
-POS_WORDS = ["normal","benign","unremarkable","clear","symmetric","intact","stable","improved","no ","without "]
-NEG_WORDS = [
-    "mass","tumor","cancer","lesion","adenopathy","enlarged","necrotic","metastasis",
-    "obstruction","compression","invasion","perforation","ischemia","fracture","bleed",
-    "hydroureteronephrosis","hydroureter","hydronephrosis","herniation","shift","edema",
-    "swelling","atrophy","stenosis","anomaly",
-]
-NEG_PHRASES = [r"mass\s+effect", r"subfalcine\s+herniation", r"midline\s+shift", r"perilesional\s+edema"]
-NEG_DEFS: Dict[str, str] = {
-    "mass":"an abnormal lump that can press on tissue","tumor":"a growth that forms a lump","cancer":"a harmful growth that can spread",
-    "lesion":"an abnormal spot or area","adenopathy":"swollen lymph nodes","enlarged":"bigger than normal","necrotic":"dead tissue",
-    "metastasis":"spread to other areas","obstruction":"a blockage","compression":"being pressed or squeezed by something","invasion":"growing into nearby tissues",
-    "perforation":"a hole or tear","ischemia":"low blood flow","fracture":"a broken bone","bleed":"bleeding","herniation":"disc material pushed out of place",
-    "edema":"swelling with fluid buildup","atrophy":"shrinking or wasting of tissue","stenosis":"narrowing of a passage or canal","anomaly":"difference from typical anatomy",
-    "mass effect":"pressure on brain structures","subfalcine herniation":"brain shifted under the central fold","midline shift":"brain pushed off center",
-    "perilesional edema":"swelling around the lesion",
-    # spine-specific
-    "disc bulge":"disc cushion pushed out beyond normal boundaries","nerve root":"nerve branch exiting the spinal cord",
-    "foraminal narrowing":"smaller space where nerve exits the spine","spinal canal":"tunnel that protects the spinal cord",
-    "bilateral":"on both sides","unilateral":"on one side only","posterior":"toward the back","anterior":"toward the front",
-    "degenerative":"wear and tear from aging or use","vertebra":"individual spine bone","intervertebral":"between spine bones",
-}
-
-# ---------- plain-language rewrites ----------
-_JARGON_MAP = [
-    (re.compile(r"\bsubfalcine\s+herniation\b", re.I), "subfalcine herniation, brain shift under the central fold"),
-    (re.compile(r"\bperilesional\b", re.I), "around the lesion"),
-    (re.compile(r"\bparenchymal\b", re.I), "brain tissue"),
-    (re.compile(r"\bavid(ly)?\s+enhanc(?:ing|ement)\b|\bavid(ly)?\s+enhacing\b", re.I), "enhances with contrast dye"),
-    (re.compile(r"\bhyperintense\b", re.I), "brighter on the scan"),
-    (re.compile(r"\bhypointense\b", re.I), "darker on the scan"),
-    (re.compile(r"\bhyperdense\b", re.I), "brighter on the scan"),
-    (re.compile(r"\bhypodense\b", re.I), "darker on the scan"),
-    (re.compile(r"\benhancing\b", re.I), "lighting up after dye"),
-    (re.compile(r"\bnon[-\s]?enhancing\b", re.I), "not lighting up after dye"),
-    (re.compile(r"\bheterogene(?:ous|ity)\b", re.I), "mixed appearance"),
-    (re.compile(r"\bfoci\b", re.I), "spots"),
-    (re.compile(r"\bnodular\b", re.I), "lumpy"),
-    (re.compile(r"\blesion\b", re.I), "lesion (abnormal area)"),
-    (re.compile(r"\bextra[-\s]?axial\b", re.I), "outside the brain tissue"),
-    (re.compile(r"\beffaced?\b", re.I), "pressed"),
-    (re.compile(r"\bdilated\b", re.I), "widened"),
-    (re.compile(r"\bemerging\s+from\s+the\b", re.I), "near the"),
-    (re.compile(r"\bedema\b", re.I), "swelling"),
-    (re.compile(r"\buvimbe\b", re.I), "mass"),
-    # spine
-    (re.compile(r"\bhypolordosis\b", re.I), "reduced normal neck curve"),
-    (re.compile(r"\blordosis\b", re.I), "inward spine curve"),
-    (re.compile(r"\bkyphosis\b", re.I), "forward rounding of the spine"),
-    (re.compile(r"\bdisc\s+herniation\b", re.I), "disc bulge"),
-    (re.compile(r"\bprotrusion\b", re.I), "bulge"),
-    (re.compile(r"\bcalvarium\b", re.I), "skull bones"),
-    (re.compile(r"\bcervical\b", re.I), "neck"),
-    (re.compile(r"\bforamina?\b", re.I), "nerve openings"),
-    (re.compile(r"\buvunjaji\b", re.I), "fracture"),
-    (re.compile(r"\bischemi(?:a|c)\b", re.I), "low blood flow"),
-    (re.compile(r"\bperfusion\b", re.I), "blood flow"),
-    (re.compile(r"\bembol(?:us|i|ism)\b", re.I), "blood clot"),
-    (re.compile(r"\bstenosis\b", re.I), "narrowing"),
-]
-def _rewrite_jargon(s: str) -> str:
-    out = s or ""
-    for rx, repl in _JARGON_MAP:
-        out = rx.sub(repl, out)
-    return out
-
-# ---------- tooltips ----------
-_TERM_DEFS = [
-    {"pat": r"\bmeningioma\b", "def": "tumor from the brain’s lining"},
-    {"pat": r"\bextra[-\s]?axial\b", "def": "outside brain tissue but inside skull"},
-    {"pat": r"\bsubfalcine\s+herniation\b", "def": "brain pushed under central fold"},
-    {"pat": r"\bmass\s+effect\b", "def": "pressure or shift caused by a mass"},
-    {"pat": r"\bperilesional\s+edema\b", "def": "swelling around a lesion"},
-    {"pat": r"\bgreater\s+sphenoid\s+wing\b", "def": "part of skull bone near the temple"},
-    {"pat": r"\bventricle[s]?\b", "def": "fluid spaces inside the brain"},
-    # spine
-    {"pat": r"\bhypolordosis\b", "def": "reduced normal inward curve of the neck"},
-    {"pat": r"\bdisc\s+bulge\b", "def": "disc cushion pushed outward beyond normal boundaries"},
-    {"pat": r"\bdisc\s+herniation\b", "def": "disc material pushed out of its normal position"},
-    {"pat": r"\bforamina?\b", "def": "openings where nerves exit the spinal canal"},
-    {"pat": r"\bforaminal\s+narrowing\b", "def": "smaller space where nerve exits, potentially pinching the nerve"},
-    {"pat": r"\bnerve\s+root\s+compression\b", "def": "nerve branch being squeezed as it exits the spine"},
-    {"pat": r"\bspinal\s+canal\s+stenosis\b", "def": "narrowing of the tunnel that protects the spinal cord"},
-    {"pat": r"\bspondylosis\b", "def": "spine wear and tear from aging"},
-    {"pat": r"\bosteophyte\b", "def": "bone spur - extra bone growth"},
-    {"pat": r"\bcalvarium\b", "def": "skull bones over the brain"},
-    {"pat": r"\bvertebral\s+body\b", "def": "main cylindrical part of a spine bone"},
-    {"pat": r"\bintervertebral\s+disc\b", "def": "cushion between spine bones"},
-    {"pat": r"\bdegenerative\s+change", "def": "wear and tear from normal aging"},
-    {"pat": r"\bposterior\b", "def": "toward the back"},
-    {"pat": r"\banterior\b", "def": "toward the front"},
-    {"pat": r"\bbilateral\b", "def": "on both sides"},
-    {"pat": r"\bunilateral\b", "def": "on one side only"},
-    {"pat": r"\blumbar\b", "def": "lower back region"},
-    {"pat": r"\bcervical\b", "def": "neck region"},
-    {"pat": r"\bthoracic\b", "def": "mid-back region"},
-    {"pat": r"\bconus\s+medullaris\b", "def": "tapered end of the spinal cord"},
-    {"pat": r"\bligamentum\s+flavum\b", "def": "elastic ligament connecting vertebrae"},
-    {"pat": r"\bfacet\s+joint\b", "def": "small joint between spine bones"},
-    {"pat": r"\buvunjaji\b", "def": "fracture"},
-    # Spine level explanations - specific levels
-    {"pat": r"\bL5/S1\s+level\b", "def": "between the lowest lumbar bone (L5) and the sacrum (tailbone area)"},
-    {"pat": r"\bL4/L?5\s+level\b", "def": "between the 4th and 5th lumbar vertebrae in the lower back"},
-    {"pat": r"\bL3/L?4\s+level\b", "def": "between the 3rd and 4th lumbar vertebrae in the lower back"},
-    {"pat": r"\bL2/L?3\s+level\b", "def": "between the 2nd and 3rd lumbar vertebrae in the lower back"},
-    {"pat": r"\bL1/L?2\s+level\b", "def": "between the 1st and 2nd lumbar vertebrae in the lower back"},
-    {"pat": r"\bC6/C?7\s+level\b", "def": "between the 6th and 7th cervical vertebrae in the neck"},
-    {"pat": r"\bC5/C?6\s+level\b", "def": "between the 5th and 6th cervical vertebrae in the neck"},
-    {"pat": r"\bC4/C?5\s+level\b", "def": "between the 4th and 5th cervical vertebrae in the neck"},
-    {"pat": r"\bC3/C?4\s+level\b", "def": "between the 3rd and 4th cervical vertebrae in the neck"},
-    {"pat": r"\bT\d+/T?\d+\s+level\b", "def": "in the thoracic (mid-back) region"},
-    # Brain structures
-    {"pat": r"\bfrontal\s+lobe\b", "def": "front part of the brain controlling movement, planning, and decision-making"},
-    {"pat": r"\bparietal\s+lobe\b", "def": "top part of the brain processing touch, temperature, and spatial awareness"},
-    {"pat": r"\btemporal\s+lobe\b", "def": "side part of the brain processing hearing, language, and memory"},
-    {"pat": r"\boccipital\s+lobe\b", "def": "back part of the brain processing vision"},
-    {"pat": r"\bcerebellum\b", "def": "back lower brain controlling balance, coordination, and fine motor skills"},
-    {"pat": r"\bbrainstem\b", "def": "connects brain to spinal cord; controls breathing, heart rate, and consciousness"},
-    {"pat": r"\bbasal\s+ganglia\b", "def": "deep brain structures that coordinate movement and habits"},
-    {"pat": r"\bthalamus\b", "def": "relay station in the brain's center that processes sensory information"},
-    {"pat": r"\bhypothalamus\b", "def": "regulates body temperature, hunger, thirst, and hormones"},
-    {"pat": r"\bpituitary\s+gland\b", "def": "master gland at the brain's base that controls other hormone glands"},
-    {"pat": r"\bcorpus\s+callosum\b", "def": "thick band connecting the brain's left and right halves"},
-    {"pat": r"\bpons\b", "def": "part of the brainstem that relays signals between brain areas"},
-    {"pat": r"\bmedulla\s+oblongata\b", "def": "lowest part of the brainstem controlling vital functions like breathing"},
-    {"pat": r"\bwhite\s+matter\b", "def": "brain tissue containing nerve fibers that transmit signals"},
-    {"pat": r"\bgray\s+matter\b", "def": "brain tissue containing nerve cell bodies that process information"},
-    # Liver segments (Couinaud system)
-    {"pat": r"\bsegment\s+I\b", "def": "caudate lobe at the back of the liver"},
-    {"pat": r"\bsegment\s+II\b", "def": "upper left part of the liver"},
-    {"pat": r"\bsegment\s+III\b", "def": "lower left part of the liver"},
-    {"pat": r"\bsegment\s+IVa\b", "def": "upper central part of the liver"},
-    {"pat": r"\bsegment\s+IVb\b", "def": "lower central part of the liver"},
-    {"pat": r"\bsegment\s+V\b", "def": "front lower right part of the liver"},
-    {"pat": r"\bsegment\s+VI\b", "def": "back lower right part of the liver"},
-    {"pat": r"\bsegment\s+VII\b", "def": "back upper right part of the liver"},
-    {"pat": r"\bsegment\s+VIII\b", "def": "front upper right part of the liver"},
-    {"pat": r"\bright\s+hepatic\s+lobe\b", "def": "right side of the liver (larger part)"},
-    {"pat": r"\bleft\s+hepatic\s+lobe\b", "def": "left side of the liver (smaller part)"},
-    {"pat": r"\bcaudate\s+lobe\b", "def": "small lobe at the back of the liver"},
-    {"pat": r"\bporta\s+hepatis\b", "def": "gateway where blood vessels and bile ducts enter/exit the liver"},
-    {"pat": r"\bcommon\s+bile\s+duct\b", "def": "tube that carries bile from the liver to the intestine"},
-    {"pat": r"\bintrahepatic\b", "def": "inside the liver"},
-    {"pat": r"\bextrahepatic\b", "def": "outside the liver"},
-    # Lung lobes and segments
-    {"pat": r"\bRUL\b", "def": "right upper lobe of the lung"},
-    {"pat": r"\bRML\b", "def": "right middle lobe of the lung"},
-    {"pat": r"\bRLL\b", "def": "right lower lobe of the lung"},
-    {"pat": r"\bLUL\b", "def": "left upper lobe of the lung"},
-    {"pat": r"\bLLL\b", "def": "left lower lobe of the lung"},
-    {"pat": r"\blingula\b", "def": "tongue-like projection of the left lung (similar to right middle lobe)"},
-    {"pat": r"\bapical\s+segment\b", "def": "top part of a lung lobe"},
-    {"pat": r"\bbasal\s+segment\b", "def": "bottom part of a lung lobe"},
-    {"pat": r"\bpleura\b", "def": "thin membrane surrounding the lungs"},
-    {"pat": r"\bpleural\s+space\b", "def": "narrow gap between the lung and chest wall"},
-    {"pat": r"\bmediastinum\b", "def": "central chest area containing the heart, major vessels, and airways"},
-    {"pat": r"\bcarina\b", "def": "point where the windpipe splits into left and right airways"},
-    {"pat": r"\bbronchus\b", "def": "major airway branch leading to the lung"},
-    {"pat": r"\bbronchiole\b", "def": "smaller airway branches within the lung"},
-    {"pat": r"\balveol\w+\b", "def": "tiny air sacs where oxygen enters the blood"},
-    # Kidney anatomy
-    {"pat": r"\bright\s+kidney\b", "def": "kidney on the right side of the body"},
-    {"pat": r"\bleft\s+kidney\b", "def": "kidney on the left side of the body"},
-    {"pat": r"\bupper\s+pole\b", "def": "top part of the kidney"},
-    {"pat": r"\blower\s+pole\b", "def": "bottom part of the kidney"},
-    {"pat": r"\brenal\s+cortex\b", "def": "outer layer of the kidney where blood is filtered"},
-    {"pat": r"\brenal\s+medulla\b", "def": "inner part of the kidney containing the collecting tubes"},
-    {"pat": r"\brenal\s+pelvis\b", "def": "funnel-shaped area where urine collects before entering the ureter"},
-    {"pat": r"\bcollecting\s+system\b", "def": "tubes that collect urine in the kidney"},
-    {"pat": r"\bureter\b", "def": "tube that carries urine from kidney to bladder"},
-    {"pat": r"\brenal\s+artery\b", "def": "blood vessel bringing blood to the kidney"},
-    {"pat": r"\brenal\s+vein\b", "def": "blood vessel carrying filtered blood away from the kidney"},
-    # Pancreas anatomy
-    {"pat": r"\bpancreatic\s+head\b", "def": "right side of the pancreas, nestled in the curve of the duodenum"},
-    {"pat": r"\bpancreatic\s+body\b", "def": "central part of the pancreas behind the stomach"},
-    {"pat": r"\bpancreatic\s+tail\b", "def": "left tip of the pancreas near the spleen"},
-    {"pat": r"\buncinate\s+process\b", "def": "hook-shaped extension of the pancreatic head"},
-    {"pat": r"\bpancreatic\s+duct\b", "def": "tube carrying digestive enzymes from pancreas to intestine"},
-    {"pat": r"\bampulla\s+of\s+vater\b", "def": "where the pancreatic and bile ducts join before entering the intestine"},
-    # Heart chambers
-    {"pat": r"\bright\s+atrium\b", "def": "upper right heart chamber that receives blood from the body"},
-    {"pat": r"\bleft\s+atrium\b", "def": "upper left heart chamber that receives oxygen-rich blood from the lungs"},
-    {"pat": r"\bright\s+ventricle\b", "def": "lower right heart chamber that pumps blood to the lungs"},
-    {"pat": r"\bleft\s+ventricle\b", "def": "lower left heart chamber that pumps blood to the body"},
-    # Major blood vessels
-    {"pat": r"\baorta\b", "def": "main artery carrying blood from the heart to the body"},
-    {"pat": r"\bascending\s+aorta\b", "def": "first part of the aorta going upward from the heart"},
-    {"pat": r"\baortic\s+arch\b", "def": "curved part of the aorta at the top"},
-    {"pat": r"\bdescending\s+aorta\b", "def": "part of the aorta going downward along the spine"},
-    {"pat": r"\bpulmonary\s+artery\b", "def": "vessel carrying blood from heart to lungs"},
-    {"pat": r"\bpulmonary\s+vein\b", "def": "vessel carrying oxygen-rich blood from lungs to heart"},
-    {"pat": r"\bvena\s+cava\b", "def": "large vein returning blood to the heart"},
-    {"pat": r"\bcoronary\s+arter\w+\b", "def": "blood vessels supplying the heart muscle"},
-    # GI tract anatomy
-    {"pat": r"\bduodenum\b", "def": "first part of the small intestine, just after the stomach"},
-    {"pat": r"\bjejunum\b", "def": "middle part of the small intestine"},
-    {"pat": r"\bileum\b", "def": "last part of the small intestine"},
-    {"pat": r"\bcecum\b", "def": "pouch at the beginning of the large intestine"},
-    {"pat": r"\bappendix\b", "def": "small finger-like pouch attached to the cecum"},
-    {"pat": r"\bascending\s+colon\b", "def": "right side of the large intestine going upward"},
-    {"pat": r"\btransverse\s+colon\b", "def": "part of large intestine crossing from right to left"},
-    {"pat": r"\bdescending\s+colon\b", "def": "left side of the large intestine going downward"},
-    {"pat": r"\bsigmoid\s+colon\b", "def": "S-shaped part of large intestine before the rectum"},
-    {"pat": r"\brectum\b", "def": "last part of the large intestine before the anus"},
-    # Pelvic anatomy
-    {"pat": r"\bbladder\b", "def": "organ that stores urine"},
-    {"pat": r"\bprostate\b", "def": "gland in men surrounding the urethra, below the bladder"},
-    {"pat": r"\buterus\b", "def": "womb - where a baby grows during pregnancy"},
-    {"pat": r"\bcervix\b", "def": "lower narrow part of the uterus opening to the vagina"},
-    {"pat": r"\bovar\w+\b", "def": "female organs that produce eggs and hormones"},
-    {"pat": r"\bfallopian\s+tube\b", "def": "tube connecting ovary to uterus"},
-    {"pat": r"\badnexa\b", "def": "ovaries and fallopian tubes"},
-    # Spine detailed structures
-    {"pat": r"\bspinous\s+process\b", "def": "bony projection at the back of each vertebra"},
-    {"pat": r"\btransverse\s+process\b", "def": "bony projections on the sides of each vertebra"},
-    {"pat": r"\blamina\b", "def": "flat bony plate forming the back of the spinal canal"},
-    {"pat": r"\bpedicle\b", "def": "bony stalk connecting vertebral body to the back part"},
-    {"pat": r"\bannulus\s+fibrosus\b", "def": "tough outer ring of the spinal disc"},
-    {"pat": r"\bnucleus\s+pulposus\b", "def": "soft gel-like center of the spinal disc"},
-    # Directional terms
-    {"pat": r"\bproximal\b", "def": "closer to the center of the body or point of attachment"},
-    {"pat": r"\bdistal\b", "def": "farther from the center of the body or point of attachment"},
-    {"pat": r"\bsuperior\b", "def": "toward the head or upper part"},
-    {"pat": r"\binferior\b", "def": "toward the feet or lower part"},
-    {"pat": r"\bmedial\b", "def": "toward the midline of the body"},
-    {"pat": r"\blateral\b", "def": "away from the midline, toward the side"},
-    {"pat": r"\bventral\b", "def": "toward the front of the body"},
-    {"pat": r"\bdorsal\b", "def": "toward the back of the body"},
-    # commonly missing definitions
-    {"pat": r"\bhydroureteronephrosis\b", "def": "swelling of kidney and ureter from blocked urine"},
-    {"pat": r"\bhydronephrosis\b", "def": "kidney swelling from blocked urine"},
-    {"pat": r"\bhydroureter\b", "def": "ureter swelling from blocked urine"},
-    {"pat": r"\badenopathy\b", "def": "swollen lymph nodes"},
-    {"pat": r"\bnecrotic\b", "def": "dead tissue"},
-    {"pat": r"\bmetastasis\b", "def": "cancer spread to other areas"},
-    {"pat": r"\bobstruction\b", "def": "blockage"},
-    {"pat": r"\bcompression\b", "def": "being squeezed or pressed"},
-    {"pat": r"\binvasion\b", "def": "growth spreading into nearby tissues"},
-    {"pat": r"\bperforation\b", "def": "hole or tear in tissue"},
-    {"pat": r"\bischemia\b", "def": "reduced blood flow"},
-    {"pat": r"\batrophy\b", "def": "tissue shrinking or wasting away"},
-    {"pat": r"\bstenosis\b", "def": "narrowing of a passage"},
-    # Additional commonly missing medical terms
-    {"pat": r"\bparenchyma\b", "def": "the functional tissue of an organ"},
-    {"pat": r"\bcortex\b", "def": "the outer layer of an organ"},
-    {"pat": r"\bmedulla\b", "def": "the inner part of an organ"},
-    {"pat": r"\blumen\b", "def": "the hollow space inside a tube or vessel"},
-    {"pat": r"\bmucosa\b", "def": "the moist inner lining of some organs"},
-    {"pat": r"\bserosa\b", "def": "the smooth outer lining of organs"},
-    {"pat": r"\bcapsule\b", "def": "a membrane enclosing an organ"},
-    {"pat": r"\bhilum\b", "def": "the area where vessels enter/exit an organ"},
-    {"pat": r"\bfistula\b", "def": "an abnormal connection between two body parts"},
-    {"pat": r"\banastomosis\b", "def": "a connection between two vessels or structures"},
-    {"pat": r"\bembolism\b", "def": "blockage of a blood vessel by a clot or debris"},
-    {"pat": r"\bthrombus\b", "def": "a blood clot inside a vessel"},
-    {"pat": r"\baneurysm\b", "def": "a bulge in a blood vessel wall"},
-    {"pat": r"\bocclusion\b", "def": "complete blockage of a passage"},
-    {"pat": r"\binfarction\b", "def": "tissue death due to lack of blood supply"},
-    {"pat": r"\bhemorrhage\b", "def": "bleeding"},
-    {"pat": r"\bhematoma\b", "def": "collection of blood outside vessels"},
-    {"pat": r"\bcontusion\b", "def": "a bruise"},
-    {"pat": r"\blaceration\b", "def": "a cut or tear in tissue"},
-    {"pat": r"\brupture\b", "def": "bursting or tearing of an organ or tissue"},
-    {"pat": r"\bprolapse\b", "def": "slipping of an organ from its normal position"},
-    {"pat": r"\beffusion\b", "def": "fluid buildup in a space"},
-    {"pat": r"\bascites\b", "def": "fluid buildup in the belly"},
-    {"pat": r"\bedema\b", "def": "swelling from fluid buildup"},
-    {"pat": r"\bsplenomegaly\b", "def": "enlarged spleen"},
-    {"pat": r"\bhepatomegaly\b", "def": "enlarged liver"},
-    {"pat": r"\bcardiomegaly\b", "def": "enlarged heart"},
-    {"pat": r"\batelectasis\b", "def": "collapsed lung tissue"},
-    {"pat": r"\bpneumothorax\b", "def": "air in the chest cavity causing lung collapse"},
-    {"pat": r"\bpleural effusion\b", "def": "fluid around the lung"},
-    {"pat": r"\bconsolidation\b", "def": "lung tissue filled with fluid or pus"},
-    {"pat": r"\bopacity\b", "def": "an area that blocks X-rays (appears white)"},
-    {"pat": r"\blucency\b", "def": "an area that allows X-rays through (appears dark)"},
-    {"pat": r"\bcalcification\b", "def": "calcium deposits in tissue"},
-    {"pat": r"\bsclerosis\b", "def": "hardening of tissue"},
-    {"pat": r"\bfibrosis\b", "def": "scarring"},
-    {"pat": r"\bcirrhosis\b", "def": "severe liver scarring"},
-    {"pat": r"\bneoplasm\b", "def": "abnormal growth or tumor"},
-    {"pat": r"\bmalignancy\b", "def": "cancer"},
-    {"pat": r"\bbenign\b", "def": "not cancerous"},
-    {"pat": r"\bnodule\b", "def": "a small rounded lump"},
-    {"pat": r"\bcyst\b", "def": "a fluid-filled sac"},
-    {"pat": r"\babscess\b", "def": "a pocket of pus"},
-    {"pat": r"\bgranuloma\b", "def": "a small area of inflammation"},
-    {"pat": r"\bpolyp\b", "def": "a growth projecting from a mucous membrane"},
-]
-_TERM_REGEX: List[Tuple[re.Pattern, str]] = [(re.compile(d["pat"], re.I), d["def"]) for d in _TERM_DEFS]
-
-# ---------- noise ----------
-NOISE_PATTERNS = [
-    r"\baxial\b", r"\bNECT\b", r"\bCECT\b", r"\bbrain window\b",
-    r"\bimages?\s+are\s+viewed", r"\bappear\s+normal\b", r"\bare\s+normal\b",
-    r"\bno\s+abnormalit(y|ies)\b", r"\bnormally\s+developed\b",
-    r"\bparanasal\s+sinuses.*(clear|pneumatiz)", r"\bvisuali[sz]ed\s+lower\s+thorax\s+is\s+normal",
-    r"^\s*(conclusion|impression|summary)\s*:\s*",
-]
-NOISE_RX = re.compile("|".join(f"(?:{p})" for p in NOISE_PATTERNS), re.I | re.M)
-
-# ---------- PHI redaction ----------
-_PHI_STOPWORDS = {
-    "hospital","clinic","centre","center","medical","radiology","imaging","ct","mri","xray",
-    "scan","study","male","female","sex","age","date","mrn","patient","ref","no","number",
-    "id","account","acct","doctor","dr","clinic",
-}
-
-_PHI_PLACEHOLDER_REPLACEMENTS = {
-    "[REDACTED]": "the patient",
-    "[DOB]": "date withheld",
-    "[AGE]": "age withheld",
-    "[SEX]": "sex withheld",
-    "[AGE/SEX]": "age/sex withheld",
-}
-
-
-def _phi_term_variants(value: str) -> List[str]:
-    terms: List[str] = []
-    val = (value or "").strip()
-    if not val:
-        return terms
-    cleaned = re.sub(r"\s+", " ", val)
-    if cleaned:
-        terms.append(cleaned)
-    split_src = re.sub(r"[:;,_-]+", " ", cleaned)
-    for piece in split_src.split():
-        piece = piece.strip()
-        if len(piece) < 2:
-            continue
-        low = piece.lower()
-        if low in _PHI_STOPWORDS:
-            continue
-        if not re.search(r"[A-Za-z]", piece):
-            continue
-        terms.append(piece)
-    return terms
-
-
-def _collect_phi_terms(meta: Dict[str, str]) -> List[str]:
-    terms: List[str] = []
-    for key in ("name", "hospital", "date"):
-        val = meta.get(key, "")
-        terms.extend(_phi_term_variants(val))
-    return [t for t in terms if t]
-
-
-def _normalize_phi_placeholders(text: str) -> str:
-    t = text or ""
-    for placeholder, replacement in _PHI_PLACEHOLDER_REPLACEMENTS.items():
-        if placeholder in t:
-            t = t.replace(placeholder, replacement)
-    return t
-
-
-def _redact_phi(s: str, extra_terms: List[str] | None = None) -> str:
-    t = s or ""
-    t = re.sub(r"(?im)^\s*(name|patient|pt|mrn|id|acct|account|gender|sex|age|dob|date\s+of\s+birth)\s*[:#].*$","[REDACTED]",t)
-    t = re.sub(r"(?i)\bDOB\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b","[DOB]",t)
-    t = re.sub(r"(?i)\b(date\s+of\s+birth)\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b","[DOB]",t)
-    t = re.sub(r"(?i)\b(\d{1,3})\s*(?:year[- ]?old|y/o|yo|yrs?|years?)\b","[AGE]",t)
-    t = re.sub(r"(?i)\b(?:male|female)\b","[SEX]",t)
-    t = re.sub(r"(?i)\b(\d{1,3})\s*/\s*(m|f)\b","[AGE/SEX]",t)
-    t = re.sub(r"(?i)\b(\d{1,3})(m|f)\b","[AGE/SEX]",t)
-    t = re.sub(r"(?im)^(\s*(indication|reason|history)\s*:\s*)[A-Z][A-Za-z'.-]+(?:\s+[A-Z][A-Za-z'.-]+){0,2},\s*",r"\1",t)
-    if extra_terms:
-        for term in extra_terms:
-            term = (term or "").strip()
-            if not term or len(term) < 2:
-                continue
-            escaped = re.escape(term)
-            t = re.sub(rf"(?i){escaped}", "[REDACTED]", t)
-    return t
-
-# ---------- helpers ----------
-def _normalize_listish(text: str) -> List[str]:
-    t = (text or "").strip()
-    # JSON array
-    try:
-        val = json.loads(t)
-        if isinstance(val, list):
-            return [re.sub(r"^\s*[\-\*\u2022]\s*", "", str(x or "").strip()) for x in val if str(x or "").strip()]
-    except Exception:
-        pass
-    # Python literal list: ['a', 'b']
-    try:
-        if re.match(r"^\s*\[.*\]\s*$", t, flags=re.S):
-            val = ast.literal_eval(t)
-            if isinstance(val, list):
-                return [re.sub(r"^\s*[\-\*\u2022]\s*", "", str(x or "").strip()) for x in val if str(x or "").strip()]
-    except Exception:
-        pass
-    # Bullet lines
-    lines = [ln.strip() for ln in t.splitlines() if ln.strip()]
-    bullets = [re.sub(r"^\s*[\-\*\u2022]\s*", "", ln) for ln in lines if re.match(r"^\s*[\-\*\u2022]", ln)]
-    if bullets:
-        return bullets
-    # Semicolon list
-    if ";" in t and not re.search(r"[.!?]\s*$", t):
-        parts = [p.strip() for p in t.split(";") if p.strip()]
-        if len(parts) > 1:
-            return parts
-    return []
-
-def _split_sentences(s: str) -> List[str]:
-    t = re.sub(r"\s+", " ", s or "").strip()
-    return re.split(r"(?<=[.!?])\s+", t) if t else []
-
-def _round_number_token(tok: str) -> str:
-    try:
-        f = float(tok); return str(int(round(f))) if abs(f) >= 10 else f"{round(f,1):g}"
-    except Exception:
-        return tok
-
-def _convert_units(s: str) -> str:
-    def conv_dim(m: re.Match) -> str:
-        nums = re.split(r"\s*[x×]\s*", m.group(1)); unit = m.group(2).lower(); out: List[str] = []
-        if unit == "mm":
-            for t in nums:
-                try:
-                    val = float(t); out.append(f"{round(val/10.0,1):g}" if val>=10 else f"{round(val,1):g} mm")
-                except Exception: out.append(t)
-            return (" x ".join(out) + (" cm" if all(not x.endswith("mm") for x in out) else ""))
-        if unit == "cm":
-            for t in nums: out.append(_round_number_token(t))
-            return " x ".join(out) + " cm"
-        return m.group(0)
-    s = re.sub(r"((?:\d+(?:\.\d+)?)(?:\s*[x×]\s*(?:\d+(?:\.\d+)?)){1,3})\s*(mm|cm)\b", conv_dim, s)
-    def conv_single(m: re.Match) -> str:
-        val = float(m.group(1)); unit = m.group(2).lower()
-        if unit=="mm" and val>=10: return f"{round(val/10.0,1):g} cm"
-        if unit=="cm" and val<0.1:  return f"{round(val*10.0,1):g} mm"
-        return f"{_round_number_token(m.group(1))} {unit}"
-    return re.sub(r"\b(\d+(?:\.\d+)?)\s*(mm|cm)\b", conv_single, s)
-
-def _numbers_simple(text_only: str) -> str:
-    s = text_only or ""
-    s = _convert_units(s)
-    s = re.sub(r"(?<!\w)(\d+\.\d+|\d+)(?!\w)", lambda m: _round_number_token(m.group(0)), s)
-    return re.sub(r"(?<=\d)\s*[x×]\s*(?=\d)", " x ", s)
-
-def _grammar_cleanup(s: str) -> str:
-    s = re.sub(r"\bare looks\b", "look", s or "", flags=re.I)
-    s = re.sub(r"\bis looks\b", "looks", s, flags=re.I)
-    s = re.sub(r"\bare appears?\b", "appear", s, flags=re.I)
-    s = re.sub(r"\bis appear\b", "appears", s, flags=re.I)
-    s = re.sub(r"\bis\s+noted\b", "", s, flags=re.I)
-    s = re.sub(r"\bis\s+seen\b", "", s, flags=re.I)
-    s = re.sub(r"\s+\.", ".", s); s = re.sub(r"\s+,", ",", s); s = re.sub(r"\s{2,}", " ", s)
-    return s.strip()
-
-def _fix_swelling_phrasing(s: str) -> str:
-    t = s or ""
-    # "There is swelling in X" -> "Swelling in X"
-    t = re.sub(r"(?i)\bthere\s+(?:is|was|are)\s+swelling\s+in\s+([a-z][a-z\s\-]{2,})",
-               lambda m: f"Swelling in {m.group(1).strip()}", t)
-    # "swelling of X" -> "Swelling in X"
-    t = re.sub(r"(?i)\bswelling\s+of\s+([a-z][a-z\s\-]{2,})",
-               lambda m: f"Swelling in {m.group(1).strip()}", t)
-    # "X swelling" -> "Swelling in X"
-    t = re.sub(r"\b([A-Za-z][A-Za-z\s\-]{3,})\s+swelling\b",
-               lambda m: f"Swelling in {m.group(1).strip()}", t)
-    # Cleanup double inserts
-    t = re.sub(r"(?i)\bSwelling in\s+(there\s+(?:is|are)\s+)", "Swelling in ", t)
-    return t
-
-_PHRASE_TIDY = [
-    (re.compile(r"\bRight\s+fronto\s*parietal\b", re.I), "Right frontoparietal"),
-    (re.compile(r"\bFronto\s*parietal\b", re.I), "frontoparietal"),
-    (re.compile(r"\boutside the brain tissue\s+enhances with contrast dye\s+(tumou?r)\b", re.I), r"\1 outside the brain tissue that enhances with contrast dye"),
-    (re.compile(r"\benhances with contrast dye\s+(tumou?r)\b", re.I), r"\1 that enhances with contrast dye"),
-    (re.compile(r"\boutside the brain tissue\s+(tumou?r)\b", re.I), r"\1 outside the brain tissue"),
-]
-def _tidy_phrases(s: str) -> str:
-    out = s or ""
-    for rx, repl in _PHRASE_TIDY: out = rx.sub(repl, out)
-    return out
-
-def _dedupe_redundant_noun_phrase(s: str) -> str:
-    """Within each sentence, replace 'may/might be a(n) X' with 'is indeterminate'
-    only when X already appears earlier in that same sentence."""
-    nouns = ["mass", "lesion", "tumor", "tumour", "cyst", "nodule", "polyp"]
-    out_sents: List[str] = []
-    for sent in _split_sentences(s or ""):
-        t = sent
-        for n in nouns:
-            # if noun appears earlier in the sentence
-            if re.search(rf"(?i)\b{re.escape(n)}\b", t):
-                # replace trailing hedge about same noun
-                t = re.sub(
-                    rf"(?i)\b(?:may|might)\s+be\s+a?n?\s+{re.escape(n)}\b",
-                    "is indeterminate",
-                    t,
-                )
-        out_sents.append(t)
-    return " ".join(out_sents)
-
-
-def _strip_signatures(s: str) -> str:
-    s = re.sub(r"(?im)^\s*(dr\.?.*|consultant\s*radiologist.*|radiologist.*|dictated\s+by.*)\s*$","",s or "")
-    s = re.sub(r"(?im)^\s*(signed|electronically\s+signed.*)\s*$","",s); return s.strip()
-
-def _unwrap_soft_breaks(s: str) -> str:
-    s = (s or "").replace("\r\n","\n").replace("\r","\n")
-    s = re.sub(r"-\s*\n(?=\w)","",s); s = re.sub(r"[ \t]+\n","\n",s); s = re.sub(r"\n[ \t]+","\n",s)
-    s = re.sub(r"(?<!\n)\n(?!\n)"," ",s)
-    return re.sub(r"\n{3,}","\n\n",s)
-
-def _is_caps_banner(ln: str) -> bool:
-    if not ln or len(ln) < 8: return False
-    letters = re.sub(r"[^A-Za-z]","",ln)
-    if not letters: return False
-    upper_ratio = sum(c.isupper() for c in letters) / max(1,len(letters))
-    tokens = len(ln.split())
-    has_modality = bool(re.search(r"\b(MRI|CT|US|XR)\b", ln))
-    return (upper_ratio >= 0.85 and tokens >= 8 and not has_modality)
-
-def _preclean_report(raw: str) -> str:
-    if not raw: return ""
-    s = _unwrap_soft_breaks(raw)
-    lines = [ln.strip() for ln in s.split("\n")]
-    start_rx = re.compile(r"(?i)\b(history|indication|reason|technique|procedure|findings?|impression|conclusion|report|scan|mri|ct|ultrasound|usg|axial|cect|nect)\b")
-    drop_exact = re.compile(r"(?i)^(report|summary|x-?ray|ct\s+head|ct\s+brain)$")
-    drop_keyval = re.compile(r"(?i)^\s*(ref(\.|:)?\s*no|ref|date|name|age|sex|gender|mrn|id|file|account|acct|dob|date\s+of\s+birth)\s*[:#].*$")
-    start = 0
-    for i, ln in enumerate(lines):
-        if start_rx.search(ln):
-            start = i; break
-    kept: List[str] = []
-    for ln in lines[start:]:
-        if not ln or drop_exact.match(ln) or drop_keyval.match(ln) or _is_caps_banner(ln):
-            continue
-        kept.append(ln)
-    cleaned: List[str] = []
-    for ln in kept:
-        if not cleaned or cleaned[-1] != ln: cleaned.append(ln)
-    return "\n".join(cleaned)
-
-def _extract_history(cleaned: str) -> Tuple[str, str]:
-    pattern = re.compile(r"(?im)^\s*(?:clinical\s*(?:hx|history)|history|indication)\s*:\s*([^\n.]+)\.?\s*$")
-    outs = [m.group(1).strip() for m in pattern.finditer(cleaned or "")]
-    text_wo = pattern.sub("", cleaned or "")
-    return ("; ".join(dict.fromkeys(outs)).strip(), text_wo)
-
-def _strip_labels(s: str) -> str:
-    s = s or ""
-    s = re.sub(r"(?im)^\s*(reason|indication|procedure|technique|findings?|impression|conclusion|summary|ddx)\s*:\s*", "", s)
-    return re.sub(r"(?i)\b(findings?|impression|conclusion|summary|ddx)\s*:\s*", "", s).strip()
-
-def _simplify(text: str, gloss: Glossary | None) -> str:
-    s = text or ""
-    if gloss: s = gloss.replace_terms(s)
-    s = re.sub(r"\bcm\b"," centimeters",s,flags=re.I); s = re.sub(r"\bmm\b"," millimeters",s,flags=re.I)
-    s = re.sub(r"\bHU\b"," Hounsfield units",s,flags=re.I)
-    s = re.sub(r"\bunremarkable\b","looks normal",s,flags=re.I)
-    s = re.sub(r"\bintact\b","normal",s,flags=re.I)
-    s = re.sub(r"\bsymmetric\b","same on both sides",s,flags=re.I)
-    s = re.sub(r"\bbenign\b","not dangerous",s,flags=re.I)
-    s = _rewrite_jargon(s); s = _numbers_simple(s); s = _fix_swelling_phrasing(s); s = _grammar_cleanup(s); s = _tidy_phrases(s)
-    return s.strip()
-
-# ---------- tooltip wrappers ----------
-def _escape_attr(s: str) -> str:
-    s = s or ""
-    return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;").replace("'","&#x27;")
-
-def _annotate_terms_onepass(text_only: str) -> str:
-    if not text_only: return ""
-    matches: List[Tuple[int,int,str,str]] = []
-    for rx, d in _TERM_REGEX:
-        for m in rx.finditer(text_only):
-            matches.append((m.start(), m.end(), m.group(0), d))
-    if not matches: return text_only
-    matches.sort(key=lambda t: (t[0], -(t[1]-t[0])))
-    kept: List[Tuple[int,int,str,str]] = []; last_end = -1
-    for s,e,vis,d in matches:
-        if s < last_end: continue
-        kept.append((s,e,vis,d)); last_end = e
-    out: List[str] = []; pos = 0
-    for s,e,vis,d in kept:
-        if s > pos: out.append(text_only[pos:s])
-        out.append(f'<span class="term-def" data-def="{_escape_attr(d)}">{_escape_attr(vis)}</span>')
-        pos = e
-    out.append(text_only[pos:]); return "".join(out)
-
-def _annotate_terms_outside_tags(htmlish: str) -> str:
-    parts = re.split(r"(<[^>]+>)", htmlish or "")
-    for i in range(0,len(parts),2): parts[i] = _annotate_terms_onepass(parts[i])
-    return "".join(parts)
-
-# ---------- phrase-aware highlighting ----------
-_POS_SENTENCE_RX = re.compile(r"(?i)\b(no|none|without|absent|free of|negative for|not seen|no evidence of|no significant)\b")
-_NEG_RXES = [re.compile(p, re.I) for p in NEG_PHRASES] + [re.compile(rf"(?i)\b{re.escape(w)}\b") for w in NEG_WORDS]
-_POS_RX = re.compile(r"(?i)\b(normal|benign|unremarkable|clear|symmetric|intact|stable|improved)\b")
-_NO_RX = re.compile(r"(?i)(no\s+(?:[a-z/-]+(?:\s+[a-z/-]+){0,3}))")
-_WITHOUT_RX = re.compile(r"(?i)(without\s+(?:[a-z/-]+(?:\s+[a-z/-]+){0,3}))")
-
-def _has_neg_term(s: str) -> bool: return any(rx.search(s) for rx in _NEG_RXES)
-def _has_pos_cue(s: str) -> bool: return bool(_POS_SENTENCE_RX.search(s))
-
-def _wrap_green(t: str) -> str: return f'<span class="ii-pos" style="color:#22c55e;font-weight:600">{t}</span>'
-def _wrap_red(tok: str, defn: str = "") -> str:
-    data = f' data-def="{_escape_attr(defn)}"' if defn else ""
-    return f'<span class="ii-neg" style="color:#ef4444;font-weight:600"{data}>{tok}</span>'
-
-def _highlight_phrasewise(text: str) -> str:
-    s = text or ""; low = s.lower()
-    if _has_neg_term(low) and _has_pos_cue(low):
-        return f'<span class="ii-text" style="color:#ffffff">{_wrap_green(s)}</span>'
-    t = s
-    for rx in _NEG_RXES:
-        def _neg_repl(m: re.Match) -> str:
-            tok = m.group(0); key = tok.lower(); defn = NEG_DEFS.get(key, NEG_DEFS.get(key.strip().lower(), ""))
-            return _wrap_red(tok, defn)
-        t = rx.sub(_neg_repl, t)
-    t = _NO_RX.sub(lambda m: _wrap_green(m.group(0)), t)
-    t = _WITHOUT_RX.sub(lambda m: _wrap_green(m.group(0)), t)
-    t = _POS_RX.sub(lambda m: _wrap_green(m.group(0)), t)
-    return f'<span class="ii-text" style="color:#ffffff">{t}</span>'
-
-# ---------- JSON utils ----------
-def _extract_json_loose(s: str) -> Dict[str, str] | None:
-    if not s: return None
-    try: return json.loads(s)
-    except Exception:
-        m = re.search(r"\{.*\}", s, flags=re.S)
-        if not m: return None
-        try: return json.loads(m.group(0))
-        except Exception: return None
-
-# ---------- Model resolution ----------
-def _supports_chat_completions(m: str) -> bool:
-    m = (m or "").lower()
-    return any(p in m for p in ["gpt-4", "gpt-4o", "gpt-4o-mini", "3.5", "mini"])
-
-def _is_reasoning_model(m: str) -> bool:
-    m = (m or "").lower()
-    return any(x in m for x in ["gpt-5", "o3", "o4-mini-high"])
-
-def _resolve_models() -> Tuple[str, str]:
-    """Return (env_model, chat_fallback). chat_fallback must support JSON mode."""
-    env_model = os.getenv("OPENAI_MODEL", "gpt-5")
-    chat_fallback = os.getenv("OPENAI_CHAT_FALLBACK", "gpt-4o-mini")
-    return (env_model, chat_fallback)
-
-# ---------- OpenAI ----------
-def _call_openai_once(report_text: str, language: str, temperature: float, effort: str) -> Dict[str, str] | None:
-    from openai import OpenAI
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    env_model, chat_fallback = _resolve_models()
-
-    # Language-specific instructions
-    if language.lower() in ["kiswahili", "swahili"]:
-        instructions = f"""Wewe ni msaidizi wa kuandika ripoti za uchunguzi wa mwili kwa lugha rahisi. Andika KILA KITU kwa Kiswahili sanifu BILA kuchanganya Kiingereza.
-Rudisha JSON object tu yenye: reason, technique, findings, conclusion, concern.
-Hadhira ni mtoto wa miaka 10. Tumia sentensi FUPI SANA (maneno 5-8 kwa kila sentensi). Tumia maneno ya kawaida ambayo mtoto anaweza kuelewa.
-
-reason: Eleza KWA NINI uchunguzi ulifanywa (sentensi 1-2 FUPI SANA). Jumuisha dalili za mgonjwa kwa maneno rahisi. Mfano: "Uchunguzi uliagizwa kwa sababu mgonjwa alikuwa na maumivu ya kichwa na kizunguzungu kwa wiki 2."
-
-technique: Eleza JINSI uchunguzi ulivyofanywa (sentensi 3-5) kwa lugha rahisi. Jumuisha:
-- Aina gani ya uchunguzi (MRI, CT, X-ray, Ultrasound)
-- Sehemu gani ya mwili ilipigiwa picha
-- Jinsi picha zilivyochukuliwa (eleza 'axial' = vipande vya kukata kama mkate, 'coronal' = vipande vya mbele-hadi-nyuma, 'sagittal' = vipande vya upande-hadi-upande)
-- Kama dawa ya rangi ilitumiwa na kwa nini ('pamoja na rangi' = dawa maalum ilidukuliwa ili kuona viungo vizuri zaidi, 'bila rangi' = hakuna dawa ilihitajika)
-- Eneo gani lilipimwa ('kutoka msingi wa fuvu hadi juu' = kutoka chini ya kichwa hadi juu)
-Mfano: "Uchunguzi wa MRI wa ubongo ulifanywa. Picha za kukata zilichukuliwa kama kukata mkate. Hakuna dawa ya rangi iliyodukuliwa. Kichwa chote kilipimwa kutoka chini hadi juu."
-
-findings: bullets 2-3 FUPI; conclusion: bullets 1-2 FUPI; concern: sentensi 1 FUPI.
-WEKA NAMBA ZOTE kama zilivyo katika ripoti ya asili - USIZIPUNGUZE. Kama ripoti inasema "5.4 x 5.6 x 6.7 cm", weka sawa sawa kama hivo. Kagua tahajia YOTE. Usitumie majina ya kitaalamu au maneno ya kisayansi.
-Andika KILA KITU kwa Kiswahili sanifu bila Kiingereza:
-- "scan" → "uchunguzi" au "skani"
-- "mass" → "uvimbe" au "chungu"
-- "normal" → "kawaida"
-- "abnormal" → "si kawaida"
-- "brain" → "ubongo"
-- "liver" → "ini"
-- "kidney" → "figo"
-- "fracture" → "mfupa umevunjika"
-Hakikisha KILA neno ni Kiswahili."""
-    else:
-        instructions = f"""
-You convert radiology reports into a kind, patient-facing summary. Write ALL output ONLY in {language}. 
-Return ONLY a JSON object with keys: reason, technique, findings, conclusion, concern. 
-Use second person ("you/your"). Be confident and plain. Avoid hedging like "clinical correlation recommended."
-
-STYLE & LENGTH
-- Short to medium sentences (8–22 words). Use everyday words.
-- Define any medical word immediately in brackets: "hydronephrosis (severe urine backup)."
-- Keep numbers from the report. Add a simple size comparison in brackets when helpful: "6 × 5 × 4.5 cm (about a chicken egg)."
-- Use direct, clear verbs: "shows," "spreads into," "blocks," "has likely spread."
-
-MAP EACH FIELD TO THIS EXACT CONTENT
-
-reason:
-- 1–2 sentences. Explain why the scan was ordered, in simple words.
-- Start with the patient’s symptom or trigger: "You had blood in the urine..."
-- Name the body area(s) doctors wanted to check and for what (growths, blockages, bleeding).
-
-technique:
-- 1–2 sentences, friendly and concrete.
-- Mention modality, body area, thin slices, and contrast timing if used.
-- Example STYLE (adapt facts from the report): 
-  "A CT machine took many thin pictures of your tummy. Pictures were taken before and after iodine dye to see the urine system clearly."
-
-findings:
-- OUTPUT AS BULLET LINES starting with "- " (dash + space).
-- Write exactly 3–4 bullets that cover the MAIN findings only.
-- Do NOT add a 'normal elsewhere' bullet — the UI adds this automatically.
-- Put the most important problem first. Each bullet may be 1–2 short sentences.
-- Use plain names: bladder, ureter (urine tube), kidney, womb (uterus), lung.
-- Show cause → effect clearly: "The lump blocks the left ureter, causing severe kidney swelling (grade 5 hydronephrosis)."
-
-conclusion:
-- 1–2 sentences that tie the findings together in plain language.
-- Name the main problem and key spread/blockage in one tight summary.
-- Example STYLE (adapt facts): 
-  "A large bladder cancer has broken through the bladder wall, blocked the left ureter, invaded the cervix, and likely spread to the lungs."
-
-concern:
-- 2–3 short sentences with next steps and red-flags. Use action words.
-- Include: urgent referrals, likely procedures (e.g., stent or nephrostomy to drain urine), and 'go to hospital if...' warnings.
-
-CRITICAL CONTENT RULES
-- Extract ONLY from the actual report. Do not invent findings.
-- Keep units and grades/stages as written; add simple explanations in brackets.
-- Prefer common words: abdomen → tummy; urinary tract → urine system; lesion → abnormal spot; mass → lump; dilated → widened/swollen; stenosis → narrowing.
-- Avoid fear language but do not downplay serious issues.
-
-OUTPUT FORMAT
-Return JSON only, like:
-{{
-  "reason": "You had blood in the urine. Doctors needed clear pictures to look for growths or blockages in the bladder, ureters, and kidneys.",
-  "technique": "A CT machine took many thin pictures of your tummy. Pictures were taken before and after iodine dye for sharp views of the urine system.",
-  "findings": "- A lump about 6 × 5 × 4.5 cm (chicken-egg size) grows from the left bladder wall, inside and outside.\n- The lump extends into the lower left ureter (urine tube), causing severe swelling of the ureter and left kidney (grade 5 hydronephrosis).\n- The same lump has grown into the cervix (neck of the womb).\n- Several small spots in both lower lungs likely show spread of the cancer.",
-  "conclusion": "Large bladder cancer has broken through the bladder wall, blocked the left ureter, invaded the cervix, and has probably spread to the lungs.",
-  "concern": "See a urologist and cancer specialist urgently for biopsy, staging, and treatment options like surgery, chemotherapy, or immunotherapy. The swollen kidney may need a stent or a tube (nephrostomy) to drain urine. Go to hospital fast if you get fever, severe side pain, cannot pass urine, or feel breathless."
-}}
+This module builds a simple, sectioned summary suitable for templates/result.html.
+It uses GPT‑5 via the OpenAI Responses API (when allowed) to rewrite the
+extracted report content into short, clear bullet points with the same tone and
+length as the provided reference style. Dashes ("-") from the model output are
+rendered as HTML bullet lists so they appear as bullets in result.html.
 """
 
+from __future__ import annotations
+
+import os
+import re
+import csv
+import html
+import logging
+from dataclasses import dataclass
+from typing import Dict, List, Tuple, Optional
+
+from .parse import parse_metadata, sections_from_text
+
+logger = logging.getLogger("insideimaging.translate")
 
 
-    # 1) Try Chat Completions JSON mode when supported.
-    chat_model = env_model if _supports_chat_completions(env_model) else chat_fallback
-    tried_chat = False
-    if chat_model:
+# ------------------------------------------------------------
+# Minimal glossary support (optional CSV at data/glossary.csv)
+# ------------------------------------------------------------
+@dataclass
+class Glossary:
+    terms: Dict[str, str]
+
+    @classmethod
+    def load(cls, path: str) -> "Glossary":
+        terms: Dict[str, str] = {}
         try:
-            from openai import APIStatusError  # present in newer sdks; ignore if missing
+            with open(path, newline="", encoding="utf-8") as f:
+                for row in csv.DictReader(f):
+                    term = (row.get("term") or row.get("Term") or "").strip()
+                    definition = (row.get("definition") or row.get("Definition") or "").strip()
+                    if term:
+                        terms[term.lower()] = definition
         except Exception:
-            APIStatusError = Exception  # type: ignore
+            logger.exception("Failed to load glossary from %s", path)
+        return cls(terms)
 
-        try:
-            tried_chat = True
-            resp = client.chat.completions.create(
-                model=chat_model,
-                messages=[
-                    {"role":"system","content":instructions},
-                    {"role":"user","content":report_text},
-                ],
-                temperature=float(os.getenv("OPENAI_TEMPERATURE","0.2")),
-                max_tokens=900,
-                response_format={"type":"json_object"},
-            )
-            data = _extract_json_loose(resp.choices[0].message.content) or {}
-            if data:
-                out: Dict[str,str] = {}
-                for k in ("reason","technique","findings","conclusion","concern"):
-                    v = data.get(k,"")
-                    out[k] = (v if isinstance(v,str) else str(v or "")).strip()
-                return out
-        except NotFoundError as e:
-            logger.error("Chat model not found: %s", getattr(e, "message", str(e)))
-        except BadRequestError as e:
-            logger.error("Chat 400 for model=%s: %s", chat_model, getattr(e, "message", str(e)))
-        except APIStatusError as e:  # network/http class
-            logger.error("Chat APIStatusError: %s", str(e))
-        except Exception:
-            logger.exception("OpenAI chat call failed")
 
-    # 2) Fallback to Responses for reasoning models or when chat failed.
-    model = env_model
-    use_temp = not _is_reasoning_model(model)  # temperature often unsupported on reasoning models
-    kwargs = dict(
-        model=model,
-        instructions=instructions,
-        input=report_text,
-        max_output_tokens=int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS","1500")),
-    )
-    if use_temp:
-        kwargs["temperature"] = temperature
-    if effort in {"low","medium","high","minimal"} and _is_reasoning_model(model):
-        kwargs["reasoning"] = {"effort": effort}
+# -----------------------
+# HTML helper functions
+# -----------------------
+_DASH_LINE_RX = re.compile(r"^\s*[-•]\s+(.+?)\s*$")
 
-    try:
-        resp = client.responses.create(**kwargs)
-        text = getattr(resp, "output_text", None) or str(resp)
-        data = _extract_json_loose(text) or {}
-    except BadRequestError as e:
-        msg = getattr(e, "message", str(e))
-        logger.error("Responses 400 for model=%s: %s", model, msg)
-        # Retry once without temperature if that was the complaint.
-        if "Unsupported parameter: 'temperature'" in msg or "temperature" in msg.lower():
-            kwargs.pop("temperature", None)
-            try:
-                resp = client.responses.create(**kwargs)
-                text = getattr(resp, "output_text", None) or str(resp)
-                data = _extract_json_loose(text) or {}
-            except Exception:
-                logger.exception("Responses retry without temperature failed")
-                data = {}
-        else:
-            data = {}
-    except NotFoundError as e:
-        logger.error("Responses model not found: %s", getattr(e, "message", str(e)))
-        data = {}
-    except Exception:
-        logger.exception("OpenAI responses call failed")
-        data = {}
 
-    out: Dict[str,str] = {}
-    for k in ("reason","technique","findings","conclusion","concern"):
-        v = data.get(k,"")
-        out[k] = (v if isinstance(v,str) else str(v or "")).strip()
-    return out
+def _dashes_to_ul(text: str) -> str:
+    """Convert dash/•-prefixed lines to a <ul> list.
 
-def _merge_runs(runs: List[Dict[str, str]]) -> Dict[str, str]:
-    def norm(x: str) -> str:
-        return re.sub(r"\s+"," ", _strip_labels((x or "").strip()).lower())
-    out: Dict[str, str] = {}
-    for key in ("reason","technique","findings","conclusion","concern"):
-        vals = [r.get(key,"") for r in runs if r.get(key)]
-        if not vals: out[key] = ""; continue
-        counts: Dict[str, Tuple[int,str]] = {}
-        for v in vals:
-            n = norm(v)
-            if n in counts:
-                prev_n, prev_v = counts[n]
-                counts[n] = (prev_n + 1, prev_v if len(prev_v) >= len(v) else v)
-            else:
-                counts[n] = (1, v)
-        pick = sorted(counts.items(), key=lambda kv: (kv[1][0], len(kv[1][1])), reverse=True)[0][1][1]
-        out[key] = pick
-    return out
-
-def _clean_kiswahili_text(text: str) -> str:
-    """Post-process Kiswahili text to fix common mixed-language issues."""
+    If there are no dash bullets, return text as-is (HTML-escaped).
+    """
     if not text:
-        return text
-    
-    # Common English words that slip through → Kiswahili
-    replacements = {
-        r'\bscan\b': 'uchunguzi',
-        r'\bmass\b': 'uvimbe',
-        r'\btumor\b': 'uvimbe',
-        r'\bnormal\b': 'kawaida',
-        r'\babnormal\b': 'si kawaida',
-        r'\bbrain\b': 'ubongo',
-        r'\bliver\b': 'ini',
-        r'\bkidney\b': 'figo',
-        r'\bheart\b': 'moyo',
-        r'\blungs?\b': 'mapafu',
-        r'\bfracture\b': 'mvunjiko',
-        r'\bbleed(?:ing)?\b': 'kutokwa na damu',
-        r'\bswelling\b': 'uvimbe',
-        r'\bpain\b': 'maumivu',
-        r'\binflammation\b': 'uvimbe',
-        r'\binfection\b': 'maambukizi',
-        r'\bct\s+scan\b': 'uchunguzi wa CT',
-        r'\bmri\s+scan\b': 'uchunguzi wa MRI',
-        r'\bx-ray\b': 'X-ray',
-        r'\bultrasound\b': 'uchunguzi wa sauti',
-        r'\bfindings?\b': 'matokeo',
-        r'\bconclusion\b': 'hitimisho',
-        r'\breason\b': 'sababu',
-        r'\btechnique\b': 'mbinu',
-        r'\bconcern\b': 'wasiwasi',
-        r'\bdoctor\b': 'daktari',
-        r'\bpatient\b': 'mgonjwa',
-        r'\bhospital\b': 'hospitali',
-        r'\bthe\b': '',
-        r'\band\b': 'na',
-        r'\bor\b': 'au',
-        r'\bwith\b': 'na',
-        r'\bwithout\b': 'bila',
-        r'\bin\b': 'ndani ya',
-        r'\bon\b': 'juu ya',
-        r'\bof\b': 'ya',
-        r'\bto\b': 'kwa',
-        r'\bfor\b': 'kwa ajili ya',
+        return ""
+
+    lines = [ln.rstrip() for ln in (text or "").splitlines()]
+    items: List[str] = []
+    for ln in lines:
+        m = _DASH_LINE_RX.match(ln)
+        if m:   
+            items.append(m.group(1).strip())
+
+    if not items:
+        # No bullets detected; return safe paragraph text
+        return html.escape(text)
+
+    lis = "".join(f"<li>{html.escape(it)}</li>" for it in items if it)
+    return f"<ul>{lis}</ul>"
+
+
+def _strip_html(s: str) -> str:
+    return re.sub(r"<[^>]+>", " ", s or "").strip()
+
+
+# -----------------------
+# GPT‑5 call + parsing
+# -----------------------
+REFERENCE_STYLE = (
+    "For the reason for scan section: -You had blood in the urine, so the doctors needed clear "
+    "pictures to look for growths or blockages in the bladder, ureters and kidneys. "
+    "Procedure details section: -A CT machine took many thin pictures of your tummy before and after iodine dye "
+    "was injected, giving sharp views of the urine system. "
+    "Important Findings section: -A lump about 6 × 5 × 4½ cm (chicken-egg sized) grows from the left side of the bladder, "
+    "both inside and outside the bladder wall. -The lump spreads into the lower part of the left urine tube (ureter), "
+    "causing severe swelling of that tube and the left kidney (grade 5 hydronephrosis). -The same lump has also grown into "
+    "the neck of the womb (cervix). -Several small spots are seen in both lower lungs; these likely show the cancer has spread. "
+    "-Liver, spleen, pancreas, adrenal glands, bowel and big blood vessels look normal; spine shows age-related wear. "
+    "CONCLUSION section: -Large bladder cancer has broken through the bladder wall, blocked the left ureter, invaded the cervix, "
+    "and has probably spread to the lungs. NOTE OF CONCERN section: -See a urologist and cancer specialist urgently to plan biopsy, "
+    "staging and treatment such as surgery, chemotherapy or immunotherapy. -The swollen kidney may need a stent or tube (nephrostomy) "
+    "to drain urine and prevent damage. -Go to hospital fast if you get fever, severe side pain, cannot pass urine, or feel breathless."
+)
+
+
+def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -> List[dict]:
+    """Build a Responses API input payload with strict headings and dash bullets.
+
+    We ask the model to emit EXACT headings so we can reliably parse them.
+    """
+    # Build minimal, PHI-free context
+    study = (meta.get("study") or "").strip()
+    hospital = (meta.get("hospital") or "").strip()
+    if hospital:
+        # keep institution name generic—do not surface PHI
+        hospital = "a hospital"
+
+    context = {
+        "study": study,
+        "hospital": hospital,
+        "reason": secs.get("reason", ""),
+        "technique": secs.get("technique", ""),
+        "findings": secs.get("findings", ""),
+        "impression": secs.get("impression", ""),
     }
-    
-    result = text
-    for pattern, replacement in replacements.items():
-        result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
-    
-    # Clean up extra spaces
-    result = re.sub(r'\s+', ' ', result).strip()
-    
-    return result
 
-def _summarize_with_openai(report_text: str, language: str) -> Dict[str, str] | None:
-    if not (os.getenv("INSIDEIMAGING_ALLOW_LLM","0")=="1" and os.getenv("OPENAI_API_KEY")):
-        logger.info("[LLM] disabled or missing API key"); return None
+    system = (
+        "You rewrite radiology reports into clear, patient-friendly language. "
+        "Do not include any personal identifiers (names, exact dates, medical record numbers)."
+    )
+
+    # Developer message with format contract
+    developer = (
+        "Write a short summary in English with EXACTLY these headings and ONLY dash-prefixed bullets under each:\n"
+        "Reason for the scan:\n"
+        "- ...\n\n"
+        "Procedure details:\n"
+        "- ...\n\n"
+        "Important Findings:\n"
+        "- ...\n\n"
+        "CONCLUSION:\n"
+        "- ...\n\n"
+        "NOTE OF CONCERN:\n"
+        "- ...\n\n"
+        "Follow the tone, feel and general length of the REFERENCE exactly."
+    )
+
+    # User message provides the actual report content and the reference style
+    user = (
+        "REFERENCE (style and length to emulate):\n"
+        f"{REFERENCE_STYLE}\n\n"
+        "REPORT CONTEXT (from the uploaded report—use only what is relevant, avoid PHI):\n"
+        f"Study: {study or 'Unknown'}\n"
+        f"Reason section:\n{secs.get('reason','').strip()}\n\n"
+        f"Technique section:\n{secs.get('technique','').strip()}\n\n"
+        f"Findings section:\n{secs.get('findings','').strip()}\n\n"
+        f"Impression/Conclusion section:\n{secs.get('impression','').strip()}\n\n"
+        "Instructions:\n"
+        "- Use plain words a non-medical reader understands.\n"
+        "- Keep each bullet to 1 short sentence.\n"
+        "- Do NOT invent facts beyond the report context.\n"
+        "- Do NOT include names, dates, or identifiers.\n"
+        "- Output only the five sections with the exact headings and dash bullets."
+    )
+
+    # Responses API accepts a list of messages; we'll pass role-tagged messages.
+    return [
+        {"role": "system", "content": system},
+        {"role": "developer", "content": developer},
+        {"role": "user", "content": user},
+    ]
+
+
+def _call_gpt5(messages: List[dict]) -> str:
+    """Call the OpenAI Responses API with GPT‑5 and return raw text output.
+
+    Honors environment variables:
+      - OPENAI_MODEL (default: gpt-5)
+      - INSIDEIMAGING_ALLOW_LLM (must be truthy to call)
+      - OPENAI_MAX_OUTPUT_TOKENS (default: 256)
+      - OPENAI_TIMEOUT (seconds; default: 60)
+    """
+    allow = os.getenv("INSIDEIMAGING_ALLOW_LLM", "0").strip()
+    if allow not in ("1", "true", "True", "yes", "YES"):  # guardrails
+        logger.info("LLM disabled by INSIDEIMAGING_ALLOW_LLM=%r", allow)
+        return ""
+
+    # Lazy import so the app can run without the SDK in non-LLM mode
     try:
-        n = max(1, int(os.getenv("OPENAI_SELF_CONSISTENCY_N","1")))
-        effort = (os.getenv("OPENAI_REASONING_EFFORT","") or "").lower()
-        base_temp = float(os.getenv("OPENAI_TEMPERATURE","0.2"))
-        runs: List[Dict[str,str]] = []
-        for i in range(n):
-            runs.append(_call_openai_once(report_text, language, min(1.0, base_temp+0.05*i), effort) or {})
-        result = (_merge_runs(runs) if len(runs)>1 else runs[0]) or None
-        
-        # Post-process for Kiswahili to remove English words
-        if result and language.lower() in ["kiswahili", "swahili"]:
-            for key in ("reason", "technique", "findings", "conclusion", "concern"):
-                if key in result:
-                    result[key] = _clean_kiswahili_text(result[key])
-        
-        return result
+        from openai import OpenAI  # type: ignore
     except Exception:
-        logger.exception("[LLM] summarization failed"); return None
+        logger.exception("openai SDK not available; skipping LLM call")
+        return ""
 
-# ---------- extraction ----------
-HEAD_WORD = re.compile(r"\b(head|skull|brain)\b", re.I)
+    model = os.getenv("OPENAI_MODEL", "gpt-5").strip() or "gpt-5"
+    max_out = int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "256") or 256)
+    timeout_s = int(os.getenv("OPENAI_TIMEOUT", "60") or 60)
 
-def _region_from_text(low: str) -> str | None:
-    if any(w in low for w in ["pancreas","pancreatic","liver","hepatic","biliary","gallbladder","kidney","renal","spleen","stomach","bowel","colon"]):
-        return "abdomen"
-    if any(w in low for w in ["pelvis","uterus","ovary","prostate","bladder","adnexa"]):
-        return "pelvis"
-    if any(w in low for w in ["chest","thorax","lung","mediastinum","cardiac","heart"]):
-        return "chest"
-    if any(w in low for w in ["cervical spine","c-spine"]):
-        return "cervical spine"
-    if any(w in low for w in ["thoracic spine"]):
-        return "thoracic spine"
-    if any(w in low for w in ["lumbar spine","l-spine","lspine"]):
-        return "lumbar spine"
-    if ("neck" in low) or ("cervical" in low and "spine" not in low):
-        return "neck"
-    if HEAD_WORD.search(low) and not re.search(r"\b(head\s+of\s+the\s+pancreas|pancreatic\s+head)\b", low):
-        return "head"
-    return None
+    # Some deployments pin verbosity low to encourage brevity
+    text_cfg = {"verbosity": "low"}
 
-def _extract_technique_details(text: str) -> str:
-    low = (text or "").lower()
-    modality = "CT" if re.search(r"\bct\b", low) else ("MRI" if "mri" in low else ("Ultrasound" if ("ultrasound" in low or "sonograph" in low) else ("X-ray" if re.search(r"x-?ray|radiograph", low) else None)))
-    region = _region_from_text(low)
-    planes = [p for p in ["axial","coronal","sagittal"] if p in low]
-    has_c = bool(re.search(r"\b(cect|contrast[-\s]?enhanced|with\s+contrast)\b", low))
-    has_nc = bool(re.search(r"\b(nect|non[-\s]?contrast|without\s+contrast)\b", low))
-    contrast = "with and without contrast" if (has_c and has_nc) else ("with contrast" if has_c else ("without contrast" if has_nc else ""))
-    m = re.search(r"from\s+(.+?)\s+to\s+(.+?)[\.;]", text, flags=re.I)
-    coverage = f"coverage from {m.group(1).strip()} to {m.group(2).strip()}" if m else ""
-    win = "brain window" if "brain window" in low else ""
-    parts = []
-    if modality: parts.append(f"{'CT scan' if modality=='CT' else modality} of the {region or 'area'}")
-    if planes: parts.append(", ".join(planes))
-    if contrast: parts.append(contrast)
-    if coverage: parts.append(coverage)
-    if win: parts.append(win)
-    out = ", ".join(parts).strip(", ")
-    if out and not out.endswith("."): out += "."
+    client = OpenAI()
+
+    try:
+        resp = client.responses.create(
+            model=model,
+            input=messages,
+            text=text_cfg,
+            max_output_tokens=max_out,
+            reasoning={"effort": "minimal"},  # fast, deterministic rewriting
+            timeout=timeout_s,
+        )
+    except Exception:
+        logger.exception("OpenAI responses.create failed")
+        return ""
+
+    # Extract assistant text per the SDK pattern
+    out_text = []
+    try:
+        for item in getattr(resp, "output", []) or []:
+            if hasattr(item, "content"):
+                for c in getattr(item, "content", []) or []:
+                    if hasattr(c, "text") and c.text:
+                        out_text.append(c.text)
+    except Exception:
+        logger.exception("Failed to parse OpenAI response output")
+        return ""
+
+    return "".join(out_text).strip()
+
+
+def _split_sections(raw: str) -> Dict[str, str]:
+    """Split raw model text into our five sections by fixed headings.
+
+    Expected headings (case-insensitive):
+      - Reason for the scan:
+      - Procedure details:
+      - Important Findings:
+      - CONCLUSION:
+      - NOTE OF CONCERN:
+    """
+    if not raw:
+        return {"reason": "", "technique": "", "findings": "", "conclusion": "", "concern": ""}
+
+    # Normalize headings and split
+    normalized = raw.replace("\r", "")
+    # Build regex to capture each heading and following block
+    parts_rx = re.compile(
+        r"(?is)\b(Reason for the scan|Procedure details|Important Findings|CONCLUSION|NOTE OF CONCERN)\s*:\s*\n?"
+        r"(.*?)(?=\n\s*(?:Reason for the scan|Procedure details|Important Findings|CONCLUSION|NOTE OF CONCERN)\s*:|\Z)"
+    )
+
+    found: Dict[str, str] = {}
+    for m in parts_rx.finditer(normalized):
+        key = m.group(1).lower()
+        body = (m.group(2) or "").strip()
+        if key.startswith("reason"):
+            found["reason"] = body
+        elif key.startswith("procedure"):
+            found["technique"] = body
+        elif key.startswith("important"):
+            found["findings"] = body
+        elif key.startswith("conclusion"):
+            found["conclusion"] = body
+        elif key.startswith("note of concern"):
+            found["concern"] = body
+
+    # Ensure all keys are present
+    for k in ("reason", "technique", "findings", "conclusion", "concern"):
+        found.setdefault(k, "")
+    return found
+
+
+# -----------------------
+# Public interface
+# -----------------------
+def build_structured(report_text: str, glossary: Optional[Glossary] = None, *, language: str = "English") -> Dict[str, str]:
+    """Create the structured, patient-friendly output consumed by result.html.
+
+    Returns a dict with keys: reason, technique, findings, conclusion, concern, and
+    a nested patient dict with non-identifying metadata when available.
+    """
+    text = report_text or ""
+    cleaned = _strip_html(text)
+
+    # Parse metadata and sections from the raw report
+    try:
+        meta = parse_metadata(cleaned)
+    except Exception:
+        logger.exception("parse_metadata failed")
+        meta = {"hospital": "", "study": "", "name": "", "sex": "", "age": "", "date": ""}
+
+    try:
+        secs = sections_from_text(cleaned)
+    except Exception:
+        logger.exception("sections_from_text failed")
+        secs = {"reason": "", "technique": "", "findings": cleaned, "impression": ""}
+
+    # Compose and call GPT‑5
+    messages = _compose_prompt(meta, secs, language)
+    raw = _call_gpt5(messages)
+
+    if not raw:
+        # Fallback: build very simple bullets directly from sections
+        logger.warning("LLM output empty; using heuristic fallback")
+        fallback = {
+            "reason": secs.get("reason", "").strip(),
+            "technique": secs.get("technique", "").strip(),
+            "findings": secs.get("findings", "").strip(),
+            "conclusion": secs.get("impression", "").strip(),
+            "concern": "",
+        }
+        # Convert first 1–5 sentences per section into bullets
+        def sentences(s: str, n: int = 5) -> List[str]:
+            pts = re.split(r"(?<=[.!?])\s+", s)
+            return [p.strip() for p in pts if p.strip()][:n]
+
+        reason_ul = _dashes_to_ul("\n".join(f"- {s}" for s in sentences(fallback["reason"], 1)))
+        tech_ul = _dashes_to_ul("\n".join(f"- {s}" for s in sentences(fallback["technique"], 1)))
+        find_ul = _dashes_to_ul("\n".join(f"- {s}" for s in sentences(fallback["findings"], 6)))
+        concl_ul = _dashes_to_ul("\n".join(f"- {s}" for s in sentences(fallback["conclusion"], 3)))
+        concern_ul = ""
+    else:
+        parts = _split_sections(raw)
+        reason_ul = _dashes_to_ul(parts.get("reason", ""))
+        tech_ul = _dashes_to_ul(parts.get("technique", ""))
+        find_ul = _dashes_to_ul(parts.get("findings", ""))
+        concl_ul = _dashes_to_ul(parts.get("conclusion", ""))
+        concern_ul = _dashes_to_ul(parts.get("concern", ""))
+
+    # Patient block: omit name/identifiers; keep generic study fields
+    patient = {
+        "hospital": meta.get("hospital", ""),
+        "study": meta.get("study", "Unknown"),
+        "name": "",  # ensure PHI is stripped
+        "sex": meta.get("sex", ""),
+        "age": meta.get("age", ""),
+        "date": meta.get("date", ""),
+        "history": secs.get("reason", ""),
+    }
+
+    out = {
+        "patient": patient,
+        "reason": reason_ul,
+        "technique": tech_ul,
+        "findings": find_ul,
+        "conclusion": concl_ul,
+        "concern": concern_ul,
+    }
+
+    # Basic word count for stats (cheap and local)
+    blob = " ".join(
+        _strip_html(out.get(k, ""))
+        for k in ("reason", "technique", "findings", "conclusion", "concern")
+    )
+    out["word_count"] = len(blob.split())
+    out["sentence_count"] = len(re.findall(r"[.!?]+", blob))
+
     return out
 
-def _infer_modality_and_region(text: str) -> str:
-    low = (text or "").lower()
-    modality = "MRI" if "mri" in low else ("CT" if re.search(r"\bct\b", low) else ("Ultrasound" if ("ultrasound" in low or "sonograph" in low) else ("X-ray" if re.search(r"x-?ray|radiograph", low) else None)))
-    with_contrast = bool(re.search(r"\b(contrast|cect)\b", low))
-    region = _region_from_text(low)
-    if not modality: return ""
-    if region:
-        return f"{'CT scan' if modality=='CT' else modality} of the {region}" + (" with contrast." if modality=='CT' and with_contrast else ".")
-    return f"{'CT scan' if modality=='CT' else modality}" + (" with contrast." if modality=='CT' and with_contrast else ".")
-
-def _translate_to_kiswahili(text: str, context: str = "") -> str:
-    """Translate simple English fallback text to Kiswahili."""
-    translations = {
-        "The scan was done to check for a mass.": "Uchunguzi ulifanywa kuangalia uvimbe.",
-        "The scan was done to look for a problem in the head.": "Uchunguzi ulifanywa kutafuta tatizo katika kichwa.",
-        "The scan was done to look for a problem in the neck.": "Uchunguzi ulifanywa kutafuta tatizo katika shingo.",
-        "The scan was done to look for a problem in the abdomen.": "Uchunguzi ulifanywa kutafuta tatizo katika tumbo.",
-        "The scan was done to look for a problem in the area.": "Uchunguzi ulifanywa kutafuta tatizo katika eneo.",
-        " and swollen lymph nodes.": " na lymph nodes zilizovimba.",
-        "The goal was to find a simple cause for the symptoms.": "Lengo lilikuwa kupata sababu rahisi ya dalili.",
-    "The scan was ordered to investigate a mass.": "Uchunguzi uliagizwa kuchunguza uvimbe.",
-    "The scan was ordered to evaluate the head.": "Uchunguzi uliagizwa kuchunguza kichwa.",
-    "The scan was ordered to evaluate the neck.": "Uchunguzi uliagizwa kuchunguza shingo.",
-    "The scan was ordered to evaluate the abdomen.": "Uchunguzi uliagizwa kuchunguza tumbo.",
-    "The scan was ordered to evaluate the area.": "Uchunguzi uliagizwa kuchunguza eneo hili.",
-    "Doctors wanted to understand what is causing the current symptoms.": "Madaktari walitaka kuelewa kinachosababisha dalili za sasa.",
-        "Technique not described.": "Mbinu haijaeleweshwa.",
-        "Not described.": "Haijaeleweshwa.",
-        "No major problems were seen.": "Hakuna matatizo makubwa yaliyoonekana.",
-        "Most other areas look normal.": "Maeneo mengine yanaonekana kawaida.",
-        "See important findings.": "Tazama matokeo muhimu.",
-        "CT scan": "Uchunguzi wa CT",
-        "MRI": "Uchunguzi wa MRI",
-        "Ultrasound": "Uchunguzi wa sauti",
-        "X-ray": "X-ray",
-        " of the ": " ya ",
-        " with contrast.": " na rangi.",
-        " without contrast.": " bila rangi.",
-    }
-    
-    result = text
-    for eng, swh in translations.items():
-        result = result.replace(eng, swh)
-    
-    return result
-
-def _infer_reason(text: str, seed: str, language: str = "English") -> str:
-    src = (seed or "").strip()
-    if not src or src.lower() == "not provided.":
-        match = re.search(r"(?im)^\s*(indication|reason|history)\s*:\s*(.+)$", text or "")
-        if match:
-            src = match.group(2).strip()
-
-    cleaned_seed = _strip_labels(src)
-    cleaned_seed = re.sub(r"(?i)\b(history|clinical\s+history)\s*:\s*", "", cleaned_seed).strip()
-
-    if cleaned_seed:
-        bullets = _normalize_listish(cleaned_seed)
-        sentences: List[str] = []
-        if bullets:
-            for item in bullets[:2]:
-                simple = _simplify(item, None)
-                if not simple:
-                    continue
-                simple = simple.strip()
-                if simple and not simple.endswith('.'):
-                    simple += '.'
-                sentences.append(simple)
-        else:
-            simple = _simplify(cleaned_seed, None)
-            if simple:
-                simple = simple.strip()
-                if simple and not simple.endswith('.'):
-                    simple += '.'
-                sentences = _split_sentences(simple) or [simple]
-        if sentences:
-            reason = " ".join(sentences[:2]).strip()
-            if language.lower() in ["kiswahili", "swahili"]:
-                reason = _clean_kiswahili_text(reason)
-            return reason
-
-    low_all = (text or "").lower() + " " + (src or "").lower()
-
-    region = "head" if any(w in low_all for w in ["head","skull","brain"]) else \
-             "neck" if "neck" in low_all else \
-             "abdomen" if any(w in low_all for w in ["abdomen","abdominal","belly","pancreas","pancreatic","biliary","liver","hepatic","gallbladder"]) else \
-             "area"
-
-    has_mass = bool(re.search(r"\b(mass|lesion|tumou?r|nodule|cyst)\b", low_all))
-    has_nodes = bool(re.search(r"\b(adenopathy|lymph\s*node|lymphaden)\b", low_all))
-
-    part1 = "The scan was ordered to investigate a mass." if has_mass else f"The scan was ordered to evaluate the {region}."
-    if has_nodes:
-        part1 = part1.rstrip('.') + " and swollen lymph nodes."
-    part2 = "Doctors wanted to understand what is causing the current symptoms."
-    fallback = f"{part1} {part2}".strip()
-
-    if language.lower() in ["kiswahili", "swahili"]:
-        fallback = _translate_to_kiswahili(fallback)
-
-    return fallback
-
-
-# ---------- dedupe and pruning ----------
-def _drop_heading_labels_line(s: str) -> str:
-    return re.sub(r"(?i)^\s*(findings?|impression|conclusion|summary)\s*:\s*", "", s or "").strip()
-
-def _normalize_sentence(s: str) -> str:
-    t = _drop_heading_labels_line(s or "")
-    t = re.sub(r"[^a-z0-9\s]", "", t.lower()); t = re.sub(r"\s+"," ",t).strip()
-    return t
-
-def _dedupe_sections(findings_text: str, conclusion_text: str) -> Tuple[str, str]:
-    f_sents = [_drop_heading_labels_line(x) for x in _split_sentences(findings_text or "")]
-    c_sents = [_drop_heading_labels_line(x) for x in _split_sentences(conclusion_text or "")]
-    c_norm = {_normalize_sentence(x) for x in c_sents if x}
-    f_keep = [s for s in f_sents if _normalize_sentence(s) not in c_norm]
-    def uniq(seq: List[str]) -> List[str]:
-        seen = set(); out = []
-        for s in seq:
-            n = _normalize_sentence(s)
-            if n and n not in seen: seen.add(n); out.append(s)
-        return out
-    f_keep = uniq(f_keep); c_keep = uniq(c_sents)
-    return (" ".join(f_keep).strip(), " ".join(c_keep).strip())
-
-def _prune_findings_for_public(text: str) -> str:
-    kept: List[str] = []
-    for sent in _split_sentences(text or ""):
-        s = _grammar_cleanup(sent.strip())
-        if not s or NOISE_RX.search(s): continue
-        low = s.lower()
-        has_number = bool(re.search(r"\b\d+(\.\d+)?\s*(mm|cm)\b", low))
-        is_key = any(re.search(p, low) for p in [*NEG_PHRASES, r"\bmass\b", r"\bfracture\b", r"\bhernia\b", r"\bherniation\b", r"\bstenosis\b"])
-        is_pos_blanket = bool(re.match(r"(?i)^(the\s+rest|other\s+areas)\b", s))
-        if re.match(r"(?i)^\s*(impression|conclusion|summary)\s*:", s): continue
-        if is_key or has_number or is_pos_blanket: kept.append(s)
-    return " ".join(kept[:4])
-
-def _to_colored_bullets_html(raw: str, max_items: int, include_normal: bool, language: str = "English") -> str:
-    items: List[str] = []
-    sources = _normalize_listish(raw) or _split_sentences(raw or "")
-    for s in sources:
-        s = _drop_heading_labels_line(s)
-        t = _tidy_phrases(_grammar_cleanup(_numbers_simple(_simplify(s, None))))
-        t = _dedupe_redundant_noun_phrase(t)
-        if not t:
-            continue
-        # Translate to Kiswahili if needed
-        if language.lower() in ["kiswahili", "swahili"]:
-            t = _clean_kiswahili_text(t)
-        items.append(_highlight_phrasewise(t))
-        if len(items) >= max_items - (1 if include_normal else 0):
-            break
-    if include_normal:
-        normal_text = "Most other areas look normal."
-        if language.lower() in ["kiswahili", "swahili"]:
-            normal_text = "Maeneo mengine yanaonekana kawaida."
-        items.append(_highlight_phrasewise(normal_text))
-    if not items:
-        no_problems_text = "No major problems were seen."
-        if language.lower() in ["kiswahili", "swahili"]:
-            no_problems_text = "Hakuna matatizo makubwa yaliyoonekana."
-        items = [_highlight_phrasewise(no_problems_text)]
-    html = "<ul class='ii-list' style='color:#ffffff'>" + "".join(f"<li>{it}</li>" for it in items[:max_items]) + "</ul>"
-    return _annotate_terms_outside_tags(html)
-
-# ---------- main API ----------
-def build_structured(
-    text: str,
-    lay_gloss: Glossary | None = None,
-    language: str = "English",
-    render_style: str = "bullets",
-) -> Dict[str, str]:
-    try:
-        lat_ms = max(0, int(os.getenv("OPENAI_MIN_LATENCY_MS","0")))
-        if lat_ms: time.sleep(min(10.0, lat_ms/1000.0))
-    except Exception:
-        pass
-
-    meta = parse_metadata(text or "")
-    cleaned = _preclean_report(text or "")
-
-    hx, cleaned = _extract_history(cleaned)
-    secs = sections_from_text(cleaned)
-
-    phi_terms = _collect_phi_terms(meta)
-    sanitized_for_model = _redact_phi(cleaned, extra_terms=phi_terms)
-    sanitized_for_public = _normalize_phi_placeholders(sanitized_for_model)
-
-    reason_seed = secs.get("reason") or "Not provided."
-    if hx: reason_seed = (reason_seed.rstrip(".") + f". History: {hx}.").strip()
-    findings_src = _strip_signatures(secs.get("findings") or (cleaned or "Not described."))
-    impression_src = _strip_signatures(secs.get("impression") or "")
-    findings_src_masked = _normalize_phi_placeholders(_redact_phi(findings_src, extra_terms=phi_terms))
-    impression_src_masked = _normalize_phi_placeholders(_redact_phi(impression_src, extra_terms=phi_terms))
-
-    m = re.search(r"(?mi)^\s*comparison\s*:\s*(.+)$", cleaned); comparison = (m.group(1).strip() if m else "")
-    m = re.search(r"(?mi)^\s*oral\s+contrast\s*:\s*(.+)$", cleaned); oral_contrast = (m.group(1).strip() if m else "")
-
-    fallback_findings = _simplify(_prune_findings_for_public(findings_src_masked), lay_gloss)
-    base_conc = impression_src_masked or ""
-    if not base_conc:
-        picks: List[str] = []
-        search_source = sanitized_for_public or cleaned
-        for kw in ["mass","obstruction","compression","dilation","fracture","bleed","appendicitis","adenopathy","necrotic","atrophy","stenosis","herniation"]:
-            m2 = re.search(rf"(?is)([^.]*\b{kw}\b[^.]*)\.", search_source)
-            if m2: picks.append(m2.group(0).strip())
-        base_conc = " ".join(dict.fromkeys(picks))
-    fallback_conclusion = _simplify(_strip_labels(base_conc) or "See important findings.", lay_gloss)
-
-    concern = ""
-    for kw in ["obstruction","compression","invasion","perforation","ischemia"]:
-        if re.search(rf"(?i)\b{kw}\b", cleaned):
-            concern = f"The findings include {kw}. Discuss next steps with your clinician."
-            break
-    # no else/fallback here
-
-    # LLM attempt, gated + PHI-redacted
-    llm = _summarize_with_openai(sanitized_for_model, language)
-    llm_reason = _strip_labels((llm or {}).get("reason","")) if llm else ""
-    llm_tech = _strip_labels((llm or {}).get("technique","")) if llm else ""
-
-    raw_findings = (_simplify(_strip_labels((llm or {}).get("findings","")), lay_gloss) if llm else "") or fallback_findings
-    raw_conclusion = (_simplify(_strip_labels((llm or {}).get("conclusion","")), lay_gloss) if llm else "") or fallback_conclusion
-    raw_findings = _normalize_phi_placeholders(raw_findings)
-    raw_conclusion = _normalize_phi_placeholders(raw_conclusion)
-
-    # remove overlap
-    raw_findings, raw_conclusion = _dedupe_sections(raw_findings, raw_conclusion)
-
-    concern_txt = (_simplify((llm or {}).get("concern",""), lay_gloss) if llm else "") or concern
-    concern_txt = _normalize_phi_placeholders(concern_txt)
-
-    # technique prefer deterministic
-    technique_extracted = _extract_technique_details(cleaned) or _infer_modality_and_region(cleaned)
-    technique_txt = technique_extracted or _simplify(llm_tech, lay_gloss) or "Technique not described."
-    
-    # Translate technique fallback to Kiswahili if needed
-    if language.lower() in ["kiswahili", "swahili"] and technique_txt == "Technique not described.":
-        technique_txt = "Mbinu haijaeleweshwa."
-    elif language.lower() in ["kiswahili", "swahili"]:
-        technique_txt = _translate_to_kiswahili(technique_txt)
-
-    # reason
-    reason_txt = _infer_reason(cleaned, llm_reason or reason_seed, language)
-    reason_txt = _normalize_phi_placeholders(reason_txt)
-    technique_txt = _normalize_phi_placeholders(technique_txt)
-
-    # render
-    findings_html = _to_colored_bullets_html(raw_findings, max_items=4, include_normal=True, language=language)
-    conclusion_html = _to_colored_bullets_html(raw_conclusion, max_items=2, include_normal=False, language=language)
-    reason_html = _annotate_terms_outside_tags(f'<span class="ii-text" style="color:#ffffff">{_simplify(reason_txt, lay_gloss)}</span>')
-    technique_html = _annotate_terms_outside_tags(f'<span class="ii-text" style="color:#ffffff">{_simplify(technique_txt, lay_gloss)}</span>')
-    concern_html = _annotate_terms_outside_tags(f'<span class="ii-text" style="color:#ffffff">{_simplify(concern_txt, lay_gloss)}</span>') if concern_txt else ""
-
-    # stats
-    words = len(re.findall(r"\w+", cleaned or ""))
-    sentences = len(re.findall(r"[.!?]+", cleaned or ""))
-    pos_hi = len(re.findall(r'class="ii-pos"', findings_html + conclusion_html))
-    neg_hi = len(re.findall(r'class="ii-neg"', findings_html + conclusion_html))
-
-    patient_bundle = {
-        "name": meta.get("name", ""),
-        "age": meta.get("age", ""),
-        "sex": meta.get("sex", ""),
-        "hospital": meta.get("hospital", ""),
-        "date": meta.get("date", ""),
-        "study": meta.get("study", ""),
-        "history": hx,
-    }
-
-    return {
-        "name": patient_bundle.get("name", ""), "age": patient_bundle.get("age", ""), "sex": patient_bundle.get("sex", ""),
-        "hospital": patient_bundle.get("hospital", ""), "date": patient_bundle.get("date", ""), "study": patient_bundle.get("study", ""),
-        "reason": reason_html.strip(), "technique": technique_html.strip(),
-        "comparison": comparison or "None", "oral_contrast": oral_contrast or "Not stated",
-        "findings": findings_html.strip(), "conclusion": conclusion_html.strip(), "concern": concern_html.strip(),
-        "word_count": words, "sentence_count": sentences, "highlights_positive": pos_hi, "highlights_negative": neg_hi,
-        "patient": patient_bundle,
-    }
-
-__all__ = ["Glossary", "build_structured"]

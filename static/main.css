@@ -196,6 +196,12 @@ a:hover { text-decoration: underline; }
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* Ensure consistent text color across all summary sections */
+.report p.simple-output,
+.report div.simple-output {
+  color: var(--text);
+}
 .report section.warn { border-color: #ffbe33; }
 
 /* Highlight important findings section */

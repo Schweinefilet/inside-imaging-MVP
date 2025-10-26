@@ -85,29 +85,75 @@ _DASH_LINE_RX = re.compile(r"^\s*-\s+(.+?)\s*$")
 def _simplify_for_layperson(text: str) -> str:
     """Very lightweight jargon simplifier for fallback mode (English only)."""
     repl = [
+        # Spinal anatomy - specific levels first
+        (r"\bL5/S1\b", "between the lowest back bone and tailbone"),
+        (r"\bL4/L5\b", "between the 4th and 5th bones in your lower back"),
+        (r"\bL3/L4\b", "between the 3rd and 4th bones in your lower back"),
+        (r"\bL2/L3\b", "between the 2nd and 3rd bones in your lower back"),
+        (r"\bL1/L2\b", "between the 1st and 2nd bones in your lower back"),
+        (r"\bC6/C7\b", "between the 6th and 7th bones in your neck"),
+        (r"\bC5/C6\b", "between the 5th and 6th bones in your neck"),
+        (r"\bC4/C5\b", "between the 4th and 5th bones in your neck"),
+        (r"\bC3/C4\b", "between the 3rd and 4th bones in your neck"),
+        (r"\bT\d+/T\d+\b", "between bones in your mid-back"),
+        (r"\bL\d+/L\d+\b", "between bones in your lower back"),
+        (r"\bC\d+/C\d+\b", "between bones in your neck"),
+        # General spinal terms
+        (r"\blumbar spine\b", "lower back"),
+        (r"\bthoracic spine\b", "mid-back"),
+        (r"\bcervical spine\b", "neck"),
+        (r"\bvertebrae\b", "bones in the spine"),
+        (r"\bvertebra\b", "bone in the spine"),
+        (r"\bforamina\b", "nerve tunnels"),
+        (r"\bforamen\b", "nerve tunnel"),
+        (r"\bdisc herniation\b", "slipped disc"),
+        (r"\bherniated disc\b", "slipped disc"),
+        (r"\bspinal canal\b", "main channel in the spine"),
+        (r"\bnerve root\b", "nerve branch"),
+        (r"\bspinal cord\b", "main nerve bundle in the spine"),
+        # Lymph and glands
+        (r"\badenopathy\b", "swollen glands"),
+        (r"\blymphadenopathy\b", "swollen glands"),
+        (r"\blymph nodes\b", "infection-fighting glands"),
+        (r"\blymph node\b", "infection-fighting gland"),
+        # Fluid and swelling
+        (r"\bedema\b", "swelling"),
+        (r"\beffusion\b", "fluid buildup"),
+        (r"\bpleural effusion\b", "fluid around the lung"),
+        (r"\bascites\b", "fluid in the belly"),
+        # Body regions
         (r"\babdomen(al)?\b", "tummy"),
         (r"\burinary tract\b", "urine system"),
-        (r"\bureters\b", "ureters (urine tubes)"),
-        (r"\bureter\b", "ureter (urine tube)"),
+        (r"\bureters\b", "urine tubes"),
+        (r"\bureter\b", "urine tube"),
+        # Abnormalities
         (r"\blesions\b", "abnormal spots"),
         (r"\blesion\b", "abnormal spot"),
         (r"\bmass(es)?\b", "lump"),
         (r"\bneoplasm(s)?\b", "cancer"),
-        (r"\blymphadenopathy\b", "swollen lymph nodes"),
+        # Organs
         (r"\bhepatic\b", "liver"),
         (r"\brenal\b", "kidney"),
         (r"\bpulmonary\b", "lung"),
-        (r"\bcervix\b", "cervix (neck of the womb)"),
-        (r"\bhydronephrosis\b", "hydronephrosis (severe urine backup)"),
+        (r"\bcervix\b", "neck of the womb"),
+        # Conditions
+        (r"\bhydronephrosis\b", "severe urine backup"),
         (r"\bstenosis\b", "narrowing"),
-        (r"\bdilat(e|ed|ation)\b", "widened/swollen"),
-        (r"\bintravenous contrast\b", "iodine dye"),
-        (r"\bcontrast\b", "iodine dye"),
+        (r"\bdilat(e|ed|ation)\b", "widened"),
+        # Procedures
+        (r"\bintravenous contrast\b", "dye through a vein"),
+        (r"\bcontrast\b", "dye"),
+        # Cancer terms
         (r"\bmetastases\b", "spread of the cancer"),
         (r"\bmetastasis\b", "spread of the cancer"),
-        (r"\bindeterminate\b", "unclear"),
-        (r"\bbenign\b", "non-cancer"),
         (r"\bmalignant\b", "cancer"),
+        (r"\bcarcinoma\b", "cancer"),
+        (r"\bbenign\b", "non-cancer"),
+        # Other
+        (r"\bindeterminate\b", "unclear"),
+        (r"\batelectasis\b", "partially collapsed lung"),
+        (r"\bconsolidation\b", "filled airspaces in the lung"),
+        (r"\bnodule(s)?\b", "small lump"),
     ]
     out = text or ""
     for rx, rep in repl:
@@ -323,17 +369,41 @@ def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -
         "Use second person (you/your). Be confident and plain. Avoid hedging.\n"
         "Explain as if to someone with no medical background (about grade 6 reading level).\n"
         "Use a kind, calm, supportive tone.\n\n"
+        "CRITICAL SIMPLIFICATION RULES\n"
+        "- NEVER use medical terms alone. ALWAYS explain them immediately in brackets.\n"
+        "- Bad: 'enlarged lymph nodes' or 'adenopathy'\n"
+        "- Good: 'swollen infection-fighting glands (lymph nodes)' or 'swollen glands in the neck'\n"
+        "- Bad: 'Many enlarged neck lymph nodes (adenopathy). Both sides are involved, worse on the left.'\n"
+        "- Good: 'Many swollen glands in the neck (lymph nodes that fight infection). Both sides are swollen, worse on the left.'\n"
+        "- Bad: 'At L4/5, a broad disc herniation (slipped disc) pushes back and center.'\n"
+        "- Good: 'Between the 4th and 5th bones in your lower back, a slipped disc pushes backward.'\n"
+        "- Replace ALL medical jargon and anatomy codes with everyday words + explanations.\n"
+        "- ALWAYS explain anatomy locations in simple terms:\n"
+        "  * L1-L5 → bones in the lower back (lumbar spine)\n"
+        "  * T1-T12 → bones in the mid-back (thoracic spine)\n"
+        "  * C1-C7 → bones in the neck (cervical spine)\n"
+        "  * Foramina → nerve tunnels or side openings\n"
+        "  * Vertebrae → bones in the spine\n"
+        "  * Disc herniation → slipped disc\n\n"
         "STYLE & LENGTH\n"
         "- Short to medium sentences (8–22 words). Use everyday words.\n"
         "- Define any medical word immediately in brackets: 'hydronephrosis (severe urine backup)'.\n"
-        "- Replace difficult words with plain ones (abdomen → tummy, lesion → abnormal spot, mass → lump).\n"
+        "- Replace difficult words with plain ones FIRST, then optionally add medical term in brackets:\n"
+        "  * abdomen → tummy\n"
+        "  * lesion → abnormal spot\n"
+        "  * mass → lump\n"
+        "  * lymph nodes → infection-fighting glands (lymph nodes) OR swollen glands\n"
+        "  * adenopathy → swollen glands\n"
+        "  * edema → swelling\n"
+        "  * effusion → fluid buildup\n"
         "- No acronyms without a plain explanation the first time: CT (special x-ray), MRI (magnet pictures), IV (through a vein).\n"
         "- Keep numbers from the report. Add a simple size comparison in brackets when helpful.\n"
         "- Use direct verbs: shows, spreads into, blocks, has likely spread.\n"
         "- Do not use phrases like 'clinical correlation recommended' or 'please correlate'.\n\n"
         "READABILITY RULES\n"
         "- Prefer common words: urinary tract → urine system; ureter → urine tube; hydronephrosis → severe urine backup.\n"
-        "- Avoid jargon: attenuation, morphology, heterogeneous, signal, density. Use simple alternatives or define in brackets.\n"
+        "- Avoid ALL jargon: attenuation, morphology, heterogeneous, signal, density, adenopathy, lymphadenopathy.\n"
+        "- Use simple alternatives or define in brackets.\n"
         "- Avoid fear language. Be honest but reassuring.\n\n"
         "MAP EACH FIELD TO THIS EXACT CONTENT\n\n"
         "reason:\n"
@@ -345,11 +415,12 @@ def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -
         "- Mention modality, body area, thin slices, and contrast timing if used.\n\n"
         "findings:\n"
         "- Return either (A) a single string composed of bullet lines that each start with '- ', or (B) an array of bullet strings where each item starts with '- '.\n"
-        "- Write exactly 3–4 bullets that cover the MAIN findings only (200–350 chars total).\n"
+        "- Write 3–8 (STRICT) bullets that cover all important findings (prioritize completeness over brevity).\n"
         "- Do NOT add a 'normal elsewhere' bullet — the UI adds this automatically.\n"
         "- Put the most important problem first. Each bullet may be 1–2 short sentences.\n"
-        "- Use plain names (bladder, ureter (urine tube), kidney, womb (uterus), lung).\n"
-        "- Show cause → effect clearly.\n\n"
+        "- Use plain names (bladder, urine tube, kidney, neck of the womb, lung).\n"
+        "- Show cause → effect clearly.\n"
+        "- Include all significant abnormalities from the report, not just the top few.\n\n"
         "conclusion:\n"
         "- 1–2 sentences (80–150 chars) that tie the findings together in plain language.\n"
         "- Name the main problem and key spread/blockage in one tight summary.\n"

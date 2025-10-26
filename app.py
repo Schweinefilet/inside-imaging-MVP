@@ -574,7 +574,7 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
     }
 
 
-@app.route("/", methods=["GET"])
+@app.route("/dashboard", methods=["GET"])
 def index():
     stats = db.get_stats()
     recent_reports = session.get("recent_reports", [])
@@ -589,7 +589,7 @@ def index():
             logging.exception("Failed to fetch user reports")
     
     return render_template("index.html", stats=stats, languages=LANGUAGES, 
-                         recent_reports=recent_reports, user_reports=user_reports)
+                          recent_reports=recent_reports, user_reports=user_reports)
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -837,6 +837,7 @@ def report_preview():
     return render_template("pdf_report.html", structured=structured, patient=patient)
 
 
+@app.route("/", methods=["GET"])
 @app.route("/projects")
 def projects():
     return render_template(

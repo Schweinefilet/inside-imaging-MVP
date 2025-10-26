@@ -338,7 +338,9 @@
     <div class="patient-card">
       <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
       <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
-      <div><span class="lbl">Name</span><strong>{{ patient.name|default('', true) }}</strong></div>
+      {% if patient.name %}
+      <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
+      {% endif %}
       <div><span class="lbl">Sex</span><strong>{{ patient.sex|default('', true) }}</strong></div>
       <div><span class="lbl">Age</span><strong>{{ patient.age|default('', true) }}</strong></div>
       <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>

@@ -577,12 +577,6 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
 
 
 @app.route("/dashboard", methods=["GET"])
-def index():
-    """Redirect to projects page as the new landing page"""
-    return redirect(url_for("projects"))
-
-
-@app.route("/dashboard", methods=["GET"])
 def dashboard():
     stats = db.get_stats()
     recent_reports = session.get("recent_reports", [])
@@ -940,6 +934,12 @@ def payment():
 @app.route("/help")
 def help_page():
     return render_template("help.html")
+
+
+@app.route("/team")
+def team():
+    """Team page with member bios and photos"""
+    return render_template("team.html")
 
 
 @app.route("/profile")

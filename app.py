@@ -4,6 +4,8 @@ import io
 import re
 import json
 import logging
+import pytesseract
+print("Tesseract path:", pytesseract.pytesseract.tesseract_cmd)
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env", override=True)

@@ -197,7 +197,7 @@
           <section class="upload-section">
             <h2>Upload New Report</h2>
             <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
-              <input type="file" name="file" accept=".pdf,.txt" required>
+              <input type="file" name="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.tif,.tiff,.webp,.bmp" required>
               <label for="language">Language:</label>
               <select name="language" id="language">
                 {% for language in languages %}

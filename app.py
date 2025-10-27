@@ -4,6 +4,8 @@ import io
 import re
 import json
 import logging
+import pytesseract
+print("Tesseract path:", pytesseract.pytesseract.tesseract_cmd)
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env", override=True)
@@ -149,6 +151,51 @@ def _extract_text_from_pdf_bytes(data: bytes) -> str:
         return extract_text(io.BytesIO(data)) or ""
     except Exception:
         logging.exception("pdfminer extract_text failed")
+        return ""
+
+
+def _extract_text_from_image_bytes(data: bytes) -> str:
+    """Extract text from an image using Tesseract OCR via pytesseract.
+
+    Requires Pillow and pytesseract. Optionally honor `TESSERACT_CMD` env var
+    pointing to the tesseract executable (e.g., on Windows:
+    C:\\Program Files\\Tesseract-OCR\\tesseract.exe).
+    """
+    try:
+        from PIL import Image, ImageOps, ImageFilter  # type: ignore
+        import pytesseract  # type: ignore
+    except Exception:
+        logging.exception("OCR dependencies (Pillow/pytesseract) not available")
+        return ""
+
+    # Configure explicit tesseract binary path if provided
+    try:
+        tcmd = os.getenv("TESSERACT_CMD")
+        if tcmd:
+            pytesseract.pytesseract.tesseract_cmd = tcmd
+        else:
+            # Windows default install path fallback if available
+            if os.name == "nt":
+                default_tess = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+                if os.path.exists(default_tess):
+                    pytesseract.pytesseract.tesseract_cmd = default_tess
+    except Exception:
+        pass
+
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            # Convert to grayscale, autocontrast, and lightly sharpen to improve OCR
+            proc = img.convert("L")
+            proc = ImageOps.autocontrast(proc)
+            proc = proc.filter(ImageFilter.SHARPEN)
+
+            # Try PSM 6 (single uniform block of text); fallback to 3 (automatic)
+            text = pytesseract.image_to_string(proc, lang="eng", config="--psm 6") or ""
+            if len(text.strip()) < 40:
+                text = pytesseract.image_to_string(proc, lang="eng", config="--psm 3") or ""
+            return (text or "").strip()
+    except Exception:
+        logging.exception("pytesseract OCR failed")
         return ""
 
 
@@ -529,7 +576,7 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
     }
 
 
-@app.route("/", methods=["GET"])
+@app.route("/dashboard", methods=["GET"])
 def index():
     """Redirect to projects page as the new landing page"""
     return redirect(url_for("projects"))
@@ -550,7 +597,7 @@ def dashboard():
             logging.exception("Failed to fetch user reports")
     
     return render_template("index.html", stats=stats, languages=LANGUAGES, 
-                         recent_reports=recent_reports, user_reports=user_reports)
+                          recent_reports=recent_reports, user_reports=user_reports)
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -562,25 +609,40 @@ def upload():
     lang = request.form.get("language", "English")
     file_text = request.form.get("file_text", "")
     extracted = ""
+    src_kind = ""
 
     # Prefer pasted text if provided
     if file_text and file_text.strip():
         extracted = file_text.strip()
+        src_kind = "text"
     elif file and file.filename:
         fname = secure_filename(file.filename)
         data = file.read()
+        lower_name = fname.lower()
         try:
-            if fname.lower().endswith(".pdf"):
+            if lower_name.endswith(".pdf"):
                 extracted = _extract_text_from_pdf_bytes(data)
+                src_kind = "pdf"
+            elif lower_name.endswith((".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp")):
+                extracted = _extract_text_from_image_bytes(data)
+                src_kind = "image"
+                if not extracted:
+                    # Provide a targeted hint for OCR setup and bail early
+                    flash(
+                        "Image OCR failed. Please install Tesseract and the pytesseract Python package, then try again.",
+                        "error",
+                    )
+                    return redirect(url_for("index"))
             else:
                 try:
                     extracted = data.decode("utf-8", "ignore")
+                    src_kind = "text"
                 except Exception:
                     logging.exception("decode failed; extracted empty")
         except Exception:
             logging.exception("file handling failed; extracted empty")
 
-    logging.info("len(extracted)=%s", len(extracted or ""))
+    logging.info("len(extracted)=%s kind=%s", len(extracted or ""), src_kind or "?")
 
     triage_ok, triage_diag = _triage_radiology_report(extracted)
     if not triage_ok:
@@ -781,6 +843,7 @@ def report_preview():
     return render_template("pdf_report.html", structured=structured, patient=patient)
 
 
+@app.route("/", methods=["GET"])
 @app.route("/projects")
 def projects():
     stats = db.get_stats()

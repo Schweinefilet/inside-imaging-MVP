@@ -42,8 +42,18 @@ def from_image(path: Path) -> str:
     import pytesseract  # type: ignore
     from PIL import Image, ImageOps, ImageFilter  # type: ignore
     # Configure path to tesseract executable if provided via env var
-    if os.getenv("TESSERACT_CMD"):
-        pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_CMD")
+    tcmd_env = os.getenv("TESSERACT_CMD")
+    if tcmd_env:
+        pytesseract.pytesseract.tesseract_cmd = tcmd_env
+    else:
+        # Windows default install path fallback if available
+        try:
+            if os.name == "nt":
+                default_tess = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+                if os.path.exists(default_tess):
+                    pytesseract.pytesseract.tesseract_cmd = default_tess
+        except Exception:
+            pass
     img = Image.open(path).convert("L")  # convert to grayscale
     img = ImageOps.autocontrast(img).filter(ImageFilter.SHARPEN)
     # Try OCR with page segmentation mode 6 (single uniform block)

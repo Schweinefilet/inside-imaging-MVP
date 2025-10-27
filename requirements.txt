@@ -31,3 +31,4 @@ fonttools>=4.0.0
 openai
 gunicorn
 flask-cors
+pytesseract

@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='blogs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='marquee-3d.css') }}">
 </head>
 <body>
   {% set landing_text = "INSIDE IMAGING" %}
@@ -86,6 +87,11 @@
     </header>
 
     <main class="content projects-page">
+        <!-- 3D Marquee Showcase Section -->
+        <section class="marquee-3d-container" data-marquee-3d data-images='{{ marquee_images | tojson }}' data-radius="600" data-autoplay="true" data-speed="30">
+            <!-- Marquee will be initialized by JavaScript -->
+        </section>
+
         <section class="marquee-hero" id="showcase">
             <div class="marquee-overlay" aria-hidden="true"></div>
             <div class="marquee-content">
@@ -95,22 +101,6 @@
                 <div class="marquee-actions">
                     <a class="btn-primary" href="{{ url_for('dashboard') }}">Try it now</a>
                     <a class="btn-secondary" href="#portfolio">View our projects</a>
-                </div>
-            </div>
-            <div class="marquee-plane" aria-hidden="true">
-                <div class="marquee-row marquee-row-a">
-                    {% for _ in range(2) %}
-                        {% for image in marquee_images %}
-                        <figure class="marquee-card"><img src="{{ image }}" alt="Inside Imaging showcase tile"></figure>
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-                <div class="marquee-row marquee-row-b">
-                    {% for _ in range(2) %}
-                        {% for image in marquee_images %}
-                        <figure class="marquee-card"><img src="{{ image }}" alt="Inside Imaging showcase tile"></figure>
-                        {% endfor %}
-                    {% endfor %}
                 </div>
             </div>
         </section>
@@ -195,6 +185,7 @@
     {% include '_footer.html' %}
 </div>
 
+<script src="{{ url_for('static', filename='marquee-3d.js') }}"></script>
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 
 <script>

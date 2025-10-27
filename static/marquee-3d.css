@@ -1,0 +1,375 @@
+/* 3D Marquee - Aceternity-inspired with perspective rows */
+
+.marquee-3d-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: rgba(10, 10, 10, 0.4);
+    border: 1px solid rgba(34, 197, 94, 0.1);
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.marquee-3d-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    padding: 2rem;
+    text-align: center;
+    pointer-events: none;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.marquee-3d-overlay .marquee-kicker {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mint);
+    margin-bottom: 1rem;
+}
+
+.marquee-3d-overlay h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 1.5rem;
+    color: var(--text-primary);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.marquee-3d-overlay .marquee-description {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto 2rem;
+}
+
+.marquee-3d-overlay .marquee-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    pointer-events: auto;
+}
+
+.marquee-3d-overlay .btn-primary,
+.marquee-3d-overlay .btn-secondary {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.marquee-3d-overlay .btn-primary {
+    background: var(--mint);
+    color: #000;
+}
+
+.marquee-3d-overlay .btn-primary:hover {
+    background: var(--mint-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.marquee-3d-overlay .btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.marquee-3d-overlay .btn-secondary:hover {
+    border-color: var(--mint);
+    color: var(--mint);
+}
+
+.marquee-3d-wrapper {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    perspective: 1500px;
+    perspective-origin: center center;
+    overflow: hidden;
+}
+
+.marquee-3d-scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(25deg) rotateZ(-5deg) translateY(-120px);
+}
+
+.marquee-3d-row {
+    position: absolute;
+    display: flex;
+    gap: 1.5rem;
+    transform-style: preserve-3d;
+    will-change: transform;
+    white-space: nowrap;
+}
+
+/* Diagonal movement - combining horizontal and vertical with more separation */
+.marquee-3d-row:nth-child(1) {
+    left: 0;
+    top: 5%;
+    animation: marqueeScrollDiagonal1 50s linear infinite;
+    animation-play-state: running;
+}
+
+.marquee-3d-row:nth-child(2) {
+    left: 0;
+    top: 30%;
+    animation: marqueeScrollDiagonal2 45s linear infinite;
+    animation-play-state: running;
+}
+
+.marquee-3d-row:nth-child(3) {
+    left: 0;
+    top: 55%;
+    animation: marqueeScrollDiagonal3 55s linear infinite;
+    animation-play-state: running;
+}
+
+.marquee-3d-row:nth-child(4) {
+    left: 0;
+    top: 80%;
+    animation: marqueeScrollDiagonal4 48s linear infinite;
+    animation-play-state: running;
+}
+
+/* Diagonal animations - moving both X and Y with wider range for continuous loop */
+@keyframes marqueeScrollDiagonal1 {
+    from {
+        transform: translateX(0) translateY(0) translateZ(0);
+    }
+    to {
+        transform: translateX(-50%) translateY(-10%) translateZ(0);
+    }
+}
+
+@keyframes marqueeScrollDiagonal2 {
+    from {
+        transform: translateX(-50%) translateY(0) translateZ(0);
+    }
+    to {
+        transform: translateX(0%) translateY(10%) translateZ(0);
+    }
+}
+
+@keyframes marqueeScrollDiagonal3 {
+    from {
+        transform: translateX(0) translateY(0) translateZ(0);
+    }
+    to {
+        transform: translateX(-50%) translateY(8%) translateZ(0);
+    }
+}
+
+@keyframes marqueeScrollDiagonal4 {
+    from {
+        transform: translateX(-50%) translateY(0) translateZ(0);
+    }
+    to {
+        transform: translateX(0%) translateY(-8%) translateZ(0);
+    }
+}
+
+.marquee-3d-item {
+    position: relative;
+    width: 280px;
+    height: 260px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    transform-style: preserve-3d;
+}
+
+.marquee-3d-item:hover {
+    transform: translateZ(40px) scale(1.05);
+    border-color: rgba(34, 197, 94, 0.6);
+    box-shadow: 0 16px 64px rgba(34, 197, 94, 0.3);
+    z-index: 10;
+}
+
+.marquee-3d-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.8) contrast(1.1);
+    transition: filter 0.3s ease;
+}
+
+.marquee-3d-item:hover img {
+    filter: brightness(1) contrast(1);
+}
+
+.marquee-3d-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(34, 197, 94, 0.15) 0%,
+        transparent 50%,
+        rgba(20, 184, 166, 0.15) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.marquee-3d-item:hover::before {
+    opacity: 1;
+}
+
+/* Gradient overlays for edge fade */
+.marquee-3d-wrapper::before,
+.marquee-3d-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 150px;
+    left: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.marquee-3d-wrapper::before {
+    top: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 10, 10, 0.9) 0%,
+        transparent 100%
+    );
+}
+
+.marquee-3d-wrapper::after {
+    bottom: 0;
+    background: linear-gradient(
+        0deg,
+        rgba(10, 10, 10, 0.9) 0%,
+        transparent 100%
+    );
+}
+
+/* Controls */
+.marquee-3d-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.marquee-3d-controls button {
+    padding: 0.75rem 1.5rem;
+    background: var(--mint);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.marquee-3d-controls button:hover {
+    background: var(--mint-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.marquee-3d-controls button:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .marquee-3d-wrapper {
+        height: 500px;
+    }
+    
+    .marquee-3d-item {
+        width: 220px;
+        height: 200px;
+    }
+    
+    .marquee-3d-scene {
+        transform: rotateX(20deg) rotateZ(-3deg) translateY(-100px);
+    }
+    
+    .marquee-3d-overlay h1 {
+        font-size: 2rem;
+    }
+    
+    .marquee-3d-overlay .marquee-description {
+        font-size: 1rem;
+    }
+    
+    .marquee-3d-overlay {
+        padding: 2rem 1rem 1rem;
+    }
+}
+
+/* Dark mode (default) */
+:root:not(.light) .marquee-3d-container {
+    background: rgba(10, 10, 10, 0.6);
+    border-color: rgba(34, 197, 94, 0.15);
+}
+
+:root:not(.light) .marquee-3d-item {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+:root:not(.light) .marquee-3d-wrapper::before {
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+}
+
+:root:not(.light) .marquee-3d-wrapper::after {
+    background: linear-gradient(0deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+}
+
+/* Light mode */
+:root.light .marquee-3d-container {
+    background: rgba(249, 250, 251, 0.9);
+    border-color: rgba(5, 150, 105, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+:root.light .marquee-3d-item {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(5, 150, 105, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+:root.light .marquee-3d-item:hover {
+    box-shadow: 0 16px 64px rgba(5, 150, 105, 0.25);
+}
+
+:root.light .marquee-3d-wrapper::before {
+    background: linear-gradient(180deg, rgba(249, 250, 251, 1) 0%, transparent 100%);
+}
+
+:root.light .marquee-3d-wrapper::after {
+    background: linear-gradient(0deg, rgba(249, 250, 251, 1) 0%, transparent 100%);
+}
+

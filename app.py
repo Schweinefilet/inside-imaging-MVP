@@ -531,6 +531,12 @@ def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
 
 @app.route("/", methods=["GET"])
 def index():
+    """Redirect to projects page as the new landing page"""
+    return redirect(url_for("projects"))
+
+
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
     stats = db.get_stats()
     recent_reports = session.get("recent_reports", [])
     
@@ -550,9 +556,7 @@ def index():
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "GET":
-        stats = db.get_stats()
-        recent_reports = session.get("recent_reports", [])
-        return render_template("index.html", stats=stats, languages=LANGUAGES, recent_reports=recent_reports)
+        return redirect(url_for("dashboard"))
 
     file = request.files.get("file")
     lang = request.form.get("language", "English")
@@ -586,7 +590,7 @@ def upload():
         )
         flash(message, "error")
         logging.warning("Upload triage rejected: %s", triage_diag)
-        return redirect(url_for("index"))
+        return redirect(url_for("dashboard"))
 
     # Build structured summary
     try:
@@ -779,11 +783,14 @@ def report_preview():
 
 @app.route("/projects")
 def projects():
+    stats = db.get_stats()
     return render_template(
         "projects.html",
         posts=BLOG_POSTS,
         marquee_images=MARQUEE_IMAGES,
         submit_url="mailto:editor@insideimaging.example?subject=Radiologist%20Blog%20Pitch",
+        stats=stats,
+        languages=LANGUAGES,
     )
 
 

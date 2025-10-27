@@ -109,30 +109,14 @@
   </style>
 </head>
 <body>
-  {% set landing_text = "INSIDE IMAGING" %}
-  <div id="landing-overlay" class="landing-overlay landing-hidden" role="dialog" aria-modal="true" aria-label="Inside Imaging introduction" aria-hidden="true" tabindex="-1">
-    <div class="landing-inner">
-      <div class="landing-heading" aria-hidden="true">
-        {% for char in landing_text %}
-          {% if char == ' ' %}
-            <span class="spacer" data-char=" "></span>
-          {% else %}
-            <span data-char="{{ char }}">{{ char }}</span>
-          {% endif %}
-        {% endfor %}
-      </div>
-      <p class="landing-tagline">Plain-language radiology reports with immersive visuals and guidance tailored for patients.</p>
-      <button type="button" class="landing-continue" id="landing-continue">Continue</button>
-    </div>
-  </div>
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
       </div>
       <nav class="nav-links">
-        <a href="{{ url_for('index') }}">Dashboard</a>
         <a href="{{ url_for('projects') }}">Projects</a>
+        <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
         <a href="{{ url_for('report_status') }}">Statistics</a>
         <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
         <a href="{{ url_for('help_page') }}">Help</a>
@@ -504,67 +488,6 @@ document.addEventListener('DOMContentLoaded', function() {
     span.style.width = clamped + '%';
   });
 });
-</script>
-
-<script>
-(function(){
-  var overlay = document.getElementById('landing-overlay');
-  if (!overlay) return;
-  var continueBtn = document.getElementById('landing-continue');
-  
-  // Check if user is navigating within site (has sessionStorage flag)
-  var isInternalNav = sessionStorage.getItem('iiInternalNav') === '1';
-  
-  var disableOverlay = function(){
-    overlay.classList.add('landing-hidden');
-    overlay.setAttribute('aria-hidden', 'true');
-    setTimeout(function(){ if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 650);
-  };
-
-  // Set flag to indicate user has navigated within site
-  sessionStorage.setItem('iiInternalNav', '1');
-
-  // Only show overlay if NOT internal navigation (i.e., fresh site entry)
-  if (isInternalNav) {
-    disableOverlay();
-    return;
-  }
-
-  // Show intro overlay for fresh site entry
-  requestAnimationFrame(function(){
-    overlay.classList.remove('landing-hidden');
-    overlay.setAttribute('aria-hidden', 'false');
-    if (continueBtn) continueBtn.focus();
-  });
-
-  var updateGradient = function(evt){
-    var rect = overlay.getBoundingClientRect();
-    var x = ((evt.clientX - rect.left) / rect.width) * 100;
-    var y = ((evt.clientY - rect.top) / rect.height) * 100;
-    overlay.style.setProperty('--mx', x + '%');
-    overlay.style.setProperty('--my', y + '%');
-  };
-
-  overlay.addEventListener('mousemove', updateGradient);
-  overlay.addEventListener('touchmove', function(evt){
-    if (!evt.touches || !evt.touches.length) return;
-    updateGradient(evt.touches[0]);
-  }, { passive: true });
-
-  if (continueBtn) continueBtn.addEventListener('click', disableOverlay);
-  overlay.addEventListener('click', function(evt){
-    if (evt.target === overlay) disableOverlay();
-  });
-  overlay.addEventListener('keydown', function(evt){
-    if (evt.key === 'Enter' || evt.key === ' ') {
-      evt.preventDefault();
-      disableOverlay();
-    }
-    if (evt.key === 'Escape') {
-      disableOverlay();
-    }
-  });
-})();
 </script>
 
   <script src="/static/loader.js"></script>

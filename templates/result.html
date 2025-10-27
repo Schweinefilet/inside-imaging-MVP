@@ -297,8 +297,8 @@
       <span class="brand-name">Inside Imaging</span>
     </div>
     <nav class="nav-links">
-      <a href="{{ url_for('index') }}">Dashboard</a>
       <a href="{{ url_for('projects') }}">Projects</a>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
       <a href="{{ url_for('report_status') }}">Statistics</a>
       <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
       <a href="{{ url_for('help_page') }}">Help</a>
@@ -759,7 +759,7 @@
       <pre>{{ extracted }}</pre>
     </details>
 
-    <p><a href="{{ url_for('index') }}">&larr; Back to Dashboard</a></p>
+    <p><a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a></p>
   </main>
 
   {% include '_footer.html' %}

@@ -4,8 +4,22 @@ import io
 import re
 import json
 import logging
-import pytesseract
-print("Tesseract path:", pytesseract.pytesseract.tesseract_cmd)
+import boto3
+from botocore.config import Config
+
+_AWS_REGION = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1"
+
+_textract_client = None
+def _textract():
+    global _textract_client
+    if _textract_client is None:
+        _textract_client = boto3.client(
+            "textract",
+            region_name=_AWS_REGION,
+            config=Config(retries={"max_attempts": 3, "mode": "standard"})
+        )
+    return _textract_client
+
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env", override=True)
@@ -155,48 +169,38 @@ def _extract_text_from_pdf_bytes(data: bytes) -> str:
 
 
 def _extract_text_from_image_bytes(data: bytes) -> str:
-    """Extract text from an image using Tesseract OCR via pytesseract.
-
-    Requires Pillow and pytesseract. Optionally honor `TESSERACT_CMD` env var
-    pointing to the tesseract executable (e.g., on Windows:
-    C:\\Program Files\\Tesseract-OCR\\tesseract.exe).
     """
-    try:
-        from PIL import Image, ImageOps, ImageFilter  # type: ignore
-        import pytesseract  # type: ignore
-    except Exception:
-        logging.exception("OCR dependencies (Pillow/pytesseract) not available")
+    Extract text from an image using AWS Textract DetectDocumentText.
+    Works best for phone photos (JPEG/PNG). Max 5 MB for Bytes input.
+    """
+    if not data:
         return ""
 
-    # Configure explicit tesseract binary path if provided
-    try:
-        tcmd = os.getenv("TESSERACT_CMD")
-        if tcmd:
-            pytesseract.pytesseract.tesseract_cmd = tcmd
-        else:
-            # Windows default install path fallback if available
-            if os.name == "nt":
-                default_tess = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
-                if os.path.exists(default_tess):
-                    pytesseract.pytesseract.tesseract_cmd = default_tess
-    except Exception:
-        pass
-
-    try:
-        with Image.open(io.BytesIO(data)) as img:
-            # Convert to grayscale, autocontrast, and lightly sharpen to improve OCR
-            proc = img.convert("L")
-            proc = ImageOps.autocontrast(proc)
-            proc = proc.filter(ImageFilter.SHARPEN)
-
-            # Try PSM 6 (single uniform block of text); fallback to 3 (automatic)
-            text = pytesseract.image_to_string(proc, lang="eng", config="--psm 6") or ""
-            if len(text.strip()) < 40:
-                text = pytesseract.image_to_string(proc, lang="eng", config="--psm 3") or ""
-            return (text or "").strip()
-    except Exception:
-        logging.exception("pytesseract OCR failed")
+    # Simple guard: DetectDocumentText supports PNG/JPEG (Bytes) up to 5 MB
+    if len(data) > 5 * 1024 * 1024:
+        logging.warning("Image >5MB; Textract DetectDocumentText requires <=5MB for Bytes.")
         return ""
+
+    try:
+        resp = _textract().detect_document_text(Document={"Bytes": data})
+    except Exception:
+        logging.exception("Textract DetectDocumentText failed")
+        return ""
+
+    # Pull out LINE blocks in natural reading order
+    lines = []
+    for block in resp.get("Blocks", []):
+        if block.get("BlockType") == "LINE" and block.get("Text"):
+            lines.append(block["Text"].strip())
+
+    # Fallback: if no LINEs, try WORDs
+    if not lines:
+        words = [b.get("Text", "").strip() for b in resp.get("Blocks", []) if b.get("BlockType") == "WORD"]
+        lines = [" ".join(w for w in words if w)]
+
+    text = "\n".join(l for l in lines if l)
+    return text.strip()
+
 
 
 def _pdf_response_from_html(html_str: str, *, filename="inside-imaging-report.pdf", inline: bool = False):
@@ -626,7 +630,7 @@ def upload():
                         "Image OCR failed. Please install Tesseract and the pytesseract Python package, then try again.",
                         "error",
                     )
-                    return redirect(url_for("index"))
+                    return redirect(url_for("dashboard"))
             else:
                 try:
                     extracted = data.decode("utf-8", "ignore")
@@ -1085,7 +1089,7 @@ def login():
         if user and check_password_hash(user["password_hash"], password):
             session["username"] = username
             flash("Logged in successfully.", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard"))
         flash("Invalid username or password.", "error")
     return render_template("login.html")
 

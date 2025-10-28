@@ -625,12 +625,12 @@ def upload():
                 extracted = _extract_text_from_image_bytes(data)
                 src_kind = "image"
                 if not extracted:
-                    # Provide a targeted hint for OCR setup and bail early
                     flash(
-                        "Image OCR failed. Please install Tesseract and the pytesseract Python package, then try again.",
+                        "Unable to extract text from the image. The image may be too large (>5MB), "
+                        "corrupted, or contain no readable text. Please try a clearer image or paste the text directly.",
                         "error",
                     )
-                    return redirect(url_for("dashboard"))
+                    return redirect(url_for("dashboard"))  # ✅ Fixed
             else:
                 try:
                     extracted = data.decode("utf-8", "ignore")

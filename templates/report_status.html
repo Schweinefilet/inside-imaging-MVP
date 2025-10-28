@@ -37,6 +37,7 @@
       <a href="{{ url_for('projects') }}">Projects</a>
       <a href="{{ url_for('dashboard') }}">Dashboard</a>
       <a href="{{ url_for('report_status') }}" class="active">Statistics</a>
+      <a href="{{ url_for('team') }}">Our Team</a>
       <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>      <div class="nav-auth">
@@ -86,7 +87,7 @@
         <article class="summary-card hover-card span-chart">
           <p class="summary-label">Reports Timeline</p>
           <div class="chart-container">
-            <canvas id="line-chart-reports" width="400" height="140"></canvas>
+            <canvas id="line-chart-reports" width="400" height="120"></canvas>
           </div>
         </article>
         <article class="summary-card hover-card">
@@ -100,10 +101,10 @@
       </section>
 
       <section class="analytics-grid">
-        <article class="analytics-panel hover-card">
+        <article class="analytics-panel hover-card span-2-desktop">
           <h2>Age Distribution</h2>
           <div class="chart-container">
-            <canvas id="pie-chart-age" width="200" height="200"></canvas>
+            <canvas id="pie-chart-age" width="180" height="180"></canvas>
           </div>
           <ul class="stat-list">
             {% for label, count in stats.age_ranges.items() %}
@@ -111,21 +112,23 @@
             {% endfor %}
           </ul>
         </article>
-        <article class="analytics-panel hover-card">
+        <article class="analytics-panel hover-card span-2-desktop gender-panel">
           <h2>Gender Mix</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-gender" width="200" height="200"></canvas>
+          <div class="gender-content">
+            <ul class="stat-list">
+              <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
+              <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
+              <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
+            </ul>
+            <div class="chart-container gender-chart-container">
+              <canvas id="bar-chart-gender" width="280" height="140"></canvas>
+            </div>
           </div>
-          <ul class="stat-list">
-            <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
-            <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
-            <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
-          </ul>
         </article>
         <article class="analytics-panel hover-card">
           <h2>Languages</h2>
           <div class="chart-container">
-            <canvas id="pie-chart-languages" width="200" height="200"></canvas>
+            <canvas id="pie-chart-languages" width="160" height="160"></canvas>
           </div>
           <ul class="stat-list">
             {% for entry in stats.languages %}
@@ -138,7 +141,7 @@
         <article class="analytics-panel hover-card">
           <h2>Modalities</h2>
           <div class="chart-container">
-            <canvas id="pie-chart-modalities" width="200" height="200"></canvas>
+            <canvas id="pie-chart-modalities" width="160" height="160"></canvas>
           </div>
           <ul class="stat-list">
             {% for entry in stats.studies %}
@@ -151,7 +154,7 @@
         <article class="analytics-panel span-2 hover-card">
           <h2>Top Findings</h2>
           <div class="chart-container">
-            <canvas id="pie-chart-findings" width="300" height="200"></canvas>
+            <canvas id="pie-chart-findings" width="240" height="180"></canvas>
           </div>
           <ul class="stat-list">
             {% for entry in stats.diseases %}

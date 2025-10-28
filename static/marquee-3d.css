@@ -124,29 +124,22 @@
 /* Diagonal movement - combining horizontal and vertical with more separation */
 .marquee-3d-row:nth-child(1) {
     left: 0;
-    top: 5%;
+    top: 0%;
     animation: marqueeScrollDiagonal1 50s linear infinite;
     animation-play-state: running;
 }
 
 .marquee-3d-row:nth-child(2) {
     left: 0;
-    top: 30%;
+    top: 40%;
     animation: marqueeScrollDiagonal2 45s linear infinite;
     animation-play-state: running;
 }
 
 .marquee-3d-row:nth-child(3) {
     left: 0;
-    top: 55%;
-    animation: marqueeScrollDiagonal3 55s linear infinite;
-    animation-play-state: running;
-}
-
-.marquee-3d-row:nth-child(4) {
-    left: 0;
     top: 80%;
-    animation: marqueeScrollDiagonal4 48s linear infinite;
+    animation: marqueeScrollDiagonal3 55s linear infinite;
     animation-play-state: running;
 }
 
@@ -178,19 +171,10 @@
     }
 }
 
-@keyframes marqueeScrollDiagonal4 {
-    from {
-        transform: translateX(-50%) translateY(0) translateZ(0);
-    }
-    to {
-        transform: translateX(0%) translateY(-8%) translateZ(0);
-    }
-}
-
 .marquee-3d-item {
     position: relative;
-    width: 280px;
-    height: 260px;
+    width: 320px;
+    height: 300px;
     border-radius: 12px;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.5);
@@ -271,36 +255,6 @@
     );
 }
 
-/* Controls */
-.marquee-3d-controls {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.marquee-3d-controls button {
-    padding: 0.75rem 1.5rem;
-    background: var(--mint);
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.95rem;
-}
-
-.marquee-3d-controls button:hover {
-    background: var(--mint-soft);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-}
-
-.marquee-3d-controls button:active {
-    transform: translateY(0);
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .marquee-3d-wrapper {
@@ -308,8 +262,8 @@
     }
     
     .marquee-3d-item {
-        width: 220px;
-        height: 200px;
+        width: 260px;
+        height: 240px;
     }
     
     .marquee-3d-scene {

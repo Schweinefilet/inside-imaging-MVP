@@ -101,6 +101,105 @@
     canvas._chartData = { data, padding, chartWidth, chartHeight, min, range, width, height };
   }
 
+  // Simple horizontal bar chart
+  function createBarChart(canvas, data, colors) {
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 45;
+    const chartWidth = width - padding - 70;
+    const chartHeight = height - 40;
+    const barHeight = 24;
+    const barSpacing = 16;
+
+    const total = data.reduce((sum, d) => sum + d.value, 0);
+    const max = Math.max(...data.map(d => d.value), 1);
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Calculate starting Y to center bars vertically
+    const totalBarsHeight = data.length * barHeight + (data.length - 1) * barSpacing;
+    let currentY = (height - totalBarsHeight) / 2;
+
+    // Draw bars
+    data.forEach((item, i) => {
+      const barWidth = (item.value / max) * chartWidth;
+      
+      // Draw bar
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(padding, currentY, barWidth, barHeight);
+
+      // Draw label on left
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#e5e7eb';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(item.label, padding - 8, currentY + barHeight / 2 + 4);
+
+      // Draw value on right of bar
+      ctx.textAlign = 'left';
+      const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0.0';
+      ctx.fillText(`${item.value} (${percent}%)`, padding + barWidth + 8, currentY + barHeight / 2 + 4);
+
+      currentY += barHeight + barSpacing;
+    });
+
+    const tooltip = ensureTooltip();
+
+    // Add hover interaction
+    canvas.addEventListener('mousemove', function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const totalBarsHeight = data.length * barHeight + (data.length - 1) * barSpacing;
+      let startY = (height - totalBarsHeight) / 2;
+      let foundIndex = -1;
+
+      data.forEach((item, i) => {
+        const barWidth = (item.value / max) * chartWidth;
+        if (x >= padding && x <= padding + barWidth &&
+            y >= startY && y <= startY + barHeight) {
+          foundIndex = i;
+        }
+        startY += barHeight + barSpacing;
+      });
+
+      if (foundIndex >= 0) {
+        canvas.style.cursor = 'pointer';
+        const percent = total > 0 ? ((data[foundIndex].value / total) * 100).toFixed(1) : '0.0';
+        tooltip.textContent = `${data[foundIndex].label}: ${data[foundIndex].value} (${percent}%)`;
+        tooltip.style.display = 'block';
+        
+        const tooltipRect = tooltip.getBoundingClientRect();
+        let left = e.clientX + 16;
+        let top = e.clientY - (tooltipRect.height / 2) - 4;
+        
+        if (left + tooltipRect.width > window.innerWidth) {
+          left = e.clientX - tooltipRect.width - 16;
+        }
+        if (left < 8) {
+          left = 8;
+        }
+        if (top < 8) {
+          top = 8;
+        }
+        if (top + tooltipRect.height > window.innerHeight - 8) {
+          top = window.innerHeight - tooltipRect.height - 8;
+        }
+        
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+      } else {
+        canvas.style.cursor = 'default';
+        hideTooltip();
+      }
+    });
+
+    canvas.addEventListener('mouseleave', function() {
+      hideTooltip();
+    });
+  }
+
   // Simple pie chart with custom tooltip
   function createPieChart(canvas, data, colors) {
     const ctx = canvas.getContext('2d');
@@ -108,7 +207,7 @@
     const height = canvas.height;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 2 - 20;
+    const radius = Math.min(width, height) / 2 - 15;
 
     const total = data.reduce((sum, d) => sum + d.value, 0);
     if (total === 0) return; // Don't draw if no data
@@ -130,7 +229,7 @@
 
       // Add stroke
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#0b0c0f';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       currentAngle += sliceAngle;
@@ -239,11 +338,11 @@
       createPieChart(ageCanvas, window.statsData.ageData, colors);
     }
 
-    // Pie chart for gender mix
-    const genderCanvas = document.getElementById('pie-chart-gender');
+    // Bar chart for gender mix
+    const genderCanvas = document.getElementById('bar-chart-gender');
     if (genderCanvas && window.statsData && window.statsData.genderData) {
       const colors = ['#ec4899', '#3b82f6', '#8b5cf6'];
-      createPieChart(genderCanvas, window.statsData.genderData, colors);
+      createBarChart(genderCanvas, window.statsData.genderData, colors);
     }
 
     // Pie chart for languages

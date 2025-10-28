@@ -76,28 +76,28 @@ MAGAZINE_ISSUES = [
 
 BLOG_POSTS = [
     {
-        "title": "Making MRI Findings Actionable for Patients",
-        "summary": "How radiologists can translate technical impressions into patient-friendly plans without losing nuance.",
-        "author": "Dr. Amina Hussein",
-        "date": "January 15, 2025",
-        "read_time": "6 min read",
-        "url": "https://www.rsna.org/news/2024/september/patient-connections",
-    },
-    {
-        "title": "AI Triage: What Clinicians Need to Know",
-        "summary": "A practical framework for validating AI-assisted reads inside busy radiology departments.",
-        "author": "Dr. Marc Feld",
-        "date": "December 9, 2024",
+        "title": "Placeholder Blog Post 1",
+        "summary": "This is a placeholder for future radiologist insights and perspectives. Content coming soon from our clinical partners.",
+        "author": "Healthcare Professional",
+        "date": "Coming Soon",
         "read_time": "5 min read",
-        "url": "https://www.diagnosticimaging.com/view/ai-in-radiology-five-takeaways",
+        "url": "#",
     },
     {
-        "title": "Ultrasound Rooms Built for Empathy",
-        "summary": "Designing spaces and scripts that help expectant parents stay informed and calm during imaging.",
-        "author": "Dr. Lillian Chen",
-        "date": "November 28, 2024",
-        "read_time": "4 min read",
-        "url": "https://appliedradiology.com/articles/improving-patient-experience-in-ultrasound",
+        "title": "Placeholder Blog Post 2",
+        "summary": "This is a placeholder for future radiologist insights and perspectives. Content coming soon from our clinical partners.",
+        "author": "Medical Professional",
+        "date": "Coming Soon",
+        "read_time": "5 min read",
+        "url": "#",
+    },
+    {
+        "title": "Placeholder Blog Post 3",
+        "summary": "This is a placeholder for future radiologist insights and perspectives. Content coming soon from our clinical partners.",
+        "author": "Clinical Partner",
+        "date": "Coming Soon",
+        "read_time": "5 min read",
+        "url": "#",
     },
 ]
 

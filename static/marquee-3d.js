@@ -11,7 +11,7 @@
             this.container = container;
             this.images = options.images || [];
             this.autoplay = options.autoplay !== false;
-            this.numRows = 4; // 4 rows for better coverage
+            this.numRows = 3; // 3 rows with better spacing
             
             this.init();
         }
@@ -24,18 +24,31 @@
         }
 
         createStructure() {
-            // Distribute images across rows - duplicate exactly 2x for perfect 50% loop
+            // Distribute images across rows to avoid duplicates appearing simultaneously
             const imagesPerRow = Math.max(4, Math.ceil(this.images.length / this.numRows));
             
-            // Create rows
+            // Create a shuffled copy for variety
+            const shuffledImages = [...this.images].sort(() => Math.random() - 0.5);
+            
+            // Create rows with unique image distribution
             let rowsHTML = '';
             for (let rowIndex = 0; rowIndex < this.numRows; rowIndex++) {
-                const startIdx = (rowIndex * imagesPerRow) % this.images.length;
                 let rowImages = [];
                 
-                // Get images for this row
+                // For 3 rows: distribute images to ensure rows 1 and 3 are different
+                // Row 0: starts at position 0
+                // Row 1: starts at position 1/3 through the array
+                // Row 2: starts at position 2/3 through the array
+                const baseOffset = Math.floor((rowIndex * this.images.length) / this.numRows);
+                
+                // Add additional offset for row 2 (3rd row) to differentiate from row 0
+                const extraOffset = rowIndex === 2 ? Math.floor(this.images.length / 6) : 0;
+                const offset = (baseOffset + extraOffset) % this.images.length;
+                
+                // Get unique images for this row by rotating through the array
                 for (let i = 0; i < imagesPerRow; i++) {
-                    rowImages.push(this.images[(startIdx + i) % this.images.length]);
+                    const imageIndex = (offset + i) % this.images.length;
+                    rowImages.push(this.images[imageIndex]);
                 }
                 
                 // Duplicate exactly 2x - animation moves 50% so it loops perfectly
@@ -67,11 +80,6 @@
                         ${rowsHTML}
                     </div>
                 </div>
-                <div class="marquee-3d-controls">
-                    <button class="marquee-3d-toggle" aria-label="Pause animation">
-                        Pause Animation
-                    </button>
-                </div>
             `;
 
             this.rows = this.container.querySelectorAll('.marquee-3d-row');
@@ -86,43 +94,26 @@
         }
 
         attachEventListeners() {
-            const toggleBtn = this.container.querySelector('.marquee-3d-toggle');
-
-            toggleBtn?.addEventListener('click', () => this.toggle());
-
-            // No pause on hover - let it run continuously
+            // Scroll to center the marquee on page load
+            this.scrollToCenter();
         }
 
-        toggle() {
-            if (this.isPlaying) {
-                this.pause();
-            } else {
-                this.play();
-            }
-        }
-
-        play() {
-            this.isPlaying = true;
-            this.rows.forEach(row => {
-                row.style.animationPlayState = 'running';
-            });
-            this.updateToggleButton();
-        }
-
-        pause() {
-            this.isPlaying = false;
-            this.rows.forEach(row => {
-                row.style.animationPlayState = 'paused';
-            });
-            this.updateToggleButton();
-        }
-
-        updateToggleButton() {
-            const toggleBtn = this.container.querySelector('.marquee-3d-toggle');
-            if (toggleBtn) {
-                toggleBtn.textContent = this.isPlaying ? 'Pause Animation' : 'Resume Animation';
-                toggleBtn.setAttribute('aria-label', this.isPlaying ? 'Pause animation' : 'Resume animation');
-            }
+        scrollToCenter() {
+            // Smooth scroll to center the marquee in the viewport
+            setTimeout(() => {
+                const containerRect = this.container.getBoundingClientRect();
+                const containerTop = containerRect.top + window.pageYOffset;
+                const containerHeight = containerRect.height;
+                const windowHeight = window.innerHeight;
+                
+                // Calculate scroll position to center the marquee
+                const scrollTo = containerTop - (windowHeight / 2) + (containerHeight / 2);
+                
+                window.scrollTo({
+                    top: scrollTo,
+                    behavior: 'smooth'
+                });
+            }, 100);
         }
     }
 

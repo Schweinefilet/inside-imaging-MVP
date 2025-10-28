@@ -53,6 +53,7 @@
             <a href="{{ url_for('projects') }}" class="active">Projects</a>
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('report_status') }}">Statistics</a>
+            <a href="{{ url_for('team') }}">Our Team</a>
             <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
             <a href="{{ url_for('help_page') }}">Help</a>
         </nav>
@@ -92,19 +93,6 @@
             <!-- Marquee will be initialized by JavaScript -->
         </section>
 
-        <section class="marquee-hero" id="showcase">
-            <div class="marquee-overlay" aria-hidden="true"></div>
-            <div class="marquee-content">
-                <span class="marquee-kicker">Inside Imaging Studio</span>
-                <h1>Transform complex radiology reports into clear, actionable insights.</h1>
-                <p class="marquee-description">AI-powered translation, interactive body diagrams, and plain-language explanations that empower patients and streamline clinical communication.</p>
-                <div class="marquee-actions">
-                    <a class="btn-primary" href="{{ url_for('dashboard') }}">Try it now</a>
-                    <a class="btn-secondary" href="#portfolio">View our projects</a>
-                </div>
-            </div>
-        </section>
-
         <section id="portfolio" class="portfolio-section">
             <header class="section-heading">
                 <h2>Projects & Learning Tracks</h2>
@@ -119,15 +107,15 @@
                 </article>
                 <article class="project-card">
                     <div class="project-icon" aria-hidden="true">🎥</div>
-                    <h3>Sessions & Tutorials</h3>
-                    <p>Short video explainers, live walkthroughs, and downloadable guides that translate scans into clear next steps.</p>
-                    <span class="project-pill">Launching soon</span>
+                    <h3>Placeholder Project 1</h3>
+                    <p>This project is currently in development. Details will be added as we expand our educational resources.</p>
+                    <span class="project-pill">Coming soon</span>
                 </article>
                 <article class="project-card">
                     <div class="project-icon" aria-hidden="true">🧠</div>
-                    <h3>Case Study Library</h3>
-                    <p>Real-world report rewrites that pair annotated imaging with plain-language interpretations.</p>
-                    <span class="project-pill">In production</span>
+                    <h3>Placeholder Project 2</h3>
+                    <p>This project is currently in development. Details will be added as we expand our educational resources.</p>
+                    <span class="project-pill">Coming soon</span>
                 </article>
             </div>
             <div class="project-note">
@@ -170,14 +158,6 @@
                 {% else %}
                 <p>Email <strong>editor@insideimaging.example</strong> to submit a draft.</p>
                 {% endif %}
-            </div>
-        </section>
-
-        <section class="cta-panel">
-            <div class="cta-content">
-                <h2>Ready to showcase your imaging practice?</h2>
-                <p>Partner with Inside Imaging to build guided experiences, educational modules, and patient-ready summaries tailored to your service lines.</p>
-                <a class="btn-primary" href="{{ url_for('help_page') }}">Start a project brief</a>
             </div>
         </section>
     </main>

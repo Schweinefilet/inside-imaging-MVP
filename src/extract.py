@@ -10,6 +10,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Tuple
 import os
+import boto3, base64
+
 
 def _clean(s: str) -> str:
     """Clean a raw string by stripping whitespace on each line and collapsing
@@ -33,35 +35,22 @@ def from_pdf(path: Path) -> str:
     return _clean("\n\n".join(text_parts))
 
 def from_image(path: Path) -> str:
-    """Extract text from an image file using Tesseract OCR.
+    """Extract text from an image file using Amazon Textract DetectDocumentText."""
+    import boto3  # local import okay too
+    client = boto3.client("textract", region_name=os.getenv("AWS_REGION", "us-east-1"))
 
-    Loads the image, converts to grayscale, enhances contrast and sharpness,
-    and then runs OCR. Requires Pillow and pytesseract to be installed.
-    If Tesseract isn't installed, raises a RuntimeError with instructions.
-    """
-    import pytesseract  # type: ignore
-    from PIL import Image, ImageOps, ImageFilter  # type: ignore
-    # Configure path to tesseract executable if provided via env var
-    tcmd_env = os.getenv("TESSERACT_CMD")
-    if tcmd_env:
-        pytesseract.pytesseract.tesseract_cmd = tcmd_env
-    else:
-        # Windows default install path fallback if available
-        try:
-            if os.name == "nt":
-                default_tess = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
-                if os.path.exists(default_tess):
-                    pytesseract.pytesseract.tesseract_cmd = default_tess
-        except Exception:
-            pass
-    img = Image.open(path).convert("L")  # convert to grayscale
-    img = ImageOps.autocontrast(img).filter(ImageFilter.SHARPEN)
-    # Try OCR with page segmentation mode 6 (single uniform block)
-    txt = pytesseract.image_to_string(img, lang="eng", config="--psm 6")
-    if len(txt.strip()) < 40:
-        # Fallback to automatic page segmentation if text seems too short
-        txt = pytesseract.image_to_string(img, lang="eng", config="--psm 3")
-    return _clean(txt)
+    # Read image bytes (DetectDocumentText Bytes supports JPEG/PNG/TIFF)
+    with open(path, "rb") as f:
+        image_bytes = f.read()
+
+    resp = client.detect_document_text(Document={"Bytes": image_bytes})
+    # Textract returns Blocks; pull LINE text in order
+    lines = []
+    for block in resp.get("Blocks", []):
+        if block.get("BlockType") == "LINE" and "Text" in block:
+            lines.append(block["Text"])
+    return _clean("\n".join(lines))
+
 
 def extract(path: Path) -> Tuple[str, str]:
     """Extract text from a file based on its extension.

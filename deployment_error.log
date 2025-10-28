@@ -1,0 +1,476 @@
+Retrieving logs...
+============= i-0c8a111707f1938fe ==============
+----------------------------------------
+/var/log/web.stdout.log
+----------------------------------------
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:  "reason": "You have long-term bleeding from the back passage and pain around the anus and tummy. This scan checks your lower bowels and pelvis for lumps, spread, or blockage.",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:  "technique": "A CT (special x-ray) of your tummy and pelvis was done with thin slices, before and after contrast dye to highlight blood flow and tissues.",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:  "findings": [
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:    "- A lump (mass) in your rectum (last part of the bowel) measures about 48 mm (about 2 inches) and wraps around the bowel.",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:    "- It slightly narrows the bowel opening and looks like it may spread into nearby fat around the rectum (mesorectal fat).",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:    "- The thin wall around the rectum (perirectal fascia) looks blurred, which suggests involvement.",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:    "- No clear invasion into nearby pelvic organs is seen on this scan.",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:    "- Several swollen infection-fighting glands (lymph nodes) in the pelvis and groin on both sides. The largest is 18 x 21 mm (about grape-sized) on the right.",
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]:    "- A right kidney stone that does not block urine, 8.
+Oct 28 00:21:58 ip-172-31-18-69 web[66521]: 2025-10-28 00:21:58,653 WARNING GPT-5 output appears truncated (doesn't end with }); attempting retry with higher token limit
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:06,243 INFO HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:06,244 INFO GPT-5 raw output:
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: {
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:  "reason": "You have long-term bleeding from the back passage and anal and tummy pain. The scan checks your lower belly and pelvis for lumps, spread, or blockages.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:  "technique": "A CT scan (special x-ray) of your belly and pelvis was done with thin slices, before and after contrast dye.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:  "findings": [
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- There is a growth in your rectum (last part of the bowel) about 48 mm wide (about 2 inches) that wraps around the inside.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- It slightly narrows the bowel tube and looks like it may spread into the fat around the rectum (mesorectal fat).",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- The thin tissue layer around the rectum (perirectal fascia) looks involved.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- No clear invasion into nearby pelvic organs is seen on this scan.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- Several swollen infection-fighting glands (lymph nodes) in the pelvis and groin are enlarged. The largest is 18 x 21 mm on the right.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- A stone in the top part of your right kidney measures 8.9 x 6.7 mm (about a pea). It is not blocking urine flow.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- Liver, gallbladder, spleen, pancreas, stomach, and bowels look normal with no abnormal spots.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:    "- Kidneys look normal in size and function, and the bladder looks normal. No fluid in the belly or bone problems are seen."
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:  ],
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:  "conclusion": "You have a rectal growth that likely extends into nearby fat with several enlarged pelvic and groin glands. No clear spread to nearby organs is seen.",
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]:  "concern": "See a colorectal surgeon urgently to plan a biopsy and staging. You may need MRI, colonoscopy, and treatment such as surgery, chemotherapy, and radiation. Call emergency care if you have severe belly pain, cannot pass stool or gas, heavy bleeding, fever, or weakness."
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: }
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:06,244 INFO Retry successful; using longer output
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:06,245 INFO Parsed section lengths: reason=151, technique=108, findings=845, conclusion=149, concern=267
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:06,245 INFO summary_keys={'reason': 151, 'technique': 108, 'findings': 845, 'conclusion': 149, 'concern': 267}
+Oct 28 00:22:06 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:06,245 INFO summary_keys={'reason': 151, 'technique': 108, 'findings': 912, 'conclusion': 149, 'concern': 267}
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:22,141 ERROR pytesseract OCR failed
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: Traceback (most recent call last):
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/pytesseract/pytesseract.py", line 275, in run_tesseract
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    proc = subprocess.Popen(cmd_args, **subprocess_args())
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/usr/lib64/python3.13/subprocess.py", line 1039, in __init__
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    self._execute_child(args, executable, preexec_fn, close_fds,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                        pass_fds, cwd, env,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                        ^^^^^^^^^^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ...<5 lines>...
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                        gid, gids, uid, umask,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                        ^^^^^^^^^^^^^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                        start_new_session, process_group)
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/usr/lib64/python3.13/subprocess.py", line 1972, in _execute_child
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    raise child_exception_type(errno_num, err_msg, err_filename)
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: FileNotFoundError: [Errno 2] No such file or directory: 'tesseract'
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: During handling of the above exception, another exception occurred:
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: Traceback (most recent call last):
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/current/app.py", line 192, in _extract_text_from_image_bytes
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    text = pytesseract.image_to_string(proc, lang="eng", config="--psm 6") or ""
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/pytesseract/pytesseract.py", line 486, in image_to_string
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    return {
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:           ~
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ...<2 lines>...
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        Output.STRING: lambda: run_and_get_output(*args),
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    }[output_type]()
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ~~~~~~~~~~~~~~^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/pytesseract/pytesseract.py", line 489, in <lambda>
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    Output.STRING: lambda: run_and_get_output(*args),
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                           ~~~~~~~~~~~~~~~~~~^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/pytesseract/pytesseract.py", line 352, in run_and_get_output
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    run_tesseract(**kwargs)
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ~~~~~~~~~~~~~^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/pytesseract/pytesseract.py", line 280, in run_tesseract
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    raise TesseractNotFoundError()
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:22,149 ERROR file handling failed; extracted empty
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: Traceback (most recent call last):
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/current/app.py", line 628, in upload
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    return redirect(url_for("index"))
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:                    ~~~~~~~^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/flask/helpers.py", line 239, in url_for
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    return current_app.url_for(
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:           ~~~~~~~~~~~~~~~~~~~^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        endpoint,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        ^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ...<4 lines>...
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        **values,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        ^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    )
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/flask/app.py", line 1121, in url_for
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    return self.handle_url_build_error(error, endpoint, values)
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/flask/app.py", line 1110, in url_for
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    rv = url_adapter.build(  # type: ignore[union-attr]
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        endpoint,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    ...<3 lines>...
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:        force_external=_external,
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    )
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:  File "/var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages/werkzeug/routing/map.py", line 924, in build
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]:    raise BuildError(endpoint, values, method, self)
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'index'. Did you mean 'magazine' instead?
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:22,155 INFO len(extracted)=0 kind=image
+Oct 28 00:22:22 ip-172-31-18-69 web[66521]: 2025-10-28 00:22:22,155 WARNING Upload triage rejected: {'reason': 'empty'}
+
+
+----------------------------------------
+/var/log/eb-engine.log
+----------------------------------------
+2025/10/28 00:17:37.435307 [INFO] Running command: systemctl enable web.service
+2025/10/28 00:17:37.707074 [INFO] Created symlink /etc/systemd/system/multi-user.target.wants/web.service → /etc/systemd/system/web.service.
+
+2025/10/28 00:17:37.707102 [INFO] Running command: systemctl show -p PartOf web.service
+2025/10/28 00:17:37.718077 [INFO] Running command: systemctl is-active web.service
+2025/10/28 00:17:37.725259 [INFO] Running command: systemctl start web.service
+2025/10/28 00:17:37.784410 [INFO] Executing instruction: start X-Ray
+2025/10/28 00:17:37.784425 [INFO] X-Ray is not enabled.
+2025/10/28 00:17:37.784429 [INFO] Executing instruction: start proxy with new configuration
+2025/10/28 00:17:37.784448 [INFO] Running command: /usr/sbin/nginx -t -c /var/proxy/staging/nginx/nginx.conf
+2025/10/28 00:17:37.821825 [INFO] nginx: [warn] could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+nginx: the configuration file /var/proxy/staging/nginx/nginx.conf syntax is ok
+nginx: configuration file /var/proxy/staging/nginx/nginx.conf test is successful
+
+2025/10/28 00:17:37.822067 [INFO] Running command: cp -rp /var/proxy/staging/nginx/* /etc/nginx
+2025/10/28 00:17:37.827590 [INFO] Running command: systemctl show -p PartOf nginx.service
+2025/10/28 00:17:37.843038 [INFO] Running command: systemctl daemon-reload
+2025/10/28 00:17:38.072248 [INFO] Running command: systemctl reset-failed
+2025/10/28 00:17:38.082321 [INFO] Running command: systemctl show -p PartOf nginx.service
+2025/10/28 00:17:38.096214 [INFO] Running command: systemctl is-active nginx.service
+2025/10/28 00:17:38.106448 [INFO] Running command: systemctl start nginx.service
+2025/10/28 00:17:38.250199 [INFO] Executing instruction: configureSqsd
+2025/10/28 00:17:38.250224 [INFO] This is a web server environment instance, skip configure sqsd daemon ...
+2025/10/28 00:17:38.250227 [INFO] Executing instruction: startSqsd
+2025/10/28 00:17:38.250229 [INFO] This is a web server environment instance, skip start sqsd daemon ...
+2025/10/28 00:17:38.250232 [INFO] Executing instruction: Track pids in healthd
+2025/10/28 00:17:38.250235 [INFO] This is an enhanced health env...
+2025/10/28 00:17:38.250245 [INFO] Running command: systemctl show -p ConsistsOf aws-eb.target | cut -d= -f2
+2025/10/28 00:17:38.261902 [INFO] healthd.service nginx.service cfn-hup.service
+
+2025/10/28 00:17:38.261934 [INFO] Running command: systemctl show -p ConsistsOf eb-app.target | cut -d= -f2
+2025/10/28 00:17:38.273565 [INFO] web.service
+
+2025/10/28 00:17:38.273866 [INFO] Executing instruction: RunAppDeployPostDeployHooks
+2025/10/28 00:17:38.273887 [INFO] Executing platform hooks in .platform/hooks/postdeploy/
+2025/10/28 00:17:38.273905 [INFO] The dir .platform/hooks/postdeploy/ does not exist
+2025/10/28 00:17:38.273909 [INFO] Finished running scripts in /var/app/current/.platform/hooks/postdeploy
+2025/10/28 00:17:38.273915 [INFO] Executing cleanup logic
+2025/10/28 00:17:38.274002 [INFO] CommandService Response: {"status":"SUCCESS","api_version":"1.0","results":[{"status":"SUCCESS","msg":"Engine execution has succeeded.","returncode":0,"events":[{"msg":"Instance deployment used the commands in your 'Procfile' to initiate startup of your application.","timestamp":1761610651075,"severity":"INFO"},{"msg":"Instance deployment completed successfully.","timestamp":1761610658273,"severity":"INFO"}]}]}
+
+2025/10/28 00:17:38.274162 [INFO] Platform Engine finished execution on command: app-deploy
+
+2025/10/28 03:45:16.893209 [INFO] Starting...
+2025/10/28 03:45:16.893310 [INFO] Starting EBPlatform-PlatformEngine
+2025/10/28 03:45:16.893334 [INFO] reading event message file
+2025/10/28 03:45:16.893645 [INFO] Engine received EB command cfn-hup-exec
+
+2025/10/28 03:45:16.956978 [INFO] Running command: /opt/aws/bin/cfn-get-metadata -s arn:aws:cloudformation:us-east-1:751849298136:stack/awseb-e-mh2dh3fuwf-stack/c3e08fc0-aeab-11f0-8a64-1206daa7b085 -r AWSEBAutoScalingGroup --region us-east-1
+2025/10/28 03:45:17.261906 [INFO] Running command: /opt/aws/bin/cfn-get-metadata -s arn:aws:cloudformation:us-east-1:751849298136:stack/awseb-e-mh2dh3fuwf-stack/c3e08fc0-aeab-11f0-8a64-1206daa7b085 -r AWSEBBeanstalkMetadata --region us-east-1
+2025/10/28 03:45:17.556935 [INFO] checking whether command app-deploy is applicable to this instance...
+2025/10/28 03:45:17.556946 [INFO] this command is applicable to the instance, thus instance should execute command
+2025/10/28 03:45:17.556949 [INFO] Engine command: (app-deploy)
+
+2025/10/28 03:45:17.556952 [INFO] Downloading EB Application...
+2025/10/28 03:45:17.556954 [INFO] Region: us-east-1
+2025/10/28 03:45:17.556956 [INFO] envID: e-mh2dh3fuwf
+2025/10/28 03:45:17.556958 [INFO] envBucket: elasticbeanstalk-us-east-1-751849298136
+2025/10/28 03:45:17.556960 [INFO] accountID: 751849298136
+2025/10/28 03:45:17.556963 [INFO] Using manifest file name from command request
+2025/10/28 03:45:17.556968 [INFO] Manifest name is : manifest_1761623095619
+2025/10/28 03:45:17.556970 [INFO] Download app version manifest
+2025/10/28 03:45:17.557121 [INFO] Downloading: bucket: elasticbeanstalk-us-east-1-751849298136, object: resources/environments/e-mh2dh3fuwf/_runtime/versions/manifest_1761623095619, expected bucket owner: 751849298136
+2025/10/28 03:45:17.591875 [INFO] Download successful113bytes downloaded
+2025/10/28 03:45:17.592034 [INFO] Trying to read and parse version manifest...
+2025/10/28 03:45:17.595594 [INFO] Downloading: bucket: elasticbeanstalk-us-east-1-751849298136, object: resources/environments/e-mh2dh3fuwf/_runtime/_versions/Inside-Imaging/app-d3ad-251027_234434232459, expected bucket owner: 751849298136
+2025/10/28 03:45:17.807644 [INFO] Download successful44586965bytes downloaded
+2025/10/28 03:45:17.807872 [INFO] Executing instruction: ElectLeader
+2025/10/28 03:45:17.807878 [INFO] Running leader election for instance i-0c8a111707f1938fe...
+2025/10/28 03:45:17.807881 [INFO] Calling the cfn-elect-cmd-leader to elect the command leader.
+2025/10/28 03:45:17.807893 [INFO] Running command: /opt/aws/bin/cfn-elect-cmd-leader --stack arn:aws:cloudformation:us-east-1:751849298136:stack/awseb-e-mh2dh3fuwf-stack/c3e08fc0-aeab-11f0-8a64-1206daa7b085 --command-name ElasticBeanstalkCommand-AWSEBAutoScalingGroup --invocation-id b7e22833-2b63-4ef7-877f-38ebe0d460c5 --listener-id i-0c8a111707f1938fe --region us-east-1
+2025/10/28 03:45:18.116648 [INFO] Instance is Leader.
+2025/10/28 03:45:18.116701 [INFO] Executing instruction: stopSqsd
+2025/10/28 03:45:18.116705 [INFO] This is a web server environment instance, skip stop sqsd daemon ...
+2025/10/28 03:45:18.116708 [INFO] Executing instruction: PreBuildEbExtension
+2025/10/28 03:45:18.116711 [INFO] Starting executing the config set Infra-EmbeddedPreBuild.
+2025/10/28 03:45:18.116722 [INFO] Running command: /opt/aws/bin/cfn-init -s arn:aws:cloudformation:us-east-1:751849298136:stack/awseb-e-mh2dh3fuwf-stack/c3e08fc0-aeab-11f0-8a64-1206daa7b085 -r AWSEBAutoScalingGroup --region us-east-1 --configsets Infra-EmbeddedPreBuild
+2025/10/28 03:45:32.739349 [INFO] Error occurred during build: Yum does not have tesseract available for installation
+
+2025/10/28 03:45:32.741387 [ERROR] An error occurred during execution of command [app-deploy] - [PreBuildEbExtension]. Stop running the command. Error: EbExtension build failed. Please refer to /var/log/cfn-init.log for more details. 
+
+2025/10/28 03:45:32.741410 [INFO] Executing cleanup logic
+2025/10/28 03:45:32.753972 [INFO] CommandService Response: {"status":"FAILURE","api_version":"1.0","results":[{"status":"FAILURE","msg":"Engine execution has encountered an error.","returncode":1,"events":[{"msg":"Instance deployment failed. For details, see 'eb-engine.log'.","timestamp":1761623132744,"severity":"ERROR"}]}]}
+
+2025/10/28 03:45:32.755020 [INFO] Platform Engine finished execution on command: app-deploy
+
+2025/10/28 03:46:29.639218 [INFO] Starting...
+2025/10/28 03:46:29.639264 [INFO] Starting EBPlatform-PlatformEngine
+2025/10/28 03:46:29.639316 [INFO] reading event message file
+2025/10/28 03:46:29.650318 [INFO] Engine received EB command cfn-hup-exec
+
+2025/10/28 03:46:29.831170 [INFO] Running command: /opt/aws/bin/cfn-get-metadata -s arn:aws:cloudformation:us-east-1:751849298136:stack/awseb-e-mh2dh3fuwf-stack/c3e08fc0-aeab-11f0-8a64-1206daa7b085 -r AWSEBAutoScalingGroup --region us-east-1
+2025/10/28 03:46:30.297581 [INFO] Running command: /opt/aws/bin/cfn-get-metadata -s arn:aws:cloudformation:us-east-1:751849298136:stack/awseb-e-mh2dh3fuwf-stack/c3e08fc0-aeab-11f0-8a64-1206daa7b085 -r AWSEBBeanstalkMetadata --region us-east-1
+2025/10/28 03:46:30.586852 [INFO] checking whether command tail-log is applicable to this instance...
+2025/10/28 03:46:30.586870 [INFO] this command is applicable to the instance, thus instance should execute command
+2025/10/28 03:46:30.586874 [INFO] Engine command: (tail-log)
+
+2025/10/28 03:46:30.588767 [INFO] Executing instruction: GetTailLogs
+2025/10/28 03:46:30.588772 [INFO] Tail Logs...
+2025/10/28 03:46:30.591511 [INFO] Running command: tail -n 100 /var/log/web.stdout.log
+2025/10/28 03:46:30.596292 [INFO] Running command: tail -n 100 /var/log/eb-engine.log
+
+
+----------------------------------------
+/var/log/eb-hooks.log
+----------------------------------------
++ /var/app/venv/staging-LQM1lest/bin/pip install -U paddleocr
+
+2025/10/27 15:07:32.201014 [INFO] Running command: .platform/hooks/postdeploy/00_sys_deps.sh
+2025/10/27 15:07:34.088098 [INFO] >>> Installing system deps for PaddleOCR (OpenCV libGL) on AL2023
+Amazon Linux 2023 repository                     61 kB/s | 3.6 kB     00:00    
+Amazon Linux 2023 Kernel Livepatch repository    48 kB/s | 2.9 kB     00:00    
+Metadata cache created.
+Package libglvnd-glx-1:1.7.0-4.amzn2023.0.2.x86_64 is already installed.
+Dependencies resolved.
+Nothing to do.
+Complete!
+
+2025/10/27 15:07:34.088164 [INFO] + echo '>>> Installing system deps for PaddleOCR (OpenCV libGL) on AL2023'
++ dnf -y makecache
++ dnf -y install libglvnd-glx
+
+2025/10/27 15:07:34.098421 [INFO] Running command: .platform/hooks/postdeploy/10_paddlepaddle.sh
+2025/10/27 15:07:36.355668 [INFO] >>> Installing PaddlePaddle (CPU) from official index
+Requirement already satisfied: pip>=23.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (25.3)
+Looking in indexes: https://www.paddlepaddle.org.cn/packages/stable/cpu/
+Requirement already satisfied: paddlepaddle==3.2.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (3.2.0)
+Requirement already satisfied: httpx in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (0.28.1)
+Requirement already satisfied: numpy>=1.21 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (2.2.6)
+Requirement already satisfied: protobuf>=3.20.2 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (6.32.0)
+Requirement already satisfied: Pillow in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (12.0.0)
+Requirement already satisfied: opt_einsum==3.3.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (3.3.0)
+Requirement already satisfied: networkx in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (3.5)
+Requirement already satisfied: typing_extensions in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (4.15.0)
+Requirement already satisfied: safetensors>=0.6.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlepaddle==3.2.0) (0.6.2)
+Requirement already satisfied: anyio in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpx->paddlepaddle==3.2.0) (4.11.0)
+Requirement already satisfied: certifi in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpx->paddlepaddle==3.2.0) (2025.10.5)
+Requirement already satisfied: httpcore==1.* in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpx->paddlepaddle==3.2.0) (1.0.9)
+Requirement already satisfied: idna in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpx->paddlepaddle==3.2.0) (3.11)
+Requirement already satisfied: h11>=0.16 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpcore==1.*->httpx->paddlepaddle==3.2.0) (0.16.0)
+Requirement already satisfied: sniffio>=1.1 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from anyio->httpx->paddlepaddle==3.2.0) (1.3.1)
+Requirement already satisfied: paddleocr in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (3.3.0)
+Requirement already satisfied: paddlex<3.4.0,>=3.3.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (3.3.5)
+Requirement already satisfied: PyYAML>=6 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddleocr) (6.0.2)
+Requirement already satisfied: requests in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddleocr) (2.32.5)
+Requirement already satisfied: typing-extensions>=4.12 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddleocr) (4.15.0)
+Requirement already satisfied: aistudio-sdk>=0.3.5 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.3.8)
+Requirement already satisfied: chardet in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (5.2.0)
+Requirement already satisfied: colorlog in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (6.10.1)
+Requirement already satisfied: filelock in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (3.20.0)
+Requirement already satisfied: huggingface-hub in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.0.0)
+Requirement already satisfied: modelscope>=1.28.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.31.0)
+Requirement already satisfied: numpy>=1.24 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.2.6)
+Requirement already satisfied: packaging in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (25.0)
+Requirement already satisfied: pandas>=1.3 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.3.3)
+Requirement already satisfied: pillow in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (12.0.0)
+Requirement already satisfied: prettytable in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (3.16.0)
+Requirement already satisfied: py-cpuinfo in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (9.0.0)
+Requirement already satisfied: pydantic>=2 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.12.0)
+Requirement already satisfied: ruamel.yaml in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.18.16)
+Requirement already satisfied: ujson in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (5.11.0)
+Requirement already satisfied: imagesize in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.4.1)
+Requirement already satisfied: opencv-contrib-python==4.10.0.84 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (4.10.0.84)
+Requirement already satisfied: pyclipper in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.3.0.post6)
+Requirement already satisfied: pypdfium2>=4 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (5.0.0)
+Requirement already satisfied: python-bidi in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.6.7)
+Requirement already satisfied: shapely in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.1.2)
+Requirement already satisfied: psutil in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from aistudio-sdk>=0.3.5->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (7.1.2)
+Requirement already satisfied: tqdm in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from aistudio-sdk>=0.3.5->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (4.67.1)
+Requirement already satisfied: bce-python-sdk in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from aistudio-sdk>=0.3.5->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.9.46)
+Requirement already satisfied: click in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from aistudio-sdk>=0.3.5->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (8.3.0)
+Requirement already satisfied: setuptools in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from modelscope>=1.28.0->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (80.9.0)
+Requirement already satisfied: urllib3>=1.26 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from modelscope>=1.28.0->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.5.0)
+Requirement already satisfied: python-dateutil>=2.8.2 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from pandas>=1.3->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from pandas>=1.3->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from pandas>=1.3->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2025.2)
+Requirement already satisfied: annotated-types>=0.6.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from pydantic>=2->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.1 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from pydantic>=2->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2.41.1)
+Requirement already satisfied: typing-inspection>=0.4.2 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from pydantic>=2->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.4.2)
+Requirement already satisfied: six>=1.5 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from python-dateutil>=2.8.2->pandas>=1.3->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.17.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from requests->paddleocr) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from requests->paddleocr) (3.11)
+Requirement already satisfied: certifi>=2017.4.17 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from requests->paddleocr) (2025.10.5)
+Requirement already satisfied: pycryptodome>=3.8.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from bce-python-sdk->aistudio-sdk>=0.3.5->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (3.23.0)
+Requirement already satisfied: future>=0.6.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from bce-python-sdk->aistudio-sdk>=0.3.5->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.0.0)
+Requirement already satisfied: fsspec>=2023.5.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (2025.9.0)
+Requirement already satisfied: httpx<1,>=0.23.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.28.1)
+Requirement already satisfied: shellingham in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.5.4)
+Requirement already satisfied: typer-slim in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.20.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.2.0 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.2.0)
+Requirement already satisfied: anyio in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpx<1,>=0.23.0->huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (4.11.0)
+Requirement already satisfied: httpcore==1.* in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpx<1,>=0.23.0->huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.0.9)
+Requirement already satisfied: h11>=0.16 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.16.0)
+Requirement already satisfied: sniffio>=1.1 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (1.3.1)
+Requirement already satisfied: wcwidth in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from prettytable->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.2.14)
+Requirement already satisfied: ruamel.yaml.clib>=0.2.7 in /var/app/venv/staging-LQM1lest/lib64/python3.13/site-packages (from ruamel.yaml->paddlex<3.4.0,>=3.3.0->paddlex[ocr-core]<3.4.0,>=3.3.0->paddleocr) (0.2.14)
+
+2025/10/27 15:07:36.355706 [INFO] + echo '>>> Installing PaddlePaddle (CPU) from official index'
++ VENV='/var/app/venv/*/bin/pip'
+++ echo /var/app/venv/staging-LQM1lest/bin/pip
++ PIP=/var/app/venv/staging-LQM1lest/bin/pip
++ '[' -x /var/app/venv/staging-LQM1lest/bin/pip ']'
++ /var/app/venv/staging-LQM1lest/bin/pip install -U 'pip>=23.0'
++ /var/app/venv/staging-LQM1lest/bin/pip install paddlepaddle==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
++ /var/app/venv/staging-LQM1lest/bin/pip install -U paddleocr
+
+
+
+----------------------------------------
+/var/log/nginx/access.log
+----------------------------------------
+172.31.2.228 - - [28/Oct/2025:03:34:39 +0000] "GET /.git/config HTTP/1.1" 404 207 "-" "Mozilla/5.0" "195.178.110.15"
+172.31.2.228 - - [28/Oct/2025:03:34:39 +0000] "GET /.git/config HTTP/1.1" 404 207 "-" "Mozilla/5.0" "195.178.110.15"
+172.31.24.159 - - [28/Oct/2025:03:34:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:34:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:34:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:35:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:35:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:35:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:35:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:35:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:35:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:35:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:35:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:36:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:36:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:36:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:36:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:36:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:36:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:36:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:36:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:37:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:37:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:37:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:37:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:37:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:37:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:37:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:37:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:38:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:38:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:38:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:38:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:38:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:38:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:38:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:38:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:39:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:39:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:39:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:39:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:39:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:39:39 +0000] "GET / HTTP/1.1" 200 15069 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36" "87.121.84.17"
+172.31.24.159 - - [28/Oct/2025:03:39:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:39:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:39:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:40:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:40:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:40:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:40:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:40:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:40:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:40:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:40:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:41:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:41:10 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:41:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:41:25 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:41:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:41:40 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:41:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:41:55 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:42:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:42:11 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:42:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:42:26 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:42:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:42:41 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:42:43 +0000] "GET /.env HTTP/1.1" 404 207 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.140 Safari/537.36" "206.206.73.107"
+172.31.24.159 - - [28/Oct/2025:03:42:43 +0000] "POST / HTTP/1.1" 405 153 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.140 Safari/537.36" "206.206.73.107"
+172.31.2.228 - - [28/Oct/2025:03:42:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:42:56 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:43:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:43:11 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:43:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:43:26 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:43:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:43:41 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:43:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:43:56 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:44:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:44:11 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:44:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:44:26 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:44:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:44:41 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:44:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:44:56 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:45:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:45:11 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:45:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:45:26 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:45:31 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:45:41 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:45:46 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:45:56 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:46:01 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:46:11 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.2.228 - - [28/Oct/2025:03:46:16 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+172.31.24.159 - - [28/Oct/2025:03:46:26 +0000] "GET / HTTP/1.1" 200 15069 "-" "ELB-HealthChecker/2.0" "-"
+
+
+----------------------------------------
+/var/log/nginx/error.log
+----------------------------------------
+2025/10/27 00:36:53 [warn] 2019#2019: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 00:36:53 [warn] 2055#2055: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 00:36:53 [warn] 2058#2058: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 05:52:07 [warn] 2062#2062: *6239 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/proxy/1/00/0000000001 while reading upstream, client: 172.31.2.228, server: , request: "GET /static/magazine/July-2025.pdf HTTP/1.1", upstream: "http://127.0.0.1:8000/static/magazine/July-2025.pdf", host: "35.168.192.171"
+2025/10/27 08:14:47 [warn] 2062#2062: *8655 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/proxy/2/00/0000000002 while reading upstream, client: 172.31.2.228, server: , request: "GET /static/magazine/July-2025.pdf HTTP/1.1", upstream: "http://127.0.0.1:8000/static/magazine/July-2025.pdf", host: "35.168.192.171"
+2025/10/27 08:55:01 [warn] 2061#2061: *9320 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/proxy/3/00/0000000003 while reading upstream, client: 172.31.24.159, server: , request: "GET /static/magazine/July-2025.pdf HTTP/1.1", upstream: "http://127.0.0.1:8000/static/magazine/July-2025.pdf", host: "54.243.130.154"
+2025/10/27 13:23:54 [warn] 2061#2061: *14008 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000004, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 13:24:03 [warn] 2061#2061: *13990 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000005, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 13:24:39 [warn] 2061#2061: *14008 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000006, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 13:25:32 [warn] 2061#2061: *14008 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000007, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 13:27:56 [warn] 34197#34197: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 13:27:57 [warn] 34242#34242: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 13:27:57 [warn] 34253#34253: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 13:33:47 [warn] 34267#34267: *102 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000001, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 13:34:26 [warn] 34266#34266: *104 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000002, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 14:05:53 [warn] 37044#37044: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:05:54 [warn] 37078#37078: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:05:54 [warn] 37079#37079: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:19:06 [warn] 37081#37081: *246 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000001, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 14:27:45 [warn] 38471#38471: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:27:46 [warn] 38525#38525: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:27:46 [warn] 38536#38536: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:30:25 [warn] 39110#39110: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:30:25 [warn] 39153#39153: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:30:25 [warn] 39160#39160: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:51:15 [warn] 40637#40637: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:51:15 [warn] 40672#40672: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:51:15 [warn] 40673#40673: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 14:53:14 [warn] 40676#40676: *36 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000001, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 15:07:31 [warn] 41938#41938: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 15:07:32 [warn] 41972#41972: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 15:07:32 [warn] 41973#41973: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/27 15:08:15 [warn] 41975#41975: *18 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000001, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 17:31:00 [warn] 41975#41975: *2528 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000002, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 17:31:37 [warn] 41975#41975: *2528 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000003, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 19:26:03 [warn] 41975#41975: *4623 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/proxy/4/00/0000000004 while reading upstream, client: 172.31.24.159, server: , request: "GET /static/magazine/July-2025.pdf HTTP/1.1", upstream: "http://127.0.0.1:8000/static/magazine/July-2025.pdf", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/magazine"
+2025/10/27 19:26:10 [warn] 41975#41975: *4623 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/proxy/5/00/0000000005 while reading upstream, client: 172.31.24.159, server: , request: "GET /static/magazine/July-2025.pdf HTTP/1.1", upstream: "http://127.0.0.1:8000/static/magazine/July-2025.pdf", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/magazine"
+2025/10/27 19:40:22 [warn] 41976#41976: *5003 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000006, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 19:40:35 [warn] 41976#41976: *5022 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000007, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 21:49:54 [warn] 41976#41976: *8204 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000008, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/27 21:50:05 [warn] 41976#41976: *8204 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000009, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/28 00:04:22 [warn] 41975#41975: *10446 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000010, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/28 00:04:58 [warn] 41975#41975: *10446 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000011, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/28 00:17:37 [warn] 66496#66496: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/28 00:17:38 [warn] 66530#66530: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/28 00:17:38 [warn] 66531#66531: could not build optimal types_hash, you should increase either types_hash_max_size: 1024 or types_hash_bucket_size: 64; ignoring types_hash_bucket_size
+2025/10/28 00:17:57 [warn] 66533#66533: *22 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000001, client: 172.31.24.159, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/28 00:21:51 [warn] 66534#66534: *102 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000002, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+2025/10/28 00:22:21 [warn] 66534#66534: *133 a client request body is buffered to a temporary file /var/lib/nginx/tmp/client_body/0000000003, client: 172.31.2.228, server: , request: "POST /upload HTTP/1.1", host: "inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com", referrer: "http://inside-imaging-env.eba-fwcyhccx.us-east-1.elasticbeanstalk.com/dashboard"
+
+

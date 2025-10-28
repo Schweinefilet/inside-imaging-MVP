@@ -32,3 +32,6 @@ openai
 gunicorn
 flask-cors
 pytesseract
+werkzeug
+boto3
+botocore

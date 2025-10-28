@@ -24,6 +24,12 @@
     pointer-events: none;
     width: 100%;
     max-width: 1000px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.4) 40%,
+        transparent 70%
+    );
 }
 
 .marquee-3d-overlay .marquee-kicker {
@@ -34,6 +40,12 @@
     letter-spacing: 0.1em;
     color: var(--mint);
     margin-bottom: 1rem;
+    text-shadow: 
+        -1px -1px 3px rgba(0, 0, 0, 0.9),
+        1px -1px 3px rgba(0, 0, 0, 0.9),
+        -1px 1px 3px rgba(0, 0, 0, 0.9),
+        1px 1px 3px rgba(0, 0, 0, 0.9),
+        0 0 15px rgba(0, 0, 0, 0.8);
 }
 
 .marquee-3d-overlay h1 {
@@ -45,6 +57,12 @@
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
+    text-shadow: 
+        -2px -2px 4px rgba(0, 0, 0, 0.9),
+        2px -2px 4px rgba(0, 0, 0, 0.9),
+        -2px 2px 4px rgba(0, 0, 0, 0.9),
+        2px 2px 4px rgba(0, 0, 0, 0.9),
+        0 0 20px rgba(0, 0, 0, 0.8);
 }
 
 .marquee-3d-overlay .marquee-description {
@@ -53,6 +71,12 @@
     color: var(--text-muted);
     max-width: 700px;
     margin: 0 auto 2rem;
+    text-shadow: 
+        -1px -1px 3px rgba(0, 0, 0, 0.9),
+        1px -1px 3px rgba(0, 0, 0, 0.9),
+        -1px 1px 3px rgba(0, 0, 0, 0.9),
+        1px 1px 3px rgba(0, 0, 0, 0.9),
+        0 0 15px rgba(0, 0, 0, 0.8);
 }
 
 .marquee-3d-overlay .marquee-actions {

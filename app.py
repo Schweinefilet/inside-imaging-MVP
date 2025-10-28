@@ -90,14 +90,24 @@ BLOG_POSTS = [
 MARQUEE_IMAGES = [
     # Placeholder images for pilot program
     # Real radiology examples will be added after IRB approval
-    "https://via.placeholder.com/400x500/22c55e/ffffff?text=MRI+Scan",
-    "https://via.placeholder.com/400x500/14b8a6/ffffff?text=CT+Scan",
-    "https://via.placeholder.com/400x500/10b981/ffffff?text=X-Ray",
-    "https://via.placeholder.com/400x500/059669/ffffff?text=Ultrasound",
-    "https://via.placeholder.com/400x500/047857/ffffff?text=PET+Scan",
-    "https://via.placeholder.com/400x500/065f46/ffffff?text=MRI+Imaging",
-    "https://via.placeholder.com/400x500/22c55e/ffffff?text=Radiology",
-    "https://via.placeholder.com/400x500/14b8a6/ffffff?text=Medical+Imaging",
+    # To add your images: replace the files in static/images/marquee/
+    # Recommended format: JPG or PNG, 320x300px or 400x500px, under 500KB
+    "/static/images/marquee/placeholder-1.jpg",
+    "/static/images/marquee/placeholder-2.jpg",
+    "/static/images/marquee/placeholder-3.jpg",
+    "/static/images/marquee/placeholder-4.jpg",
+    "/static/images/marquee/placeholder-5.jpg",
+    "/static/images/marquee/placeholder-6.jpg",
+    "/static/images/marquee/placeholder-7.jpg",
+    "/static/images/marquee/placeholder-8.jpg",
+    "/static/images/marquee/placeholder-9.jpg",
+    "/static/images/marquee/placeholder-10.jpg",
+    "/static/images/marquee/placeholder-11.jpg",
+    "/static/images/marquee/placeholder-12.jpg",
+    "/static/images/marquee/placeholder-13.jpg",
+    "/static/images/marquee/placeholder-14.jpg",
+    "/static/images/marquee/placeholder-15.jpg",
+    "/static/images/marquee/placeholder-16.jpg",
 ]
 
 # Initialize database

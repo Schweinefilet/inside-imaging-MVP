@@ -67,7 +67,7 @@
 
             this.container.innerHTML = `
                 <div class="marquee-3d-overlay">
-                    <span class="marquee-kicker">Inside Imaging Studio</span>
+                    <span class="marquee-kicker">Inside Imaging</span>
                     <h1>Transform complex radiology reports into clear, actionable insights.</h1>
                     <p class="marquee-description">AI-powered translation, interactive body diagrams, and plain-language explanations that empower patients and streamline clinical communication.</p>
                     <div class="marquee-actions">

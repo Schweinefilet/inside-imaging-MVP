@@ -19,3 +19,8 @@ Thumbs.db
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 .env
+.venv/
+.venv-*/
+venv/
+ENV/
+env/

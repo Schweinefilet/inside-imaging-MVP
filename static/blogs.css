@@ -136,3 +136,96 @@
   background: color-mix(in oklab, var(--mint) 85%, #ffffff);
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.45);
 }
+
+/* Author Bio Section */
+.author-bio {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.author-avatar {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--panel-2);
+  border: 2px solid var(--border);
+}
+
+.author-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.author-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--mint);
+  background: color-mix(in oklab, var(--mint) 15%, var(--panel-2));
+}
+
+.author-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.author-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.author-description {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+.author-social {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.author-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.author-social a:hover,
+.author-social a:focus-visible {
+  background: var(--mint);
+  color: #051e14;
+  border-color: var(--mint);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.author-social svg {
+  width: 18px;
+  height: 18px;
+}

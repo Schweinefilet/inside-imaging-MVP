@@ -198,7 +198,10 @@
           <section class="upload-section">
             <h2>Upload New Report</h2>
             <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
-              <input type="file" name="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.tif,.tiff,.webp,.bmp" required>
+              <input type="file" name="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.heic,.heif,.docx,.tif,.tiff,.webp,.bmp" required>
+              <p style="font-size: 0.85em; color: var(--text-muted); margin: 0.5rem 0;">
+                Supported formats: PDF, Word (DOCX), Images (PNG, JPG, HEIC/HEIF, TIFF, WebP, BMP), or plain text
+              </p>
               <label for="language">Language:</label>
               <select name="language" id="language">
                 {% for language in languages %}

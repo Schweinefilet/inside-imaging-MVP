@@ -104,6 +104,7 @@
                     <h3>Inside Imaging Magazine</h3>
                     <p>Monthly deep-dives on radiology storytelling, AI adoption, and patient-centered education.</p>
                     <a class="project-link" href="{{ url_for('magazine') }}">Browse magazine archives →</a>
+                    <span class="project-pill" style="background: var(--mint); color: var(--bg);">Live Now</span>
                 </article>
                 <article class="project-card">
                     <div class="project-icon" aria-hidden="true">🎙️</div>
@@ -155,7 +156,7 @@
                     </header>
                     <p class="blog-summary">{{ post.summary }}</p>
                     <footer>
-                        <a href="{{ post.url }}" target="_blank" rel="noopener">Read full post →</a>
+                        <a href="{{ post.url }}">Read full post →</a>
                     </footer>
                     
                     <!-- Author Bio Section -->

@@ -338,11 +338,11 @@
       createPieChart(ageCanvas, window.statsData.ageData, colors);
     }
 
-    // Bar chart for gender mix
-    const genderCanvas = document.getElementById('bar-chart-gender');
+    // Pie chart for gender mix
+    const genderCanvas = document.getElementById('pie-chart-gender');
     if (genderCanvas && window.statsData && window.statsData.genderData) {
       const colors = ['#ec4899', '#3b82f6', '#8b5cf6'];
-      createBarChart(genderCanvas, window.statsData.genderData, colors);
+      createPieChart(genderCanvas, window.statsData.genderData, colors);
     }
 
     // Pie chart for languages

@@ -98,7 +98,7 @@
     },
     'pulmonary embolism': {
       keywords: ['pulmonary embolism', 'pe', 'blood clot', 'clot in lung', 'embolus'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/59632221/419fb0cc39742cfe12fdfc53c07b5f9a2c2011d379ec576401f59942ed7f7d34_big_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/54710603/CT_PULMONARY_ANGIOGRAM_20210324_big_gallery.jpeg',
       altText: 'Example CT angiogram showing pulmonary embolism',
       description: 'Pulmonary embolism appears as dark filling defect in contrast-filled pulmonary artery'
     },
@@ -645,14 +645,48 @@
     const normalizedText = (text || '').toLowerCase();
     const detectedConditions = [];
     
+    // Negative phrases that indicate absence of a condition
+    const negativeIndicators = [
+      'no ', 'no evidence of', 'no sign of', 'no signs of', 'absence of',
+      'without ', 'ruled out', 'negative for', 'free of', 'clear of',
+      'not seen', 'not identified', 'not visualized', 'not appreciated',
+      'unremarkable', 'normal', 'within normal limits', 'stable',
+      'unchanged', 'resolved', 'improving', 'no acute', 'no active'
+    ];
+    
     for (const [condition, data] of Object.entries(CONDITION_EXAMPLES)) {
       for (const keyword of data.keywords) {
         if (normalizedText.includes(keyword)) {
-          if (!detectedConditions.find(c => c.name === condition)) {
+          // Check if this keyword appears in a negative context
+          const keywordIndex = normalizedText.indexOf(keyword);
+          
+          // Extract context around the keyword (50 chars before and after)
+          const contextStart = Math.max(0, keywordIndex - 50);
+          const contextEnd = Math.min(normalizedText.length, keywordIndex + keyword.length + 50);
+          const context = normalizedText.substring(contextStart, contextEnd);
+          
+          // Check if any negative indicator appears near this keyword
+          let isNegative = false;
+          for (const negIndicator of negativeIndicators) {
+            if (context.includes(negIndicator)) {
+              // Check if the negative indicator is before or at the keyword location
+              const negIndex = context.indexOf(negIndicator);
+              const keywordRelativeIndex = keywordIndex - contextStart;
+              if (negIndex < keywordRelativeIndex + keyword.length) {
+                isNegative = true;
+                console.log(`Skipping "${condition}" - found in negative context: "${context}"`);
+                break;
+              }
+            }
+          }
+          
+          // Only add if NOT in negative context
+          if (!isNegative && !detectedConditions.find(c => c.name === condition)) {
             detectedConditions.push({
               name: condition,
               ...data
             });
+            console.log(`Detected condition: "${condition}" with keyword "${keyword}"`);
           }
           break;
         }
@@ -726,22 +760,47 @@
 
   /**
    * Extract context around organ mentions to show what's wrong
+   * Only shows sentences that are primarily about this specific organ
    */
   function extractOrganContext(text, organ) {
     const normalizedText = (text || '').toLowerCase();
     const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
     const relevantSentences = [];
+    const keywords = ORGAN_KEYWORDS[organ] || [];
     
     // Find sentences mentioning this organ
     for (const sentence of sentences) {
       const lowerSentence = sentence.toLowerCase();
-      const keywords = ORGAN_KEYWORDS[organ] || [];
       
+      // Check if this sentence mentions this organ
+      let mentionsThisOrgan = false;
       for (const keyword of keywords) {
         if (lowerSentence.includes(keyword)) {
-          relevantSentences.push(sentence.trim());
+          mentionsThisOrgan = true;
           break;
         }
+      }
+      
+      if (!mentionsThisOrgan) continue;
+      
+      // Count how many different organs are mentioned in this sentence
+      let organMentionCount = 0;
+      for (const [otherOrgan, otherKeywords] of Object.entries(ORGAN_KEYWORDS)) {
+        for (const otherKeyword of otherKeywords) {
+          if (lowerSentence.includes(otherKeyword)) {
+            organMentionCount++;
+            break;
+          }
+        }
+      }
+      
+      // Only include if this sentence mentions 2 or fewer organs (avoids overly general sentences)
+      // OR if it's specifically about this organ (keyword appears early in sentence)
+      const firstKeywordPosition = Math.min(...keywords.filter(k => lowerSentence.includes(k)).map(k => lowerSentence.indexOf(k)));
+      const isSpecificToOrgan = firstKeywordPosition < 50 || organMentionCount <= 2;
+      
+      if (isSpecificToOrgan && !relevantSentences.includes(sentence.trim())) {
+        relevantSentences.push(sentence.trim());
       }
     }
     
@@ -858,11 +917,10 @@
   function createOrganSection(organ, isAvailable, reportText) {
     const section = document.createElement('section');
     section.className = 'organ-anatomy-section';
-    section.style.cssText = 'margin: 1rem; padding: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; flex: 1; min-width: 280px; max-width: 450px;';
+    // No inline styles - let CSS handle it
     
     const title = document.createElement('h3');
     title.textContent = organ.charAt(0).toUpperCase() + organ.slice(1) + ' Anatomy';
-    title.style.cssText = 'margin: 0 0 0.75rem 0; color: var(--text); font-size: 1.1rem;';
     section.appendChild(title);
 
     // Extract specific regions and context
@@ -1022,80 +1080,6 @@
 
   /**
    * Create a section displaying an example medical image for a detected condition
-   * @param {string} conditionName - The name of the medical condition
-   * @param {Object} conditionData - Object with imageUrl, altText, description
-   * @returns {HTMLElement|null} The condition example section or null
-   */
-  function createConditionExampleSection(conditionName, conditionData) {
-    const section = document.createElement('div');
-    section.className = 'condition-example-section';
-    section.style.cssText = 'flex: 1 1 100%; min-width: 280px; max-width: 100%; padding: 1.5rem; background: var(--panel); border: 3px solid #ff9800; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);';
-    
-    // Title
-    const title = document.createElement('h3');
-    title.style.cssText = 'margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem;';
-    title.innerHTML = `<span style="font-size: 1.3rem;">📊</span> Example: ${conditionName.charAt(0).toUpperCase() + conditionName.slice(1)}`;
-    section.appendChild(title);
-    
-    // Prominent disclaimer box at the top
-    const disclaimerTop = document.createElement('div');
-    disclaimerTop.className = 'disclaimer-box';
-    disclaimerTop.style.cssText = 'background: rgba(255, 165, 0, 0.2); border-left: 5px solid #ff9800; padding: 1rem; margin-bottom: 1rem; border-radius: 6px;';
-    disclaimerTop.innerHTML = `
-      <p style="margin: 0; color: #ff9800; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span style="font-size: 1.5rem;">⚠️</span> EXAMPLE IMAGE ONLY - NOT YOUR ACTUAL SCAN
-      </p>
-      <p style="margin: 0.5rem 0 0 0; color: var(--text); font-size: 0.85rem;">
-        This is a reference image from medical literature. Your scan may look completely different. 
-        <strong>Do NOT use this to self-diagnose.</strong> This is just an educational assumption.
-      </p>
-    `;
-    section.appendChild(disclaimerTop);
-    
-    // Image container with loading/error handling
-    const imageContainer = document.createElement('div');
-    imageContainer.style.cssText = 'margin: 1rem 0; text-align: center; background: rgba(0,0,0,0.05); border-radius: 8px; padding: 1rem;';
-    
-    const img = document.createElement('img');
-    img.src = conditionData.imageUrl;
-    img.alt = conditionData.altText;
-    img.style.cssText = 'max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
-    img.loading = 'lazy';
-    
-    // Handle image load errors
-    img.onerror = function() {
-      imageContainer.innerHTML = `
-        <p style="color: var(--muted); font-size: 0.9rem; margin: 1rem 0;">
-          ⚠️ Example image could not be loaded. Please consult your doctor for information about this condition.
-        </p>
-      `;
-    };
-    
-    imageContainer.appendChild(img);
-    section.appendChild(imageContainer);
-    
-    // Description
-    if (conditionData.description) {
-      const description = document.createElement('p');
-      description.style.cssText = 'margin: 1rem 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5;';
-      description.textContent = conditionData.description;
-      section.appendChild(description);
-    }
-    
-    // Bottom disclaimer
-    const disclaimerBottom = document.createElement('div');
-    disclaimerBottom.style.cssText = 'margin-top: 1rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px;';
-    disclaimerBottom.innerHTML = `
-      <p style="margin: 0; color: var(--muted); font-size: 0.8rem; text-align: center;">
-        <strong>Important:</strong> Your radiologist will provide accurate interpretation. 
-        This is just a reference image and may not represent your specific case.
-      </p>
-    `;
-    section.appendChild(disclaimerBottom);
-    
-    return section;
-  }
-
   /**
    * Initialize organ highlighting
    */
@@ -1135,25 +1119,7 @@
     // Find or create container for organ sections
     let container = document.getElementById('organ-anatomy-container');
     if (!container) {
-      // Insert after body diagram section
-      const bodyDiagram = document.getElementById('diagram-container');
-      if (bodyDiagram && bodyDiagram.parentElement) {
-        container = document.createElement('div');
-        container.id = 'organ-anatomy-container';
-        bodyDiagram.parentElement.insertAdjacentElement('afterend', container);
-      } else {
-        // Fallback: insert in main content
-        const mainContent = document.querySelector('main.content');
-        if (mainContent) {
-          container = document.createElement('div');
-          container.id = 'organ-anatomy-container';
-          mainContent.appendChild(container);
-        }
-      }
-    }
-    
-    if (!container) {
-      console.error('Organ highlighting: Could not find or create container');
+      console.error('Organ highlighting: organ-anatomy-container not found in template');
       return;
     }
     
@@ -1167,24 +1133,26 @@
           50% { opacity: 0.4; }
         }
         #organ-anatomy-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-          margin: 2rem 0;
+          display: contents;
+        }
+        .organ-anatomy-section {
+          background: var(--panel);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 1.5rem;
+          box-shadow: var(--shadow);
+        }
+        .organ-anatomy-section h3 {
+          margin-top: 0;
+          margin-bottom: 1rem;
+          color: var(--mint);
+          font-size: 1.3rem;
         }
         .light .organ-anatomy-section {
           background: var(--panel) !important;
         }
         .light .organ-anatomy-section h3 {
           color: var(--text) !important;
-        }
-        @media (max-width: 768px) {
-          #organ-anatomy-container {
-            flex-direction: column;
-          }
-          .organ-anatomy-section {
-            max-width: 100% !important;
-          }
         }
       `;
       document.head.appendChild(style);
@@ -1216,26 +1184,97 @@
     console.log('Detected conditions:', detectedConditions);
     
     if (detectedConditions.length > 0) {
-      // Add a separator/header before condition examples
-      const conditionHeader = document.createElement('div');
-      conditionHeader.style.cssText = 'flex: 1 1 100%; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 165, 0, 0.1); border-radius: 8px;';
-      conditionHeader.innerHTML = `
-        <h3 style="margin: 0; color: var(--text); font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.4rem;">📚</span> Educational Reference Images
-        </h3>
-        <p style="margin: 0.5rem 0 0 0; color: var(--muted); font-size: 0.85rem;">
-          Based on keywords in your report, here are some example medical images for educational purposes only.
-        </p>
-      `;
-      container.appendChild(conditionHeader);
+      // Create a single compact box for all condition examples
+      const conditionBox = document.createElement('div');
+      conditionBox.className = 'visual-section-box';
+      conditionBox.style.cssText = 'border: 3px solid #ff9800;';
       
-      // Create section for each detected condition
+      // Header with placeholder count that will be updated
+      const header = document.createElement('div');
+      header.style.cssText = 'margin-bottom: 1rem;';
+      const countSpan = document.createElement('span');
+      countSpan.id = 'condition-count';
+      header.innerHTML = `
+        <h2 style="margin: 0 0 0.5rem 0; color: var(--mint); font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.4rem;">📚</span> Educational Reference Images (<span id="condition-count">0</span>)
+        </h2>
+        <div style="background: rgba(255, 165, 0, 0.2); border-left: 5px solid #ff9800; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+          <p style="margin: 0; color: #ff9800; font-weight: bold; font-size: 0.9rem;">
+            ⚠️ EXAMPLE IMAGES ONLY - NOT YOUR ACTUAL SCANS
+          </p>
+          <p style="margin: 0.5rem 0 0 0; color: var(--muted); font-size: 0.8rem;">
+            These are reference images from medical literature. <strong>Do NOT use these to self-diagnose.</strong> Your radiologist will provide accurate interpretation.
+          </p>
+        </div>
+      `;
+      conditionBox.appendChild(header);
+      
+      // Create a grid for condition images
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;';
+      
+      let successfulImageCount = 0;
+      
       detectedConditions.forEach(condition => {
-        const conditionSection = createConditionExampleSection(condition.name, condition);
-        if (conditionSection) {
-          container.appendChild(conditionSection);
+        const conditionItem = document.createElement('div');
+        conditionItem.style.cssText = 'text-align: center; padding: 0.75rem; background: rgba(0,0,0,0.05); border-radius: 8px;';
+        
+        // Condition name
+        const name = document.createElement('div');
+        name.style.cssText = 'font-weight: 600; font-size: 0.85rem; color: var(--text); margin-bottom: 0.5rem;';
+        name.textContent = condition.name.charAt(0).toUpperCase() + condition.name.slice(1);
+        conditionItem.appendChild(name);
+        
+        // Image
+        const img = document.createElement('img');
+        img.src = condition.imageUrl;
+        img.alt = condition.altText;
+        img.style.cssText = 'max-width: 100%; height: auto; max-height: 150px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;';
+        img.loading = 'lazy';
+        img.title = condition.description;
+        
+        // Track successful loads
+        img.onload = function() {
+          successfulImageCount++;
+          const countElement = document.getElementById('condition-count');
+          if (countElement) {
+            countElement.textContent = successfulImageCount;
+          }
+        };
+        
+        // Click to expand
+        img.onclick = () => {
+          const modal = document.createElement('div');
+          modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; cursor: pointer;';
+          modal.onclick = () => modal.remove();
+          
+          const modalImg = document.createElement('img');
+          modalImg.src = condition.imageUrl;
+          modalImg.style.cssText = 'max-width: 90%; max-height: 90vh; border-radius: 8px;';
+          modal.appendChild(modalImg);
+          document.body.appendChild(modal);
+        };
+        
+        img.onerror = function() {
+          conditionItem.style.display = 'none';
+        };
+        
+        conditionItem.appendChild(img);
+        
+        // Short description with proper ellipsis
+        if (condition.description) {
+          const desc = document.createElement('div');
+          desc.style.cssText = 'font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;';
+          desc.textContent = condition.description;
+          desc.title = condition.description; // Show full text on hover
+          conditionItem.appendChild(desc);
         }
+        
+        grid.appendChild(conditionItem);
       });
+      
+      conditionBox.appendChild(grid);
+      container.appendChild(conditionBox);
       
       console.log('Condition examples displayed: ' + detectedConditions.length);
     }

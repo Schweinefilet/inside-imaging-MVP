@@ -35,3 +35,5 @@ pytesseract
 werkzeug
 boto3
 botocore
+python-docx
+pillow-heif

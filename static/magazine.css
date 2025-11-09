@@ -61,7 +61,7 @@
   max-width: 900px;
   margin: 0 auto;
   min-height: 0;
-  height: clamp(720px, 90vh, 1400px);
+  height: clamp(900px, 95vh, 1600px);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;

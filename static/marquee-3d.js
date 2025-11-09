@@ -67,11 +67,11 @@
 
             this.container.innerHTML = `
                 <div class="marquee-3d-overlay">
-                    <span class="marquee-kicker">Inside Imaging</span>
-                    <h1>Transform complex radiology reports into clear, actionable insights.</h1>
-                    <p class="marquee-description">AI-powered translation, interactive body diagrams, and plain-language explanations that empower patients and streamline clinical communication.</p>
+                    <span class="marquee-kicker">Live Now</span>
+                    <h1>AI-Powered Translation Platform</h1>
+                    <p class="marquee-description">Transform complex radiology reports into clear, patient-friendly summaries with interactive 3D anatomy visualization and multilingual support.</p>
                     <div class="marquee-actions">
-                        <a class="btn-primary" href="/dashboard">Try it now</a>
+                        <a class="btn-primary" href="/dashboard">Try the platform →</a>
                         <a class="btn-secondary" href="#portfolio">View our projects</a>
                     </div>
                 </div>

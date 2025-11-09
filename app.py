@@ -94,7 +94,7 @@ BLOG_POSTS = [
         "author_website": None,
         "date": "July 2025",
         "read_time": "7 min read",
-        "url": "/magazine#page=5",
+        "url": "/magazine#page=9",
     },
     {
         "title": "AI in Medical Radiography, Imaging and Radiotherapy: Innovations and Ethical Considerations",
@@ -110,7 +110,7 @@ BLOG_POSTS = [
         "author_website": None,
         "date": "July 2025",
         "read_time": "10 min read",
-        "url": "/magazine#page=8",
+        "url": "/magazine#page=18",
     },
     {
         "title": "The Evolution Landscape of Radiology: Current Trends and Future Prospects",
@@ -126,7 +126,7 @@ BLOG_POSTS = [
         "author_website": None,
         "date": "July 2025",
         "read_time": "12 min read",
-        "url": "/magazine#page=12",
+        "url": "/magazine#page=41",
     },
 ]
 
@@ -239,6 +239,70 @@ def _extract_text_from_image_bytes(data: bytes) -> str:
 
     text = "\n".join(l for l in lines if l)
     return text.strip()
+
+
+def _extract_text_from_docx_bytes(data: bytes) -> str:
+    """Extract text from a DOCX file."""
+    try:
+        from docx import Document  # type: ignore
+    except Exception:
+        logging.exception("python-docx not available")
+        return ""
+    
+    try:
+        doc = Document(io.BytesIO(data))
+        paragraphs = []
+        for para in doc.paragraphs:
+            if para.text.strip():
+                paragraphs.append(para.text.strip())
+        
+        # Also extract text from tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip():
+                        paragraphs.append(cell.text.strip())
+        
+        return "\n".join(paragraphs)
+    except Exception:
+        logging.exception("docx extraction failed")
+        return ""
+
+
+def _extract_text_from_heif_bytes(data: bytes) -> str:
+    """
+    Extract text from HEIF/HEIC images (iOS photos) by converting to JPEG
+    and then using AWS Textract.
+    """
+    try:
+        import pillow_heif  # type: ignore
+        from PIL import Image  # type: ignore
+        pillow_heif.register_heif_opener()
+    except Exception:
+        logging.exception("pillow-heif not available")
+        return ""
+    
+    try:
+        # Convert HEIF to JPEG in memory
+        heif_image = pillow_heif.read_heif(io.BytesIO(data))
+        image = Image.frombytes(
+            heif_image.mode, 
+            heif_image.size, 
+            heif_image.data,
+            "raw"
+        )
+        
+        # Convert to JPEG bytes
+        jpeg_buffer = io.BytesIO()
+        image.save(jpeg_buffer, format="JPEG", quality=95)
+        jpeg_bytes = jpeg_buffer.getvalue()
+        
+        # Use existing image extraction with Textract
+        return _extract_text_from_image_bytes(jpeg_bytes)
+    except Exception:
+        logging.exception("HEIF extraction failed")
+        return ""
+
 
 
 
@@ -660,6 +724,26 @@ def upload():
             if lower_name.endswith(".pdf"):
                 extracted = _extract_text_from_pdf_bytes(data)
                 src_kind = "pdf"
+            elif lower_name.endswith((".heic", ".heif")):
+                extracted = _extract_text_from_heif_bytes(data)
+                src_kind = "heif"
+                if not extracted:
+                    flash(
+                        "Unable to extract text from the HEIF/HEIC image. The file may be corrupted "
+                        "or contain no readable text. Please try a different format or paste the text directly.",
+                        "error",
+                    )
+                    return redirect(url_for("dashboard"))
+            elif lower_name.endswith((".docx",)):
+                extracted = _extract_text_from_docx_bytes(data)
+                src_kind = "docx"
+                if not extracted:
+                    flash(
+                        "Unable to extract text from the Word document. The file may be corrupted "
+                        "or empty. Please try a different file or paste the text directly.",
+                        "error",
+                    )
+                    return redirect(url_for("dashboard"))
             elif lower_name.endswith((".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp")):
                 extracted = _extract_text_from_image_bytes(data)
                 src_kind = "image"

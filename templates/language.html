@@ -136,7 +136,7 @@
     var timeoutId = setTimeout(function() {
       loader.classList.remove('is-active');
       loader.classList.add('is-hidden');
-    }, 30000); // 30 seconds timeout
+    }, 60000); // 60 seconds timeout
     
     var hide = function() {
       clearTimeout(timeoutId);
@@ -144,20 +144,32 @@
       setTimeout(function() {
         loader.classList.remove('is-active');
         loader.classList.add('is-hidden');
-      }, 3000); // 3 second delay after iframe load
+      }, 6000); // 6 second delay after iframe load
     };
     
     frame.addEventListener('load', hide, { once: true });
     
     // Handle page hash navigation for blog post links
-    if (window.location.hash && window.location.hash.includes('page=')) {
-      var hash = window.location.hash;
-      var currentSrc = frame.src;
-      // Remove any existing hash from the iframe src
-      var baseUrl = currentSrc.split('#')[0];
-      // Add the page navigation hash
-      frame.src = baseUrl + hash;
+    function navigateToPage() {
+      if (window.location.hash && window.location.hash.includes('page=')) {
+        var hash = window.location.hash;
+        var pageMatch = hash.match(/page=(\d+)/);
+        if (pageMatch && pageMatch[1]) {
+          var pageNum = pageMatch[1];
+          var currentSrc = frame.src;
+          // Remove any existing hash from the iframe src
+          var baseUrl = currentSrc.split('#')[0];
+          // Add the page navigation hash in PDF.js format
+          frame.src = baseUrl + '#page=' + pageNum;
+        }
+      }
     }
+    
+    // Navigate on initial load
+    navigateToPage();
+    
+    // Also handle hash changes (if user clicks another blog link while on magazine page)
+    window.addEventListener('hashchange', navigateToPage);
   })();
   </script>
 </body>

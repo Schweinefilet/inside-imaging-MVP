@@ -90,47 +90,9 @@
             <canvas id="line-chart-reports" width="400" height="120"></canvas>
           </div>
         </article>
-        <article class="summary-card hover-card">
-          <p class="summary-label">Average Word Count</p>
-          <p class="summary-value">{{ stats.summary.average_word_count }}</p>
-        </article>
-        <article class="summary-card hover-card">
-          <p class="summary-label">Languages Logged</p>
-          <p class="summary-value">{{ stats.summary.languages_tracked }}</p>
-        </article>
-      </section>
-
-      <section class="analytics-grid">
-        <article class="analytics-panel hover-card span-2-desktop">
-          <h2>Age Distribution</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-age" width="180" height="180"></canvas>
-          </div>
-          <ul class="stat-list">
-            {% for label, count in stats.age_ranges.items() %}
-            <li><span>{{ label }}</span><span>{{ count }}</span></li>
-            {% endfor %}
-          </ul>
-        </article>
-        <article class="analytics-panel hover-card span-2-desktop gender-panel">
-          <h2>Gender Mix</h2>
-          <div class="gender-content">
-            <ul class="stat-list">
-              <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
-              <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
-              <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
-            </ul>
-            <div class="chart-container gender-chart-container">
-              <canvas id="bar-chart-gender" width="280" height="140"></canvas>
-            </div>
-          </div>
-        </article>
-        <article class="analytics-panel hover-card">
-          <h2>Languages</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-languages" width="160" height="160"></canvas>
-          </div>
-          <ul class="stat-list">
+        <article class="summary-card hover-card languages-summary">
+          <p class="summary-label">Languages</p>
+          <ul class="stat-list compact">
             {% for entry in stats.languages %}
             <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>
             {% else %}
@@ -138,6 +100,34 @@
             {% endfor %}
           </ul>
         </article>
+      </section>
+
+      <section class="analytics-grid">
+        <!-- Row 1: Age Distribution and Gender Mix (full width each) -->
+        <article class="analytics-panel hover-card span-full">
+          <h2>Age Distribution</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-age" width="160" height="160"></canvas>
+          </div>
+          <ul class="stat-list">
+            {% for label, count in stats.age_ranges.items() %}
+            <li><span>{{ label }}</span><span>{{ count }}</span></li>
+            {% endfor %}
+          </ul>
+        </article>
+        <article class="analytics-panel hover-card span-full">
+          <h2>Gender Mix</h2>
+          <div class="chart-container">
+            <canvas id="pie-chart-gender" width="160" height="160"></canvas>
+          </div>
+          <ul class="stat-list">
+            <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
+            <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
+            <li><span>Other</span><span>{{ stats.gender.other }}</span></li>
+          </ul>
+        </article>
+
+        <!-- Row 2: Modalities and Top Findings -->
         <article class="analytics-panel hover-card">
           <h2>Modalities</h2>
           <div class="chart-container">
@@ -151,11 +141,8 @@
             {% endfor %}
           </ul>
         </article>
-        <article class="analytics-panel span-2 hover-card">
+        <article class="analytics-panel hover-card">
           <h2>Top Findings</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-findings" width="240" height="180"></canvas>
-          </div>
           <ul class="stat-list">
             {% for entry in stats.diseases %}
             <li><span>{{ entry.label|capitalize }}</span><span>{{ entry.count }}</span></li>
@@ -164,6 +151,9 @@
             {% endfor %}
           </ul>
         </article>
+
+        <!-- Row 3: Recent Activity (full width) -->
+        <article class="analytics-panel span-2 hover-card">
         <article class="analytics-panel span-2 hover-card">
           <h2>Recent Activity</h2>
           <ul class="recent-list">

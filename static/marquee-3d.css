@@ -5,12 +5,18 @@
     max-width: 1400px;
     margin: 3rem auto;
     padding: 2rem;
-    background: rgba(10, 10, 10, 0.4);
+    background: rgba(10, 10, 10, 0.9);
     border: 1px solid rgba(34, 197, 94, 0.1);
     border-radius: 24px;
     overflow: hidden;
     position: relative;
     backdrop-filter: blur(10px);
+}
+
+/* Force dark background even in light mode */
+html.light .marquee-3d-container {
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .marquee-3d-overlay {
@@ -346,11 +352,11 @@ html.light .marquee-3d-overlay .marquee-description {
     background: linear-gradient(0deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
 }
 
-/* Light mode */
+/* Light mode - keep marquee dark */
 :root.light .marquee-3d-container {
-    background: rgba(249, 250, 251, 0.9);
-    border-color: rgba(5, 150, 105, 0.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background: rgba(10, 10, 10, 0.95) !important;
+    border-color: rgba(34, 197, 94, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 :root.light .marquee-3d-item {
@@ -364,10 +370,10 @@ html.light .marquee-3d-overlay .marquee-description {
 }
 
 :root.light .marquee-3d-wrapper::before {
-    background: linear-gradient(180deg, rgba(249, 250, 251, 1) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
 }
 
 :root.light .marquee-3d-wrapper::after {
-    background: linear-gradient(0deg, rgba(249, 250, 251, 1) 0%, transparent 100%);
+    background: linear-gradient(0deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
 }
 

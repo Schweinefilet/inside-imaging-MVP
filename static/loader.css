@@ -136,3 +136,39 @@
 		opacity: 0.7;
 	}
 }
+
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .loader-overlay {
+  background: rgba(248, 250, 252, 0.95);
+}
+
+html.light .loader-spinner {
+  border-color: rgba(16, 185, 129, 0.2);
+  border-top-color: var(--mint);
+}
+
+html.light .loader-text {
+  color: rgba(10, 30, 28, 0.85);
+}
+
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .loader-overlay {
+  background: rgba(248, 250, 252, 0.95);
+}
+
+html.light .loader-spinner {
+  border-color: rgba(16, 185, 129, 0.2);
+  border-top-color: var(--mint);
+}
+
+html.light .loader-text {
+  color: rgba(10, 30, 28, 0.85);
+}

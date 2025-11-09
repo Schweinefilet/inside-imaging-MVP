@@ -65,18 +65,38 @@
         0 0 20px rgba(0, 0, 0, 0.8);
 }
 
+html.light .marquee-3d-overlay h1 {
+    text-shadow: 
+        -2px -2px 4px rgba(255, 255, 255, 0.9),
+        2px -2px 4px rgba(255, 255, 255, 0.9),
+        -2px 2px 4px rgba(255, 255, 255, 0.9),
+        2px 2px 4px rgba(255, 255, 255, 0.9),
+        0 0 20px rgba(255, 255, 255, 0.8);
+}
+
 .marquee-3d-overlay .marquee-description {
     font-size: 1.125rem;
     line-height: 1.6;
-    color: var(--text-muted);
+    color: #ffffff;
     max-width: 700px;
     margin: 0 auto 2rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(34, 197, 94, 0.3);
     text-shadow: 
         -1px -1px 3px rgba(0, 0, 0, 0.9),
         1px -1px 3px rgba(0, 0, 0, 0.9),
         -1px 1px 3px rgba(0, 0, 0, 0.9),
         1px 1px 3px rgba(0, 0, 0, 0.9),
         0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+html.light .marquee-3d-overlay .marquee-description {
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(34, 197, 94, 0.4);
 }
 
 .marquee-3d-overlay .marquee-actions {

@@ -172,3 +172,38 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .language-container {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .language-container h2 {
+  color: var(--mint);
+}
+
+html.light .language-container p {
+  color: rgba(10, 30, 28, 0.75);
+}
+
+html.light .language-option {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--border);
+  color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .language-option:hover {
+  border-color: var(--mint);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+html.light .language-option.selected {
+  border-color: var(--mint);
+  background: rgba(62, 230, 176, 0.08);
+}

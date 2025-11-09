@@ -263,3 +263,83 @@
 :root.light .auth-submit:hover {
     box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
 }
+
+html.light .auth-card {
+    background: var(--panel);
+    border-color: var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .auth-title {
+    color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .auth-subtitle {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .flash-message {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #dc2626;
+}
+
+html.light .auth-label {
+    color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .auth-input {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--border);
+    color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .auth-input::placeholder {
+    color: rgba(10, 30, 28, 0.5);
+}
+
+html.light .auth-input:focus {
+    border-color: var(--mint);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+html.light .auth-submit {
+    background: linear-gradient(135deg, var(--mint) 0%, #059669 100%);
+    color: #051e14;
+}
+
+html.light .auth-submit:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+}
+
+html.light .auth-divider::before {
+    background: var(--border);
+}
+
+html.light .auth-divider span {
+    background: var(--panel);
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .social-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: var(--border);
+    color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .social-btn:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: var(--mint);
+}
+
+html.light .auth-footer {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .auth-footer a {
+    color: var(--mint);
+}
+
+html.light .auth-footer a:hover {
+    color: #059669;
+}

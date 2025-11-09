@@ -229,3 +229,59 @@
   width: 18px;
   height: 18px;
 }
+
+/* Light mode overrides */
+html.light .blogs-hero h1 {
+  color: var(--mint);
+}
+
+html.light .blogs-hero p {
+  color: var(--muted);
+}
+
+html.light .blog-card {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .blog-card:hover,
+html.light .blog-card:focus-within {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+html.light .blog-summary {
+  color: rgba(10, 30, 28, 0.88);
+}
+
+html.light .blog-card a {
+  background: var(--mint);
+  color: #051e14;
+}
+
+html.light .blog-card a:hover,
+html.light .blog-card a:focus-visible {
+  background: color-mix(in oklab, var(--mint) 90%, #000000);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+html.light .author-name {
+  color: var(--text);
+}
+
+html.light .author-description,
+html.light .blog-meta {
+  color: var(--muted);
+}
+
+html.light .author-social a {
+  background: var(--panel-2);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+html.light .author-social a:hover,
+html.light .author-social a:focus-visible {
+  background: var(--mint);
+  color: #051e14;
+}

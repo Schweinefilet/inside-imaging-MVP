@@ -141,3 +141,51 @@
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .payment-card {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .payment-card h2,
+html.light .payment-card h3 {
+  color: var(--mint);
+}
+
+html.light .payment-card p {
+  color: rgba(10, 30, 28, 0.75);
+}
+
+html.light .payment-form label {
+  color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .payment-form input,
+html.light .payment-form select {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--border);
+  color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .payment-form select option {
+  background: #ffffff;
+  color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .primary-btn {
+  background: var(--mint);
+  color: #051e14;
+}
+
+html.light .primary-btn:hover {
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
+}
+
+html.light .secure-note {
+  color: rgba(10, 30, 28, 0.68);
+}

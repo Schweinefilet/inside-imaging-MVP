@@ -83,13 +83,18 @@
       {% if magazine_url %}
       <section class="magazine-frame" aria-label="Magazine PDF viewer">
         <div id="magazine-loader" class="magazine-loader" role="status" aria-live="polite">
-          <div class="loader-one">
-            <div class="loader-orb"></div>
-            <div class="loader-tail"></div>
-            <span class="loader-copy">Loading magazine…</span>
+          <div class="loader-card">
+            <div class="loader-five-container">
+              <div class="loader-ring loader-ring-1"></div>
+              <div class="loader-ring loader-ring-2"></div>
+              <div class="loader-ring loader-ring-3"></div>
+              <div class="loader-core"></div>
+            </div>
+            <p class="loader-text">Loading Magazine</p>
+            <p class="loader-sub">Please wait while the PDF loads…</p>
           </div>
         </div>
-        <iframe src="{{ magazine_url }}#toolbar=0" title="Inside Imaging Magazine PDF"></iframe>
+        <iframe id="magazine-iframe" src="{{ magazine_url }}" title="Inside Imaging Magazine PDF"></iframe>
       </section>
       {% else %}
       <section class="magazine-placeholder">
@@ -126,8 +131,33 @@
     var loader = document.getElementById('magazine-loader');
     if (!frame || !loader) return;
     loader.classList.add('is-active');
-    var hide = function(){ loader.classList.remove('is-active'); loader.classList.add('is-hidden'); };
+    
+    // Use a longer timeout as fallback in case load event doesn't fire
+    var timeoutId = setTimeout(function() {
+      loader.classList.remove('is-active');
+      loader.classList.add('is-hidden');
+    }, 30000); // 30 seconds timeout
+    
+    var hide = function() {
+      clearTimeout(timeoutId);
+      // Add a longer delay to ensure PDF is fully rendered and visible
+      setTimeout(function() {
+        loader.classList.remove('is-active');
+        loader.classList.add('is-hidden');
+      }, 3000); // 3 second delay after iframe load
+    };
+    
     frame.addEventListener('load', hide, { once: true });
+    
+    // Handle page hash navigation for blog post links
+    if (window.location.hash && window.location.hash.includes('page=')) {
+      var hash = window.location.hash;
+      var currentSrc = frame.src;
+      // Remove any existing hash from the iframe src
+      var baseUrl = currentSrc.split('#')[0];
+      // Add the page navigation hash
+      frame.src = baseUrl + hash;
+    }
   })();
   </script>
 </body>

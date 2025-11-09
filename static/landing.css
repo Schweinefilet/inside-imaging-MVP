@@ -114,3 +114,49 @@
     padding: 2rem 1.5rem;
   }
 }
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .landing-overlay {
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(62, 230, 176, 0.15), rgba(240, 245, 248, 0.95) 60%);
+  backdrop-filter: blur(18px) saturate(110%);
+}
+
+html.light .landing-inner {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(62, 230, 176, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+html.light .landing-heading span {
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), #10b981 0%, rgba(16, 185, 129, 0.85) 35%, rgba(10, 30, 28, 0.25) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+html.light .landing-heading span::after {
+  color: rgba(10, 30, 28, 0.08);
+}
+
+html.light .landing-heading span:hover,
+html.light .landing-heading span:focus-visible {
+  filter: drop-shadow(0 12px 20px rgba(16, 185, 129, 0.35));
+}
+
+html.light .landing-tagline {
+  color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .landing-continue {
+  background: var(--mint);
+  color: #051e14;
+  border-color: color-mix(in oklab, var(--mint) 35%, rgba(0, 0, 0, 0.15));
+}
+
+html.light .landing-continue:hover,
+html.light .landing-continue:focus-visible {
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+}

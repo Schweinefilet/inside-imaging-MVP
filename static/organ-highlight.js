@@ -32,19 +32,19 @@
   const CONDITION_EXAMPLES = {
     'kidney stone': {
       keywords: ['kidney stone', 'renal stone', 'nephrolithiasis', 'calculus', 'calculi', 'renal calculi'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/59301253/f5caccae4af9f6c9f75c7d1dbbdc6abfb2d308d56faa33ce9af13a7e1dbc5b72_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/24804/1af425ddaf16fa001b5d129ec2ecbb_big_gallery.jpeg',
       altText: 'Example CT scan showing kidney stones',
       description: 'Kidney stones appear as bright white spots on CT scans due to calcium content'
     },
     'pleural effusion': {
       keywords: ['pleural effusion', 'fluid in lung', 'pleural fluid', 'effusion'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/9311839/5543fd9154ecf50925321a526aa76b_gallery.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/53183623/f69b9ba15aa08e02024c4dc168ab80aa0dfc09c8bde1662cd7ce62d13c7b016d_big_gallery.jpeg',
       altText: 'Example chest X-ray showing pleural effusion',
       description: 'Pleural effusion shows as fluid collection blunting the costophrenic angle'
     },
     'pneumonia': {
       keywords: ['pneumonia', 'consolidation', 'infiltrate', 'opacity', 'lung infection'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/16083661/b09bd71a17869e29d323815834d3c3_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/8151527/95a07767cebe3da2923819c650a539_big_gallery.jpg',
       altText: 'Example chest X-ray showing pneumonia',
       description: 'Pneumonia appears as cloudy white areas (consolidation) in the affected lung'
     },
@@ -56,7 +56,7 @@
     },
     'enlarged heart': {
       keywords: ['cardiomegaly', 'enlarged heart', 'heart enlargement', 'cardiac enlargement'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/00/Cardiac_Silhouette_Enlarged_-_Annotated.png',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/604505/8d2027dc816cf6bea4ced88ff487cbef1636da2890b7c558846da148431559c9_big_gallery.jpeg',
       altText: 'Example chest X-ray showing enlarged heart',
       description: 'Enlarged heart appears with cardiothoracic ratio greater than 50% on PA chest X-ray'
     },
@@ -68,55 +68,55 @@
     },
     'stroke': {
       keywords: ['stroke', 'infarct', 'ischemic', 'cva', 'cerebrovascular accident'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Ischemic_stroke.png',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/139045/ac57c1be30d13d1c89b8b65d693a03_big_gallery.jpg',
       altText: 'Example CT showing ischemic stroke',
       description: 'Ischemic stroke appears as dark areas representing dead brain tissue'
     },
     'brain hemorrhage': {
       keywords: ['hemorrhage', 'bleed', 'bleeding', 'intracranial hemorrhage', 'ich', 'subdural', 'epidural'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Intracerebral_Haemorrhage.png',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/66455109/8de8e96b667f7f07b0c4e488ea78d219d613270c0b95e7f614e1370af9d9f37f_big_gallery.jpeg',
       altText: 'Example CT showing brain hemorrhage',
       description: 'Brain hemorrhage appears as bright white areas on CT scan'
     },
     'pulmonary edema': {
       keywords: ['pulmonary edema', 'lung edema', 'fluid in lungs', 'pulmonary congestion'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/63311274/329be60fa585f8f03463894db4e9bbde14e0701cc5d157b48e55d4c4cf32032e_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/1429771/ef3a23eddf31faee980a4011d9d5ee_big_gallery.jpg',
       altText: 'Example chest X-ray showing pulmonary edema',
       description: 'Pulmonary edema appears as bat-wing pattern or widespread bilateral infiltrates'
     },
     'liver cyst': {
       keywords: ['liver cyst', 'hepatic cyst', 'cyst in liver'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Simple_liver_cyst.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/1263816/32122190a29e1efb176daf65a21848_gallery.jpg',
       altText: 'Example ultrasound showing liver cyst',
       description: 'Liver cysts appear as dark, round, well-defined fluid-filled structures'
     },
     'appendicitis': {
       keywords: ['appendicitis', 'inflamed appendix', 'appendix'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Acute_Appendicitis_CT.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/42276667/2c041670eb0bc608fcfa35194f721c_gallery.jpeg',
       altText: 'Example CT showing appendicitis',
       description: 'Appendicitis shows as enlarged, thickened appendix with surrounding inflammation'
     },
     'pulmonary embolism': {
       keywords: ['pulmonary embolism', 'pe', 'blood clot', 'clot in lung', 'embolus'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/381452/0d55caa677924ebe41504cea1a2d9c_gallery.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/59632221/419fb0cc39742cfe12fdfc53c07b5f9a2c2011d379ec576401f59942ed7f7d34_big_gallery.jpeg',
       altText: 'Example CT angiogram showing pulmonary embolism',
       description: 'Pulmonary embolism appears as dark filling defect in contrast-filled pulmonary artery'
     },
     'aortic aneurysm': {
       keywords: ['aneurysm', 'aortic aneurysm', 'dilated aorta', 'aaa', 'abdominal aortic aneurysm'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/10/Aortic_aneurysm_CT.png',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/537896/193227405d7bc7093cf287f4045b25_big_gallery.jpg',
       altText: 'Example CT showing aortic aneurysm',
       description: 'Aortic aneurysm appears as abnormal widening of the aorta (>3cm diameter)'
     },
     'pneumothorax': {
       keywords: ['pneumothorax', 'collapsed lung', 'air in pleural space'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/61783637/07cb5022fb294273623aa52270294f1f302265a23be328a8f01fe43b46b8e035_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/25371812/245d5e88c4b42c42b62ba9b703c4cc_big_gallery.jpeg',
       altText: 'Example chest X-ray showing pneumothorax',
       description: 'Pneumothorax appears as dark air space between lung and chest wall with visible lung edge'
     },
     'gallstones': {
       keywords: ['gallstone', 'cholelithiasis', 'gallbladder stone'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Gallstones_ultrasound.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/34413824/downloaded_image20240312-12155-5m90dh_gallery.jpeg',
       altText: 'Example ultrasound showing gallstones',
       description: 'Gallstones appear as bright echogenic foci with posterior acoustic shadowing on ultrasound'
     },
@@ -128,7 +128,7 @@
     },
     'herniated disc': {
       keywords: ['herniated disc', 'disc herniation', 'bulging disc', 'slipped disc', 'prolapsed disc'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Lumbar_disc_herniation.png',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/12738056/076a23012e343a4b8e7452e3dc0b0a_big_gallery.jpg',
       altText: 'Example MRI showing herniated disc',
       description: 'Herniated disc appears as disc material protruding beyond normal vertebral boundaries'
     },
@@ -140,43 +140,43 @@
     },
     'lymphoma': {
       keywords: ['lymphoma', 'lymph node', 'lymphadenopathy', 'enlarged lymph nodes'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/59/Lymphoma_CT.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/22328/964f22cc285ef868d5d5cf2ebedf05_big_gallery.jpeg',
       altText: 'Example CT showing lymphadenopathy',
       description: 'Lymphoma shows as enlarged lymph nodes (>1cm) in multiple regions'
     },
     'osteoarthritis': {
       keywords: ['osteoarthritis', 'arthritis', 'degenerative', 'joint space narrowing', 'osteophyte'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d8/Heberden-Arthrose.JPG',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/135647/2eeee0a3ef1b6191d8a0684218e676_big_gallery.jpg',
       altText: 'Example X-ray showing osteoarthritis',
       description: 'Osteoarthritis shows joint space narrowing, bone spurs (osteophytes), and sclerosis'
     },
     'pneumoperitoneum': {
       keywords: ['pneumoperitoneum', 'free air', 'air under diaphragm', 'perforated'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Pneumoperitoneum.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/15094/cc00ef2b1cc452c017c18fe6821135_big_gallery.jpeg',
       altText: 'Example X-ray showing pneumoperitoneum',
       description: 'Free air appears as dark crescents under the diaphragm indicating perforation'
     },
     'hydronephrosis': {
       keywords: ['hydronephrosis', 'kidney swelling', 'dilated kidney', 'renal pelvis dilation'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/60234230/d97da8b6a6e4890bf3d391c687459a555f55e28ccd873cfd5fca9b96819520ca_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/24875/adf9769a7bd13f6b9b89dc56dd86fb_big_gallery.jpeg',
       altText: 'Example ultrasound showing hydronephrosis',
       description: 'Hydronephrosis shows enlarged kidney with dilated collecting system'
     },
     'cirrhosis': {
       keywords: ['cirrhosis', 'liver disease', 'hepatic fibrosis', 'nodular liver'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Hepatic_cirrhosis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/53923517/110064_big_gallery.jpeg',
       altText: 'Example CT showing cirrhosis',
       description: 'Cirrhosis shows nodular liver surface with altered texture and portal hypertension'
     },
     'pancreatitis': {
       keywords: ['pancreatitis', 'inflamed pancreas', 'pancreatic inflammation'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Acute_pancreatitis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/595477/d63c92095afee076778b1fce6e79d6_big_gallery.jpeg',
       altText: 'Example CT showing pancreatitis',
       description: 'Pancreatitis shows enlarged, edematous pancreas with surrounding inflammation'
     },
     'bowel obstruction': {
       keywords: ['bowel obstruction', 'intestinal obstruction', 'blocked bowel', 'ileus'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Small_bowel_obstruction.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/11381359/162fb46ddb2b9f97b0a8d5f1ee7272_big_gallery.jpg',
       altText: 'Example X-ray showing bowel obstruction',
       description: 'Bowel obstruction shows dilated loops of bowel with air-fluid levels'
     },
@@ -188,7 +188,7 @@
     },
     'thyroid nodule': {
       keywords: ['thyroid nodule', 'thyroid mass', 'thyroid lesion'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/80/Thyroid_nodule_ultrasound.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/32476945/bdbdd89b0b0e501d7c17e8d9f1a3f5_big_gallery.jpeg',
       altText: 'Example ultrasound showing thyroid nodule',
       description: 'Thyroid nodules appear as discrete masses within thyroid gland'
     },
@@ -200,19 +200,19 @@
     },
     'atelectasis': {
       keywords: ['atelectasis', 'collapsed lung', 'lung collapse', 'partial collapse'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/56735386/52._gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/583698/5383b773b0b3ca2ecdf35ee1f26e5a_big_gallery.jpg',
       altText: 'Example chest X-ray showing atelectasis',
       description: 'Atelectasis appears as increased density with volume loss'
     },
     'emphysema': {
       keywords: ['emphysema', 'copd', 'hyperinflation', 'bullae'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/53189751/7ea55043e9f3608e2d6536b3559f1a_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/382212/b9da26743a93f34c519f00aeb23578_gallery.jpg',
       altText: 'Example CT showing emphysema',
       description: 'Emphysema shows destruction of alveoli with hyperinflation and bullae'
     },
     'pulmonary fibrosis': {
       keywords: ['pulmonary fibrosis', 'interstitial lung disease', 'lung scarring', 'fibrosis'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/61456912/95e9efea725b5097238a684057fdd26d97978500072e27ac58432b5abb1f2d75_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/5353775/9bc8f92541d77c5b49145260f43763_gallery.jpg',
       altText: 'Example CT showing pulmonary fibrosis',
       description: 'Pulmonary fibrosis shows reticular pattern with honeycombing'
     },
@@ -224,19 +224,19 @@
     },
     'orbital fracture': {
       keywords: ['orbital fracture', 'eye socket fracture', 'blowout fracture'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Orbital_fracture.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/54243544/coronal_soft.Seq302.Ser0.Img41_big_gallery.jpeg',
       altText: 'Example CT showing orbital fracture',
       description: 'Orbital fracture shows bone disruption with possible herniation of orbital contents'
     },
     'aortic dissection': {
       keywords: ['aortic dissection', 'dissection', 'aortic tear'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Aortic_dissection.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/587/6fd2c5081df13d6ae300b54a20e783_big_gallery.jpeg',
       altText: 'Example CT showing aortic dissection',
       description: 'Aortic dissection shows intimal flap separating true and false lumens'
     },
     'pericardial effusion': {
       keywords: ['pericardial effusion', 'fluid around heart', 'pericardial fluid'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d9/Pericardial_effusion.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/60518382/bf87561b6d5787b810f49d382dea62b387412d66c3fc608fc0c81b9ac8d8c132_big_gallery.jpeg',
       altText: 'Example echo showing pericardial effusion',
       description: 'Pericardial effusion shows dark fluid collection surrounding heart'
     },
@@ -248,7 +248,7 @@
     },
     'ascites': {
       keywords: ['ascites', 'abdominal fluid', 'peritoneal fluid', 'fluid in abdomen'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Ascites.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/6954392/80b3fa11537b86a9df167e76d4c044_big_gallery.jpg',
       altText: 'Example CT showing ascites',
       description: 'Ascites appears as dark fluid collection in peritoneal cavity'
     },
@@ -260,13 +260,13 @@
     },
     'scoliosis': {
       keywords: ['scoliosis', 'spinal curvature', 'curved spine'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d8/Scoliosis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/17198/d6a5a89c7a0d95b2092dbd174516d6_big_gallery.jpeg',
       altText: 'Example X-ray showing scoliosis',
       description: 'Scoliosis shows lateral curvature of spine with vertebral rotation'
     },
     'osteomyelitis': {
       keywords: ['osteomyelitis', 'bone infection', 'infected bone'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/af/Osteomyelitis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/16522/8ada203fa69e9f76dfa3b06fc52f7fdd2222b0946e812010001c7c0541dd2d49_big_gallery.jpeg',
       altText: 'Example X-ray showing osteomyelitis',
       description: 'Osteomyelitis shows bone destruction with periosteal reaction'
     },
@@ -284,13 +284,13 @@
     },
     'diverticulitis': {
       keywords: ['diverticulitis', 'diverticular disease', 'inflamed diverticulum'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Diverticulitis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/3582613/0df66543ffb697ca0c38555ca5ae01_gallery.jpg',
       altText: 'Example CT showing diverticulitis',
       description: 'Diverticulitis shows thickened bowel wall with inflamed diverticula'
     },
     'inguinal hernia': {
       keywords: ['hernia', 'inguinal hernia', 'ventral hernia', 'umbilical hernia'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Inguinal_hernia.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/627161/f18e48456ba83cb291a10efffcccce_big_gallery.jpg',
       altText: 'Example CT showing inguinal hernia',
       description: 'Hernia shows bowel or fat protruding through abdominal wall defect'
     },
@@ -302,31 +302,31 @@
     },
     'subdural hematoma': {
       keywords: ['subdural hematoma', 'subdural', 'sdh'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Subdural_hematoma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/2917407/76f8efa0129f2bbee07534be6dac09_gallery.jpg',
       altText: 'Example CT showing subdural hematoma',
       description: 'Subdural hematoma appears as crescentic blood collection'
     },
     'epidural hematoma': {
       keywords: ['epidural hematoma', 'epidural', 'edh'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Epidural_hematoma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/2917400/c1f043792d0a4b4e2511aa75f36113_gallery.jpg',
       altText: 'Example CT showing epidural hematoma',
       description: 'Epidural hematoma appears as biconvex lens-shaped blood collection'
     },
     'subarachnoid hemorrhage': {
       keywords: ['subarachnoid hemorrhage', 'subarachnoid', 'sah'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/99/Subarachnoid_hemorrhage.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/30462007/f9b3048bebfeeb37c713a1db06a5ae_big_gallery.jpeg',
       altText: 'Example CT showing subarachnoid hemorrhage',
       description: 'Subarachnoid hemorrhage shows blood in sulci and cisterns'
     },
     'hydrocephalus': {
       keywords: ['hydrocephalus', 'enlarged ventricles', 'ventriculomegaly'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Hydrocephalus.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/8860052/2af75d166a92e01da2e2703ad565f3_big_gallery.jpeg',
       altText: 'Example CT showing hydrocephalus',
       description: 'Hydrocephalus shows abnormally enlarged cerebral ventricles'
     },
     'multiple sclerosis': {
       keywords: ['multiple sclerosis', 'ms', 'demyelination', 'white matter lesions'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/37/Multiple_sclerosis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/798/7a111ecd3bebcb930ce9f60ed18840_big_gallery.jpeg',
       altText: 'Example MRI showing multiple sclerosis',
       description: 'MS shows multiple white matter plaques on MRI'
     },
@@ -338,37 +338,37 @@
     },
     'rotator cuff tear': {
       keywords: ['rotator cuff tear', 'shoulder tear', 'cuff tear'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Rotator_cuff_tear_MRI.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/1181097/cf6188085df7990d397028a30ba5cd_big_gallery.jpg',
       altText: 'Example MRI showing rotator cuff tear',
       description: 'Rotator cuff tear shows discontinuity of tendon with fluid signal'
     },
     'meniscal tear': {
       keywords: ['meniscal tear', 'meniscus tear', 'knee tear'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c9/Meniscal_tear.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/52121909/b7689ccd662e817b60eeef6b577677_big_gallery.jpeg',
       altText: 'Example MRI showing meniscal tear',
       description: 'Meniscal tear shows irregular signal within meniscus'
     },
     'acl tear': {
       keywords: ['acl tear', 'anterior cruciate ligament', 'ligament tear'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f1/ACL_tear.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/590017/994f72bdb3c7c58a22fe52b41b8b5acfeac621ca2572799b785e91bcb688525e_big_gallery.jpeg',
       altText: 'Example MRI showing ACL tear',
       description: 'ACL tear shows discontinuity or absence of anterior cruciate ligament'
     },
     'achilles tendon rupture': {
       keywords: ['achilles rupture', 'achilles tear', 'tendon rupture'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Achilles_tendon_rupture.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/858/953975b108f02b51c197fa55814120_gallery.jpeg',
       altText: 'Example MRI showing Achilles rupture',
       description: 'Achilles rupture shows gap in tendon with surrounding fluid'
     },
     'hip fracture': {
       keywords: ['hip fracture', 'femoral neck fracture', 'intertrochanteric fracture'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Hip_fracture.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/57897095/0._big_gallery.jpeg',
       altText: 'Example X-ray showing hip fracture',
       description: 'Hip fracture shows break in femoral neck or intertrochanteric region'
     },
     'scaphoid fracture': {
       keywords: ['scaphoid fracture', 'wrist fracture', 'navicular fracture'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/39/Scaphoid_fracture.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/61880398/d3ce2589f8bb0a510c49a0a9c59c329bf235d16ed5203254169f45135ba36fb7_big_gallery.jpeg',
       altText: 'Example X-ray showing scaphoid fracture',
       description: 'Scaphoid fracture shows break through waist of scaphoid bone'
     },
@@ -380,49 +380,49 @@
     },
     'rib fracture': {
       keywords: ['rib fracture', 'broken rib', 'rib break'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Rib_fracture.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/7866511/8742c6e7b8e74dbc77a2e307ae9255_big_gallery.jpg',
       altText: 'Example X-ray showing rib fracture',
       description: 'Rib fracture shows disruption of rib cortex with displacement'
     },
     'clavicle fracture': {
       keywords: ['clavicle fracture', 'broken collarbone', 'collar bone fracture'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Clavicle_fracture.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/27227555/1704e1789edd0dfd3160b36baf9b796907d2f07c548bdd531bb9a42bd0f80a35_big_gallery.jpeg',
       altText: 'Example X-ray showing clavicle fracture',
       description: 'Clavicle fracture typically occurs at middle third with displacement'
     },
     'fatty liver': {
       keywords: ['fatty liver', 'hepatic steatosis', 'steatosis'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Fatty_liver.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/29860/3668259b9776a8e4c04917f6d9170a_gallery.jpg',
       altText: 'Example ultrasound showing fatty liver',
       description: 'Fatty liver shows increased echogenicity with poor visualization of vessels'
     },
     'hepatomegaly': {
       keywords: ['hepatomegaly', 'enlarged liver', 'liver enlargement'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Hepatomegaly.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/25420/f4ad43586abb20167ec3ac23438ee0_big_gallery.jpeg',
       altText: 'Example CT showing hepatomegaly',
       description: 'Hepatomegaly shows liver extending below costal margin'
     },
     'splenomegaly': {
       keywords: ['splenomegaly', 'enlarged spleen', 'spleen enlargement'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Splenomegaly.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/53415844/splenomegaly9201136_big_gallery.jpeg',
       altText: 'Example CT showing splenomegaly',
       description: 'Splenomegaly shows enlarged spleen extending beyond normal size'
     },
     'portal vein thrombosis': {
       keywords: ['portal vein thrombosis', 'portal vein clot', 'pvt'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Portal_vein_thrombosis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/31196/f029a368a913d90cdefdaf67c2f108_big_gallery.jpg',
       altText: 'Example CT showing portal vein thrombosis',
       description: 'Portal vein thrombosis shows filling defect within portal vein'
     },
     'carotid stenosis': {
       keywords: ['carotid stenosis', 'carotid narrowing', 'carotid plaque'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Carotid_stenosis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/8807248/906b36856e433c3a2b3985b0bd00e2_big_gallery.jpg',
       altText: 'Example ultrasound showing carotid stenosis',
       description: 'Carotid stenosis shows narrowing of carotid artery with plaque'
     },
     'deep vein thrombosis': {
       keywords: ['deep vein thrombosis', 'dvt', 'leg clot', 'venous thrombosis'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Deep_vein_thrombosis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/381423/33e6681df31b4d19e8cac6216155a1_big_gallery.jpg',
       altText: 'Example ultrasound showing DVT',
       description: 'DVT shows non-compressible vein with echogenic thrombus'
     },
@@ -440,49 +440,49 @@
     },
     'prostate enlargement': {
       keywords: ['prostate enlargement', 'bph', 'benign prostatic hyperplasia', 'enlarged prostate'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/58/BPH.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/420/dabb9954c6d02165278318fa035410_big_gallery.jpeg',
       altText: 'Example ultrasound showing enlarged prostate',
       description: 'BPH shows enlarged prostate gland compressing urethra'
     },
     'testicular torsion': {
       keywords: ['testicular torsion', 'twisted testicle', 'torsion'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2e/Testicular_torsion.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/552240/0b56088cf1469bbb08f03ed87cc868_big_gallery.jpeg',
       altText: 'Example ultrasound showing testicular torsion',
       description: 'Testicular torsion shows absent or decreased blood flow to testicle'
     },
     'nephrolithiasis': {
       keywords: ['nephrolithiasis', 'urolithiasis', 'urinary stones'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/71386166/28b27ec10acaef64c1ed3b109ea0b20020386ec4c34edb4697de4ee31bbbce7f_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/24804/1af425ddaf16fa001b5d129ec2ecbb_big_gallery.jpeg',
       altText: 'Example CT showing kidney stones',
       description: 'Kidney stones appear as high-density calcifications in collecting system'
     },
     'bladder stone': {
       keywords: ['bladder stone', 'vesical calculus', 'bladder calculi'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/4139133/544fcc2b88b5764197222d539735b8cb03e9b550eebc25e6f26b7389de68e77a_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/55534935/Bladder_stones_big_gallery.jpeg',
       altText: 'Example X-ray showing bladder stone',
       description: 'Bladder stones appear as dense calcifications in bladder'
     },
     'urinary tract infection': {
       keywords: ['pyelonephritis', 'kidney infection', 'renal infection'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/48/Pyelonephritis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/480170/7e950becf5fae9067a38a5be46e065_big_gallery.jpg',
       altText: 'Example CT showing pyelonephritis',
       description: 'Pyelonephritis shows striated nephrogram with delayed enhancement'
     },
     'renal cyst': {
       keywords: ['renal cyst', 'kidney cyst', 'simple cyst'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/64183829/4de181db59f1bacf051073d49ac586beb298dc6b75e989bc5e3d317789767158_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/5816521/b3f4ff14786b8d73dea3df62d395ca_big_gallery.jpg',
       altText: 'Example CT showing renal cyst',
       description: 'Renal cysts appear as well-defined low-density fluid collections'
     },
     'polycystic kidney': {
       keywords: ['polycystic kidney', 'pkd', 'multiple kidney cysts'],
-      imageUrl: 'https://prod-images-static.radiopaedia.org/images/60982350/3680f084de11ad02573aca2aa3abb9d5c0ffea63deb496d92d207fb64f60897d_gallery.jpeg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/25248/d786b88a87abee8b2664bacd5807cd_big_gallery.jpeg',
       altText: 'Example CT showing polycystic kidney disease',
       description: 'Polycystic kidneys show bilateral enlarged kidneys with multiple cysts'
     },
     'adrenal adenoma': {
       keywords: ['adrenal adenoma', 'adrenal mass', 'adrenal nodule'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Adrenal_adenoma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/53636477/s10_big_gallery.jpeg',
       altText: 'Example CT showing adrenal adenoma',
       description: 'Adrenal adenoma appears as well-circumscribed low-density mass'
     },
@@ -494,49 +494,49 @@
     },
     'thyroid goiter': {
       keywords: ['goiter', 'enlarged thyroid', 'thyroid enlargement'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Goiter.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/9149495/986d3656d7ca59a267fe0843dbbffd_gallery.jpeg',
       altText: 'Example ultrasound showing thyroid goiter',
       description: 'Goiter shows diffusely or nodularly enlarged thyroid gland'
     },
     'parathyroid adenoma': {
       keywords: ['parathyroid adenoma', 'parathyroid mass'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c9/Parathyroid_adenoma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/1706437/b8ebcac7467e63627fe50c1aca4590_big_gallery.jpg',
       altText: 'Example ultrasound showing parathyroid adenoma',
       description: 'Parathyroid adenoma appears as hypoechoic mass behind thyroid'
     },
     'cushing syndrome': {
       keywords: ['cushing', 'pituitary adenoma', 'sellar mass'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Pituitary_adenoma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/2838459/64fb6151f2ce05f6c5b70723df7599_big_gallery.jpg',
       altText: 'Example MRI showing pituitary adenoma',
       description: 'Pituitary adenoma shows enhancing sellar or suprasellar mass'
     },
     'acoustic neuroma': {
       keywords: ['acoustic neuroma', 'vestibular schwannoma', 'cerebellopontine angle mass'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f5/Acoustic_neuroma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/25854460/d5062bf8ea01f356463b88cb48b569_big_gallery.jpeg',
       altText: 'Example MRI showing acoustic neuroma',
       description: 'Acoustic neuroma shows enhancing mass in internal auditory canal'
     },
     'chiari malformation': {
       keywords: ['chiari malformation', 'cerebellar tonsillar herniation'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Chiari_malformation.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/59112961/1965cae05b02670fc62f9eec8ba4994d12d1ce0d50907b1256645ebc748cc3cb_gallery.jpeg',
       altText: 'Example MRI showing Chiari malformation',
       description: 'Chiari malformation shows cerebellar tonsils extending below foramen magnum'
     },
     'syringomyelia': {
       keywords: ['syringomyelia', 'syrinx', 'spinal cord cyst'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/Syringomyelia.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/1159985/7bc83e67867be3fa1cd5e28c5ee1f5_big_gallery.jpg',
       altText: 'Example MRI showing syringomyelia',
       description: 'Syringomyelia shows fluid-filled cavity within spinal cord'
     },
     'spondylolisthesis': {
       keywords: ['spondylolisthesis', 'vertebral slip', 'slipped vertebra'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Spondylolisthesis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/4092009/8ddb0422f1b694c63891f9deda56aa_big_gallery.jpg',
       altText: 'Example X-ray showing spondylolisthesis',
       description: 'Spondylolisthesis shows forward displacement of vertebra'
     },
     'ankylosing spondylitis': {
       keywords: ['ankylosing spondylitis', 'bamboo spine', 'fused spine'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Ankylosing_spondylitis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/53731976/AS_gallery.jpeg',
       altText: 'Example X-ray showing ankylosing spondylitis',
       description: 'Ankylosing spondylitis shows vertebral fusion with syndesmophytes'
     },
@@ -566,49 +566,49 @@
     },
     'ulcerative colitis': {
       keywords: ['ulcerative colitis', 'uc', 'colitis'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/be/Ulcerative_colitis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/24800/eef03b2d007a2e191bcb3e514dfcfa_big_gallery.jpeg',
       altText: 'Example CT showing ulcerative colitis',
       description: 'Ulcerative colitis shows continuous colonic wall thickening'
     },
     'intussusception': {
       keywords: ['intussusception', 'telescoped bowel'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/17/Intussusception.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/55801502/Stool_big_gallery.jpeg',
       altText: 'Example CT showing intussusception',
       description: 'Intussusception shows target sign with bowel within bowel'
     },
     'volvulus': {
       keywords: ['volvulus', 'twisted bowel', 'sigmoid volvulus'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/46/Sigmoid_volvulus.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/22763/0312cc34edf2c38859b96c86aca03f_big_gallery.jpeg',
       altText: 'Example X-ray showing volvulus',
       description: 'Volvulus shows dilated twisted bowel loop with bird beak sign'
     },
     'mesenteric ischemia': {
       keywords: ['mesenteric ischemia', 'bowel ischemia', 'dead bowel'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/85/Mesenteric_ischemia.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/29886933/30cd3c2439375d1f5c3e753f4faea7bfa7659803a33f477f48736f70ab58cac7_big_gallery.jpeg',
       altText: 'Example CT showing mesenteric ischemia',
       description: 'Mesenteric ischemia shows bowel wall thickening with pneumatosis'
     },
     'pneumatosis intestinalis': {
       keywords: ['pneumatosis', 'air in bowel wall', 'intramural air'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/22/Pneumatosis_intestinalis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/545624/0459ff57d70fb62f5317efc59e84c7_big_gallery.jpg',
       altText: 'Example CT showing pneumatosis intestinalis',
       description: 'Pneumatosis shows air within bowel wall appearing as linear lucencies'
     },
     'cholecystitis': {
       keywords: ['cholecystitis', 'gallbladder inflammation', 'inflamed gallbladder'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/ed/Cholecystitis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/563856/a61a99793f19cdb0f19d515a8466fd_big_gallery.jpg',
       altText: 'Example ultrasound showing cholecystitis',
       description: 'Cholecystitis shows thickened gallbladder wall with pericholecystic fluid'
     },
     'pancreatic cancer': {
       keywords: ['pancreatic cancer', 'pancreatic mass', 'pancreatic tumor'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/31/Pancreatic_cancer.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/54008125/110173_big_gallery.jpeg',
       altText: 'Example CT showing pancreatic cancer',
       description: 'Pancreatic cancer shows hypoenhancing mass with vascular involvement'
     },
     'choledocholithiasis': {
       keywords: ['choledocholithiasis', 'bile duct stone', 'cbd stone'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Choledocholithiasis.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/597090/fb776fad141c861541f0702defcdde_big_gallery.jpg',
       altText: 'Example MRCP showing bile duct stone',
       description: 'Bile duct stone shows filling defect in common bile duct with dilation'
     },
@@ -620,13 +620,13 @@
     },
     'hepatocellular carcinoma': {
       keywords: ['hepatocellular carcinoma', 'hcc', 'liver cancer'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Hepatocellular_carcinoma.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/29041/a2f908f1245a8c86819f56633bc772_big_gallery.jpg',
       altText: 'Example CT showing hepatocellular carcinoma',
       description: 'HCC shows arterial enhancement with washout in portal venous phase'
     },
     'portal hypertension': {
       keywords: ['portal hypertension', 'varices', 'esophageal varices'],
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Portal_hypertension.jpg',
+      imageUrl: 'https://prod-images-static.radiopaedia.org/images/29588/729aca4f2417d8cfb9e13f9d6cd50b_big_gallery.jpg',
       altText: 'Example CT showing portal hypertension',
       description: 'Portal hypertension shows enlarged portal vein with collateral vessels'
     },

@@ -346,63 +346,57 @@ def fetch(session, url: str, warm: bool = True):
 
 # ------------------------ extraction logic ------------------------
 
+
 def collect_case_caption_images(html: str, limit: int, session) -> list:
     """
     From an article HTML:
-      - find anchors to /cases/ where nearby text includes “Case”
-      - follow each case page and collect many prod-images
+      - extract prod-images URLs directly from the page using regex
+      - optionally follow case links for additional images
     """
-    soup = BeautifulSoup(html, "html.parser")
     out = []
 
-    # 1) gather case links from article cards with "Case" in caption
-    case_links = []
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        if "/cases/" not in href:
-            continue
-        captions = [
-            text_safe(a),
-            text_safe(a.find_next_sibling()),
-            text_safe(a.find_previous_sibling()),
-            text_safe(a.parent),
-        ]
-        if any(has_case_word(t) for t in captions):
-            # absolutize
-            url = href if href.startswith("http") else (BASE + href)
-            if url not in case_links:
-                case_links.append(url)
+    # 1) Extract prod-images URLs directly from HTML using regex
+    prod_pattern = r'https://prod-images-static\.radiopaedia\.org/images/[^\s"\'<>]+'
+    found = re.findall(prod_pattern, html)
+    for u in found:
+        # Prefer _big_gallery versions for better quality
+        if '_big_gallery' in u or '_gallery' in u:
+            push_img(out, u)
+            if len(out) >= limit:
+                return out[:limit]
+    
+    # Add any remaining non-gallery images if we still need more
+    for u in found:
+        push_img(out, u)
+        if len(out) >= limit:
+            return out[:limit]
+    
+    # 2) If we still need more images, follow case links
+    if len(out) < limit:
+        soup = BeautifulSoup(html, "html.parser")
+        case_links = []
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if "/cases/" in href:
+                url = href if href.startswith("http") else (BASE + href)
+                if url not in case_links:
+                    case_links.append(url)
+                if len(case_links) >= 5:  # Limit case page visits
+                    break
 
-    # 2) visit each case link and scrape images
-    for url in case_links:
-        r = fetch(session, url)
-        if r and r.status_code == 200:
-            s2 = BeautifulSoup(r.text, "html.parser")
-
-            # meta image(s) first
-            for prop in ("og:image", "og:image:secure_url", "twitter:image"):
-                m = s2.find("meta", {"property": prop}) or s2.find("meta", {"name": prop})
-                if m and m.get("content"):
-                    push_img(out, m["content"])
+        # Visit each case link and scrape images
+        for url in case_links:
+            r = fetch(session, url, warm=False)
+            if r and r.status_code == 200:
+                case_imgs = re.findall(prod_pattern, r.text)
+                for u in case_imgs:
+                    push_img(out, u)
                     if len(out) >= limit:
                         return out[:limit]
-
-            # all <img> candidates
-            for img in s2.find_all("img"):
-                for attr in ("src", "data-src", "data-large", "data-original", "data-image"):
-                    push_img(out, img.get(attr))
-                srcset = img.get("srcset")
-                if srcset:
-                    for part in srcset.split(","):
-                        push_img(out, part.strip().split(" ")[0])
-                if len(out) >= limit:
-                    return out[:limit]
-
-        if len(out) >= limit:
-            break
+            if len(out) >= limit:
+                break
 
     return out[:limit]
-
 
 def try_articles(session, slugs, max_images):
     for slug in slugs:

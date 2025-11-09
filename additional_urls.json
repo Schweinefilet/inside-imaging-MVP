@@ -1,0 +1,54 @@
+{
+  "Appendicitis": {
+    "url": "https://radiopaedia.org/articles/acute-appendicitis",
+    "image": "https://prod-images-static.radiopaedia.org/images/42276667/2c041670eb0bc608fcfa35194f721c_gallery.jpeg"
+  },
+  "Emphysema": {
+    "url": "https://radiopaedia.org/articles/emphysema",
+    "image": "https://prod-images-static.radiopaedia.org/images/382212/b9da26743a93f34c519f00aeb23578_gallery.jpg"
+  },
+  "Pulmonary fibrosis": {
+    "url": "https://radiopaedia.org/articles/pulmonary-fibrosis",
+    "image": "https://prod-images-static.radiopaedia.org/images/5353775/9bc8f92541d77c5b49145260f43763_gallery.jpg"
+  },
+  "Subdural hematoma": {
+    "url": "https://radiopaedia.org/articles/subdural-haematoma",
+    "image": "https://prod-images-static.radiopaedia.org/images/2917407/76f8efa0129f2bbee07534be6dac09_gallery.jpg"
+  },
+  "Epidural hematoma": {
+    "url": "https://radiopaedia.org/articles/epidural-haematoma",
+    "image": "https://prod-images-static.radiopaedia.org/images/2917400/c1f043792d0a4b4e2511aa75f36113_gallery.jpg"
+  },
+  "Liver cyst": {
+    "url": "https://radiopaedia.org/articles/hepatic-cyst",
+    "image": "https://prod-images-static.radiopaedia.org/images/1263816/32122190a29e1efb176daf65a21848_gallery.jpg"
+  },
+  "Fatty liver": {
+    "url": "https://radiopaedia.org/articles/hepatic-steatosis",
+    "image": "https://prod-images-static.radiopaedia.org/images/29860/3668259b9776a8e4c04917f6d9170a_gallery.jpg"
+  },
+  "Gallstones": {
+    "url": "https://radiopaedia.org/articles/cholelithiasis",
+    "image": "https://prod-images-static.radiopaedia.org/images/34413824/downloaded_image20240312-12155-5m90dh_gallery.jpeg"
+  },
+  "Diverticulitis": {
+    "url": "https://radiopaedia.org/articles/diverticulitis",
+    "image": "https://prod-images-static.radiopaedia.org/images/3582613/0df66543ffb697ca0c38555ca5ae01_gallery.jpg"
+  },
+  "Achilles tendon rupture": {
+    "url": "https://radiopaedia.org/articles/achilles-tendon-rupture",
+    "image": "https://prod-images-static.radiopaedia.org/images/858/953975b108f02b51c197fa55814120_gallery.jpeg"
+  },
+  "Ankylosing spondylitis": {
+    "url": "https://radiopaedia.org/articles/ankylosing-spondylitis",
+    "image": "https://prod-images-static.radiopaedia.org/images/53731976/AS_gallery.jpeg"
+  },
+  "Chiari malformation": {
+    "url": "https://radiopaedia.org/articles/chiari-i-malformation",
+    "image": "https://prod-images-static.radiopaedia.org/images/59112961/1965cae05b02670fc62f9eec8ba4994d12d1ce0d50907b1256645ebc748cc3cb_gallery.jpeg"
+  },
+  "Thyroid goiter": {
+    "url": "https://radiopaedia.org/articles/goitre",
+    "image": "https://prod-images-static.radiopaedia.org/images/9149495/986d3656d7ca59a267fe0843dbbffd_gallery.jpeg"
+  }
+}

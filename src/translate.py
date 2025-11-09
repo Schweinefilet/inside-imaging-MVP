@@ -501,14 +501,24 @@ def _call_gpt5(messages: List[dict]) -> str:
     client = OpenAI()
 
     try:
-        resp = client.responses.create(
-            model=model,
-            input=messages,
-            text=text_cfg,
-            max_output_tokens=max_out,
-            reasoning={"effort": "minimal"},  # fast, deterministic rewriting
-            timeout=timeout_s,
-        )
+        # gpt-5 supports reasoning parameter, gpt-4o does not
+        if model.startswith("gpt-5"):
+            resp = client.responses.create(
+                model=model,
+                input=messages,
+                text=text_cfg,
+                max_output_tokens=max_out,
+                reasoning={"effort": "minimal"},  # fast, deterministic rewriting for gpt-5
+                timeout=timeout_s,
+            )
+        else:
+            resp = client.responses.create(
+                model=model,
+                input=messages,
+                text=text_cfg,
+                max_output_tokens=max_out,
+                timeout=timeout_s,
+            )
     except Exception:
         logger.exception("OpenAI responses.create failed")
         return ""

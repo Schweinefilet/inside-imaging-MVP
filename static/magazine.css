@@ -58,8 +58,10 @@
 .magazine-frame {
   position: relative;
   width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   min-height: 0;
-  height: clamp(520px, 85vh, 1100px);
+  height: clamp(720px, 90vh, 1400px);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -70,10 +72,11 @@
 .magazine-loader {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  background: color-mix(in oklab, var(--panel) 80%, rgba(9, 12, 16, 0.85));
-  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(900px 900px at 50% 50%, rgba(10, 16, 24, 0.96), rgba(6, 9, 14, 0.82));
+  backdrop-filter: blur(12px) saturate(120%);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s ease, visibility 0.25s ease;
@@ -90,16 +93,18 @@
   visibility: hidden;
 }
 
-.loader-one {
-  position: relative;
-  display: grid;
-  place-items: center;
-  gap: 0.9rem;
-  padding: 1.5rem;
-  border-radius: 16px;
-  background: color-mix(in oklab, var(--panel-2) 70%, rgba(255, 255, 255, 0.04));
-  border: 1px solid color-mix(in oklab, var(--mint) 25%, var(--border));
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+.magazine-loader .loader-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2.5rem 2.8rem;
+  border-radius: 20px;
+  background: color-mix(in oklab, var(--panel) 70%, rgba(255, 255, 255, 0.06));
+  border: 1px solid color-mix(in oklab, var(--mint) 30%, var(--border));
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  min-width: min(340px, 90vw);
 }
 
 .loader-orb {
@@ -202,4 +207,49 @@
 @keyframes loaderSweep {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .magazine-hero h1 {
+  color: var(--mint);
+}
+
+html.light .magazine-hero p {
+  color: rgba(10, 30, 28, 0.75);
+}
+
+html.light .magazine-grid {
+  background: transparent;
+}
+
+html.light .magazine-card {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .magazine-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+html.light .magazine-title {
+  color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .magazine-description {
+  color: rgba(10, 30, 28, 0.75);
+}
+
+html.light .magazine-link {
+  background: var(--mint);
+  color: #051e14;
+  border-color: var(--mint);
+}
+
+html.light .magazine-link:hover {
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
 }

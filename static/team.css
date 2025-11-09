@@ -197,3 +197,49 @@
 :root.light .team-cta {
     background: #f9fafb;
 }
+
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .team-hero h1 {
+  color: var(--mint);
+}
+
+html.light .team-hero p {
+  color: rgba(10, 30, 28, 0.75);
+}
+
+html.light .team-card {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .team-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+html.light .team-name {
+  color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .team-role {
+  color: var(--mint);
+}
+
+html.light .team-bio {
+  color: rgba(10, 30, 28, 0.75);
+}
+
+html.light .team-social a {
+  color: rgba(10, 30, 28, 0.68);
+  border-color: var(--border);
+}
+
+html.light .team-social a:hover {
+  background: var(--mint);
+  color: #051e14;
+  border-color: var(--mint);
+}

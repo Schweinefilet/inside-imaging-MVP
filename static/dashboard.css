@@ -452,3 +452,191 @@
         padding-top: 0.4rem;
     }
 }
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .content h2 {
+    color: var(--mint);
+}
+
+html.light .content p {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .upload-section,
+html.light .transformation-section,
+html.light .reports-section {
+    background: var(--panel);
+    border-color: var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .transformation-section h2 {
+    color: var(--mint);
+}
+
+html.light .transformation-subtitle {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .reports-section-header h2 {
+    color: var(--mint);
+}
+
+html.light .reports-section-header p {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .upload-section h2,
+html.light .reports-section h2,
+html.light .reports-section h3,
+html.light .reports-section h4 {
+    color: var(--mint);
+}
+
+html.light .upload-section form label {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .upload-section form input[type="file"],
+html.light .upload-section form select {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: var(--border);
+    color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .upload-section form button {
+    background: var(--mint);
+    color: #051e14;
+    border-color: color-mix(in oklab, var(--mint) 32%, var(--border));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+html.light .upload-section form button:hover {
+    background: color-mix(in oklab, var(--mint) 85%, #ffffff);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+html.light .upload-section form button:active {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+html.light .reports-section p {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .history-item {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: var(--border);
+}
+
+html.light .history-item:hover {
+    border-color: color-mix(in oklab, var(--mint) 55%, var(--border));
+}
+
+html.light .history-item.empty {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .history-primary strong {
+    color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .history-language {
+    color: rgba(10, 30, 28, 0.75);
+    border-color: var(--border);
+    background: rgba(62, 230, 176, 0.08);
+}
+
+html.light .history-meta {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .history-tags {
+    background: rgba(62, 230, 176, 0.12);
+    color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .history-link {
+    color: var(--mint);
+}
+
+html.light .reports-insights h3 {
+    color: var(--mint);
+}
+
+html.light .insight-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+    border-color: var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+html.light .insight-icon {
+    background: rgba(62, 230, 176, 0.12);
+    color: var(--mint);
+}
+
+html.light .insight-label {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .insight-value {
+    color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .insight-column {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .insight-column h4 {
+    color: var(--mint);
+}
+
+html.light .insight-name,
+html.light .insight-count {
+    color: rgba(10, 30, 28, 0.95);
+}
+
+html.light .insight-bar {
+    background: rgba(62, 230, 176, 0.08);
+}
+
+html.light .insight-bar .insight-progress {
+    background: linear-gradient(90deg, rgba(62, 230, 176, 0.85), rgba(62, 230, 176, 0.45));
+}
+
+html.light .insight-empty {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .history-tags span {
+    background: rgba(62, 230, 176, 0.12);
+    color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .footer {
+    background: var(--panel);
+    border-top-color: var(--border);
+}
+
+html.light .footer-col h4 {
+    color: var(--mint);
+}
+
+html.light .footer-col p,
+html.light .footer-col a {
+    color: rgba(10, 30, 28, 0.68);
+}
+
+html.light .footer-col a:hover {
+    color: var(--mint);
+}
+
+html.light .footer-bottom {
+    color: rgba(10, 30, 28, 0.68);
+    border-top-color: var(--border);
+}

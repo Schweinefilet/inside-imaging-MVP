@@ -50,6 +50,11 @@ logging.info("OPENAI_API_KEY loaded=%s len=%d", "yes" if bool(k) else "no", len(
 logging.info("INSIDEIMAGING_ALLOW_LLM=%r", os.getenv("INSIDEIMAGING_ALLOW_LLM"))
 logging.info("OPENAI_MODEL=%r", os.getenv("OPENAI_MODEL"))
 
+# Set default model to gpt-5 if not specified
+if not os.getenv("OPENAI_MODEL"):
+    os.environ["OPENAI_MODEL"] = "gpt-5"
+    logging.info("Defaulting OPENAI_MODEL to gpt-5")
+
 # --- app ---
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
@@ -76,70 +81,76 @@ MAGAZINE_ISSUES = [
 
 BLOG_POSTS = [
     {
-        "title": "The Evolution of Diagnostic Imaging: From X-Rays to AI",
-        "summary": "Exploring how medical imaging has transformed over the decades and what artificial intelligence means for the future of radiology and patient care.",
-        "author": "Dr. Sarah Mitchell",
-        "author_bio": "Board-certified radiologist with 15 years of experience in diagnostic imaging and AI integration.",
+        "title": "Excellence in Radiography: My Journey as a Valedictorian and Beyond",
+        "summary": "A personal reflection on the path to excellence in radiography, exploring the dedication, challenges, and triumphs that shaped a distinguished career in medical imaging.",
+        "author": "Mbuya Benjamin",
+        "author_bio": "Valedictorian and accomplished radiographer sharing insights on professional growth and excellence in medical imaging.",
         "author_image": None,
-        "author_linkedin": "https://linkedin.com/in/placeholder",
-        "author_twitter": "https://twitter.com/placeholder",
-        "author_email": "editor@insideimaging.example",
-        "author_website": None,
-        "date": "January 2025",
-        "read_time": "8 min read",
-        "url": "#",
-    },
-    {
-        "title": "Communicating Complex Findings: A Patient-Centered Approach",
-        "summary": "Practical strategies for translating medical jargon into clear, compassionate explanations that empower patients to understand their imaging results.",
-        "author": "Dr. James Chen",
-        "author_bio": "Interventional radiologist passionate about patient education and accessible healthcare communication.",
-        "author_image": None,
-        "author_linkedin": "https://linkedin.com/in/placeholder",
+        "author_linkedin": None,
         "author_twitter": None,
+        "author_facebook": None,
+        "author_whatsapp": None,
         "author_email": "editor@insideimaging.example",
         "author_website": None,
-        "date": "February 2025",
-        "read_time": "6 min read",
-        "url": "#",
+        "date": "July 2025",
+        "read_time": "7 min read",
+        "url": "/magazine#page=5",
     },
     {
-        "title": "The Role of AI in Early Disease Detection",
-        "summary": "How machine learning algorithms are helping radiologists identify subtle abnormalities earlier, improving patient outcomes and treatment planning.",
-        "author": "Dr. Priya Sharma",
-        "author_bio": "Diagnostic radiologist and AI researcher focused on computer-aided detection systems.",
+        "title": "AI in Medical Radiography, Imaging and Radiotherapy: Innovations and Ethical Considerations",
+        "summary": "Exploring the transformative impact of artificial intelligence in medical imaging and radiotherapy, while addressing the critical ethical considerations that must guide its implementation.",
+        "author": "Jevas Kenyanya",
+        "author_bio": "Medical imaging specialist focused on AI integration and ethical frameworks in healthcare technology.",
         "author_image": None,
-        "author_linkedin": "https://linkedin.com/in/placeholder",
-        "author_twitter": "https://twitter.com/placeholder",
+        "author_linkedin": None,
+        "author_twitter": None,
+        "author_facebook": None,
+        "author_whatsapp": None,
         "author_email": "editor@insideimaging.example",
-        "author_website": "https://example.com",
-        "date": "March 2025",
+        "author_website": None,
+        "date": "July 2025",
         "read_time": "10 min read",
-        "url": "#",
+        "url": "/magazine#page=8",
+    },
+    {
+        "title": "The Evolution Landscape of Radiology: Current Trends and Future Prospects",
+        "summary": "An expert review of radiology's evolution, examining current trends in diagnostic imaging and exploring the innovative technologies shaping the future of patient care.",
+        "author": "Dr. Tima Nassir Ali Khamis",
+        "author_bio": "Radiologist and researcher dedicated to advancing diagnostic imaging practices and technology integration in African healthcare.",
+        "author_image": None,
+        "author_linkedin": None,
+        "author_twitter": None,
+        "author_facebook": None,
+        "author_whatsapp": None,
+        "author_email": "editor@insideimaging.example",
+        "author_website": None,
+        "date": "July 2025",
+        "read_time": "12 min read",
+        "url": "/magazine#page=12",
     },
 ]
 
 MARQUEE_IMAGES = [
-    # Placeholder images for pilot program
-    # Real radiology examples will be added after IRB approval
-    # To add your images: replace the files in static/images/marquee/
-    # Recommended format: JPG or PNG, 320x300px or 400x500px, under 500KB
-    "/static/images/marquee/placeholder-1.jpg",
-    "/static/images/marquee/placeholder-2.jpg",
-    "/static/images/marquee/placeholder-3.jpg",
-    "/static/images/marquee/placeholder-4.jpg",
-    "/static/images/marquee/placeholder-5.jpg",
-    "/static/images/marquee/placeholder-6.jpg",
-    "/static/images/marquee/placeholder-7.jpg",
-    "/static/images/marquee/placeholder-8.jpg",
-    "/static/images/marquee/placeholder-9.jpg",
-    "/static/images/marquee/placeholder-10.jpg",
-    "/static/images/marquee/placeholder-11.jpg",
-    "/static/images/marquee/placeholder-12.jpg",
-    "/static/images/marquee/placeholder-13.jpg",
-    "/static/images/marquee/placeholder-14.jpg",
-    "/static/images/marquee/placeholder-15.jpg",
-    "/static/images/marquee/placeholder-16.jpg",
+    # Real radiology examples from the team
+    "/static/images/marquee/IMG-20251030-WA0002.jpg",
+    "/static/images/marquee/IMG-20251030-WA0003.jpg",
+    "/static/images/marquee/IMG-20251030-WA0004.jpg",
+    "/static/images/marquee/IMG-20251030-WA0005.jpg",
+    "/static/images/marquee/IMG-20251030-WA0006.jpg",
+    "/static/images/marquee/IMG-20251030-WA0007.jpg",
+    "/static/images/marquee/IMG-20251030-WA0008.jpg",
+    "/static/images/marquee/IMG-20251030-WA0009.jpg",
+    "/static/images/marquee/IMG-20251030-WA0010.jpg",
+    "/static/images/marquee/IMG-20251030-WA0011.jpg",
+    "/static/images/marquee/IMG-20251030-WA0012.jpg",
+    "/static/images/marquee/IMG-20251030-WA0013.jpg",
+    "/static/images/marquee/IMG-20251030-WA0014.jpg",
+    "/static/images/marquee/IMG-20251030-WA0015.jpg",
+    "/static/images/marquee/IMG-20251030-WA0016.jpg",
+    "/static/images/marquee/IMG-20251030-WA0017.jpg",
+    "/static/images/marquee/IMG-20251030-WA0018.jpg",
+    "/static/images/marquee/IMG-20251030-WA0019.jpg",
+    "/static/images/marquee/IMG-20251030-WA0020.jpg",
 ]
 
 # Initialize database

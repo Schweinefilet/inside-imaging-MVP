@@ -338,13 +338,19 @@
 
     <div class="patient-card">
       <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
-      <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
+      <div><span class="lbl">Study</span><strong data-study-type="{{ patient.study|default('Unknown', true) }}">{{ patient.study|default('Unknown', true) }}</strong></div>
       {% if patient.name %}
       <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
       {% endif %}
       <div><span class="lbl">Sex</span><strong>{{ patient.sex|default('', true) }}</strong></div>
       <div><span class="lbl">Age</span><strong>{{ patient.age|default('', true) }}</strong></div>
       <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>
+    </div>
+
+    <!-- Hidden data attributes for organ detection -->
+    <div style="display: none;" 
+         data-findings-text="{{ structured.findings|default('', true)|striptags }}"
+         data-conclusion-text="{{ structured.conclusion|default('', true)|striptags }}">
     </div>
 
     <section>
@@ -1256,5 +1262,6 @@
 
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 <script src="{{ url_for('static', filename='loader.js') }}"></script>
+<script src="{{ url_for('static', filename='organ-highlight.js') }}"></script>
 </body>
 </html>

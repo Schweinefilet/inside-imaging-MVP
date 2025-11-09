@@ -105,3 +105,37 @@
 .contact-info p {
   margin-bottom: 0.75rem;
 }
+
+/* ========================================
+   Light Mode Overrides
+   ======================================== */
+
+html.light .help-container {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html.light .help-container h1,
+html.light .help-container h2,
+html.light .help-container h3 {
+  color: var(--mint);
+}
+
+html.light .help-container p,
+html.light .help-container li {
+  color: rgba(10, 30, 28, 0.85);
+}
+
+html.light .help-section {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--border);
+}
+
+html.light .help-link {
+  color: var(--mint);
+}
+
+html.light .help-link:hover {
+  color: #059669;
+}

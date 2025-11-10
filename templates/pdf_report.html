@@ -1,63 +1,182 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Inside Imaging - Patient Report</title>
   <style>
-    @page { size: A4; margin: 24mm 18mm; }
-    html, body { padding:0; margin:0; }
-    body { font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial; font-size:12.5px; line-height:1.45; color:#000; }
-    * { color:#000 !important; } /* ensure no white text survives into PDF */
+    @page {
+      size: A4;
+      margin: 24mm 18mm;
+    }
+
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    body {
+      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: #000;
+    }
+
+    * {
+      color: #000 !important;
+    }
+
+    /* ensure no white text survives into PDF */
 
     /* Header */
-    header { display:flex; align-items:center; gap:10px; margin-bottom:12mm; }
-    header img { height:40px; }
-    header h1 { font-size:16px; margin:0; letter-spacing:.3px; font-weight:600; }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12mm;
+    }
+
+    header img {
+      height: 40px;
+    }
+
+    header h1 {
+      font-size: 16px;
+      margin: 0;
+      letter-spacing: .3px;
+      font-weight: 600;
+    }
 
     /* Patient block */
-    .patient-name { font-size:22px; font-weight:700; margin:0 0 6mm; text-transform:uppercase; }
-    .facts { display:grid; grid-template-columns: repeat(2, 1fr); gap:6px 14px; margin-bottom:10mm; }
-    .fact { display:grid; grid-template-columns: 160px 1fr; gap:8px; align-items:baseline; }
-    .fact .label { font-size:11px; letter-spacing:.6px; font-weight:700; text-transform:uppercase; }
-    .fact .value { font-size:12.5px; }
+    .patient-name {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6mm;
+      text-transform: uppercase;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 14px;
+      margin-bottom: 10mm;
+    }
+
+    .fact {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .fact .label {
+      font-size: 11px;
+      letter-spacing: .6px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .fact .value {
+      font-size: 12.5px;
+    }
 
     /* Sections */
-    .section { margin:0 0 8mm; }
-    .section h2 { font-size:12px; margin:0 0 6px; letter-spacing:.6px; font-weight:800; text-transform:uppercase; }
-    .box { border:1px solid #111; border-radius:4px; padding:10px 12px; }
+    .section {
+      margin: 0 0 8mm;
+    }
+
+    .section h2 {
+      font-size: 12px;
+      margin: 0 0 6px;
+      letter-spacing: .6px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .box {
+      border: 1px solid #111;
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
 
     /* Output formatting */
-    .simple-output ul { margin:.25rem 0 0; padding-left:1.1rem; }
-    .simple-output li { margin:.15rem 0; }
+    .simple-output ul {
+      margin: .25rem 0 0;
+      padding-left: 1.1rem;
+    }
+
+    .simple-output li {
+      margin: .15rem 0;
+    }
+
     .simple-output strong.negative,
-    .simple-output strong.positive { font-weight:700; } /* keep emphasis, but black */
+    .simple-output strong.positive {
+      font-weight: 700;
+    }
+
+    /* keep emphasis, but black */
 
     /* Footer org block */
-    footer { margin-top:12mm; }
-    .org-grid { display:grid; grid-template-columns: 180px 1fr; gap:6px 14px; }
-    .org-grid .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
+    footer {
+      margin-top: 12mm;
+    }
+
+    .org-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 6px 14px;
+    }
+
+    .org-grid .label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
 
     /* Fine rules */
-    .rule { height:1px; background:#111; margin:10mm 0 7mm; }
+    .rule {
+      height: 1px;
+      background: #111;
+      margin: 10mm 0 7mm;
+    }
   </style>
 </head>
+
 <body>
   <header>
     <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging">
     <h1>Sample Simplified Radiology Report</h1>
   </header>
 
-  <!-- Patient name -->
-  <h2 class="patient-name">{{ patient.name or 'PATIENT’S NAME' }}</h2>
 
   <!-- Key facts to match sample -->
   <section class="facts">
-    <div class="fact"><div class="label">Modality</div><div class="value">{{ patient.study or '' }}</div></div>
-    <div class="fact"><div class="label">Date</div><div class="value">{{ patient.date or '' }}</div></div>
-    <div class="fact"><div class="label">Age</div><div class="value">{{ patient.age or '' }}</div></div>
-    <div class="fact"><div class="label">Gender</div><div class="value">{{ patient.sex or '' }}</div></div>
-    <div class="fact"><div class="label">Radiology Procedure Done</div><div class="value">{{ patient.study or '' }}</div></div>
-    <div class="fact"><div class="label">Hospital</div><div class="value">{{ patient.hospital or '' }}</div></div>
+    <div class="fact">
+      <div class="label">Modality</div>
+      <div class="value">{{ patient.study or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Date</div>
+      <div class="value">{{ patient.date or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Age</div>
+      <div class="value">{{ patient.age or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Gender</div>
+      <div class="value">{{ patient.sex or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Radiology Procedure Done</div>
+      <div class="value">{{ patient.study or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Hospital</div>
+      <div class="value">{{ patient.hospital or '' }}</div>
+    </div>
   </section>
 
   <div class="rule"></div>
@@ -89,28 +208,36 @@
       <div style="text-align:center;">
         <svg width="80" height="80" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <ellipse cx="120" cy="120" rx="85" ry="90" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
-          <ellipse cx="{{ lesion_data.coords[0] }}" cy="{{ lesion_data.coords[1] }}" rx="{{ lesion_data.size }}" ry="{{ (lesion_data.size * 1.2)|int }}" fill="#b30000" />
+          <ellipse cx="{{ lesion_data.coords[0] }}" cy="{{ lesion_data.coords[1] }}" rx="{{ lesion_data.size }}"
+            ry="{{ (lesion_data.size * 1.2)|int }}" fill="#b30000" />
         </svg>
         <p style="font-size:10px; margin:2px 0;">Top (Axial)</p>
       </div>
       <!-- Side / Sagittal -->
       <div style="text-align:center;">
         <svg width="80" height="80" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M60,120 Q60,50 100,35 Q140,50 160,70 Q175,90 178,120 Q175,150 165,175 Q150,195 120,205 Q90,200 70,175 Q60,150 60,120" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
-          <ellipse cx="{{ lesion_data.coords[2] }}" cy="{{ lesion_data.coords[3] }}" rx="{{ (lesion_data.size * 0.9)|int }}" ry="{{ (lesion_data.size * 1.1)|int }}" fill="#b30000" />
+          <path
+            d="M60,120 Q60,50 100,35 Q140,50 160,70 Q175,90 178,120 Q175,150 165,175 Q150,195 120,205 Q90,200 70,175 Q60,150 60,120"
+            fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
+          <ellipse cx="{{ lesion_data.coords[2] }}" cy="{{ lesion_data.coords[3] }}"
+            rx="{{ (lesion_data.size * 0.9)|int }}" ry="{{ (lesion_data.size * 1.1)|int }}" fill="#b30000" />
         </svg>
         <p style="font-size:10px; margin:2px 0;">Side (Sagittal)</p>
       </div>
       <!-- Front / Coronal -->
       <div style="text-align:center;">
         <svg width="80" height="80" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M50,120 Q50,60 80,45 Q110,40 120,40 Q130,40 160,45 Q190,60 190,120 Q185,150 170,175 Q150,195 120,200 Q90,195 70,175 Q55,150 50,120" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
-          <ellipse cx="{{ lesion_data.coords[4] }}" cy="{{ lesion_data.coords[5] }}" rx="{{ (lesion_data.size * 0.95)|int }}" ry="{{ (lesion_data.size * 1.1)|int }}" fill="#b30000" />
+          <path
+            d="M50,120 Q50,60 80,45 Q110,40 120,40 Q130,40 160,45 Q190,60 190,120 Q185,150 170,175 Q150,195 120,200 Q90,195 70,175 Q55,150 50,120"
+            fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
+          <ellipse cx="{{ lesion_data.coords[4] }}" cy="{{ lesion_data.coords[5] }}"
+            rx="{{ (lesion_data.size * 0.95)|int }}" ry="{{ (lesion_data.size * 1.1)|int }}" fill="#b30000" />
         </svg>
         <p style="font-size:10px; margin:2px 0;">Front (Coronal)</p>
       </div>
     </div>
-    <p style="font-size:11px; color:#222; margin-top:6px;">Lesion location ({{ lesion_data.location }}) and approximate size derived from report text. Not a diagnostic image.</p>
+    <p style="font-size:11px; color:#222; margin-top:6px;">Lesion location ({{ lesion_data.location }}) and approximate
+      size derived from report text. Not a diagnostic image.</p>
   </section>
   {% endif %}
 
@@ -132,12 +259,18 @@
   <footer class="section">
     <h2>Generated By</h2>
     <div class="box org-grid">
-      <div class="label">Contact Information</div><div>{{ org.name if org and org.name else 'Inside Imaging' }}</div>
-      <div class="label">Phone Number</div><div>{{ org.phone if org and org.phone else '' }}</div>
-      <div class="label">Email</div><div>{{ org.email if org and org.email else '' }}</div>
-      <div class="label">Website</div><div>{{ org.website if org and org.website else '' }}</div>
-      <div class="label">Office Location</div><div>{{ org.address if org and org.address else '' }}</div>
+      <div class="label">Contact Information</div>
+      <div>{{ org.name if org and org.name else 'Inside Imaging' }}</div>
+      <div class="label">Phone Number</div>
+      <div>{{ org.phone if org and org.phone else '' }}</div>
+      <div class="label">Email</div>
+      <div>{{ org.email if org and org.email else '' }}</div>
+      <div class="label">Website</div>
+      <div>{{ org.website if org and org.website else '' }}</div>
+      <div class="label">Office Location</div>
+      <div>{{ org.address if org and org.address else '' }}</div>
     </div>
   </footer>
 </body>
+
 </html>

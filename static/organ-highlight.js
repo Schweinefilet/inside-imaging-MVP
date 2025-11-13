@@ -6,6 +6,9 @@
 (function() {
   'use strict';
 
+  // Global toggle state for anatomy diagrams (module-level so UI and init share it)
+  let SHOW_ANATOMY_DIAGRAMS = false;
+
   // Available anatomy images
   const AVAILABLE_ORGANS = {
     'brain': '/static/images/anatomy/brain.svg',
@@ -1110,12 +1113,12 @@
     // Detect organs
     const detectedOrgans = detectOrgans(reportText);
     console.log('Detected organs:', detectedOrgans);
-    
+
     if (detectedOrgans.length === 0) {
       console.log('Organ highlighting: No organs detected');
       return;
     }
-    
+
     // Find or create container for organ sections
     let container = document.getElementById('organ-anatomy-container');
     if (!container) {
@@ -1158,66 +1161,146 @@
       document.head.appendChild(style);
     }
     
+    // Anatomy diagram visibility: read module-level toggle and respect localStorage if present
+    try {
+      const stored = localStorage.getItem('insideimaging_show_anatomy');
+      if (stored !== null) {
+        SHOW_ANATOMY_DIAGRAMS = stored === '1' || stored === 'true';
+      } else {
+        // default remains the module-level default (false)
+        SHOW_ANATOMY_DIAGRAMS = !!SHOW_ANATOMY_DIAGRAMS;
+      }
+    } catch (e) {
+      console.warn('organ-highlight: localStorage unavailable', e);
+      SHOW_ANATOMY_DIAGRAMS = !!SHOW_ANATOMY_DIAGRAMS;
+    }
+
     // Create sections for each detected organ, filtering out normal ones
     let sectionsAdded = 0;
-    detectedOrgans.forEach(organ => {
-      // Skip organs that appear normal
-      if (isOrganNormal(reportText, organ)) {
-        console.log('Skipping ' + organ + ' - appears normal');
-        return;
-      }
-      
-      const isAvailable = AVAILABLE_ORGANS.hasOwnProperty(organ);
-      const section = createOrganSection(organ, isAvailable, reportText);
-      
-      // Only add if section was created (not null)
-      if (section) {
-        container.appendChild(section);
-        sectionsAdded++;
-      }
-    });
-    
+    if (SHOW_ANATOMY_DIAGRAMS) {
+      detectedOrgans.forEach(organ => {
+        // Skip organs that appear normal
+        if (isOrganNormal(reportText, organ)) {
+          console.log('Skipping ' + organ + ' - appears normal');
+          return;
+        }
+
+        const isAvailable = AVAILABLE_ORGANS.hasOwnProperty(organ);
+        const section = createOrganSection(organ, isAvailable, reportText);
+
+        // Only add if section was created (not null)
+        if (section) {
+          container.appendChild(section);
+          sectionsAdded++;
+        }
+      });
+    } else {
+      console.log('Anatomy diagrams are hidden by configuration (SHOW_ANATOMY_DIAGRAMS=false)');
+    }
+
     console.log('Organ highlighting complete: ' + sectionsAdded + ' organs visualized (out of ' + detectedOrgans.length + ' detected)');
     
     // Detect and display example images for medical conditions
-    const detectedConditions = detectConditions(reportText);
-    console.log('Detected conditions:', detectedConditions);
-    
-    if (detectedConditions.length > 0) {
+    if (SHOW_ANATOMY_DIAGRAMS) {
+      const detectedConditions = detectConditions(reportText);
+      console.log('Detected conditions:', detectedConditions);
+
+    // Further filter detected conditions to tighter "likely" set:
+    // - condition keywords in conclusion text OR
+    // - presence of strong likelihood indicators near the keyword
+    const conclusionText = (conclusionElement && conclusionElement.dataset && conclusionElement.dataset.conclusionText) ? conclusionElement.dataset.conclusionText.toLowerCase() : '';
+
+    function isConditionLikely(condition) {
+      const normalizedReport = reportText.toLowerCase();
+      const name = condition.name.toLowerCase();
+
+      // If condition appears in conclusion, consider it likely
+      if (conclusionText && conclusionText.includes(name)) return true;
+
+      // Strong indicators that a finding is being asserted
+      const strongIndicators = ['likely', 'probable', 'probability', 'consistent with', 'suspicious for', 'highly suspicious', 'diagnostic of', 'compatible with', 'in keeping with', 'most in keeping with', 'favor', 'suggests', 'suggestive of', 'was suspicious for'];
+
+      // Weak/uncertain indicators we should treat conservatively
+      const weakIndicators = ['possible', 'may represent', 'could represent', 'cannot exclude', 'query for', 'cannot rule out', 'question of', 'likely/'];
+
+      // Find first occurrence of any keyword for this condition
+      const found = condition.keywords || [];
+      for (const kw of found) {
+        const idx = normalizedReport.indexOf(kw);
+        if (idx === -1) continue;
+
+        // context window
+        const start = Math.max(0, idx - 80);
+        const end = Math.min(normalizedReport.length, idx + kw.length + 80);
+        const ctx = normalizedReport.substring(start, end);
+
+        // If any weak indicator appears near the keyword, treat as not likely
+        for (const w of weakIndicators) {
+          if (ctx.includes(w)) {
+            console.log(`Condition "${condition.name}" skipped due to weak/uncertain indicator: ${w}`);
+            return false;
+          }
+        }
+
+        for (const s of strongIndicators) {
+          if (ctx.includes(s)) {
+            console.log(`Condition "${condition.name}" accepted due to strong indicator: ${s}`);
+            return true;
+          }
+        }
+      }
+
+      // Fallback: if condition appears multiple times in report, treat it as likely
+      const count = (normalizedReport.match(new RegExp(name, 'g')) || []).length;
+      if (count >= 2) {
+        console.log(`Condition "${condition.name}" accepted due to multiple mentions (${count})`);
+        return true;
+      }
+
+      // Default: conservative — not likely enough
+      return false;
+    }
+
+      // Apply filter and cap to a reasonable number (e.g., 3) to avoid clutter
+      const likelyConditions = detectedConditions.filter(isConditionLikely).slice(0, 3);
+      console.log('Likely conditions to show as examples:', likelyConditions);
+
+      if (likelyConditions.length > 0) {
       // Create a single compact box for all condition examples
       const conditionBox = document.createElement('div');
       conditionBox.className = 'visual-section-box';
       conditionBox.style.cssText = 'border: 3px solid #ff9800;';
       
-      // Header with placeholder count that will be updated
+      // Header with count (no extra spaces around parentheses)
       const header = document.createElement('div');
-      header.style.cssText = 'margin-bottom: 1rem;';
+      header.style.cssText = 'margin-bottom: 0.6rem;';
       const countSpan = document.createElement('span');
       countSpan.id = 'condition-count';
+      countSpan.textContent = likelyConditions.length;
       header.innerHTML = `
-        <h2 style="margin: 0 0 0.5rem 0; color: var(--mint); font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.4rem;">📚</span> Educational Reference Images (<span id="condition-count">0</span>)
+        <h2 style="margin: 0 0 0.35rem 0; color: var(--mint); font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.25rem;">📚</span> Educational Reference Images (<span id="condition-count">${likelyConditions.length}</span>)
         </h2>
-        <div style="background: rgba(255, 165, 0, 0.2); border-left: 5px solid #ff9800; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
-          <p style="margin: 0; color: #ff9800; font-weight: bold; font-size: 0.9rem;">
+        <div style="background: rgba(255, 165, 0, 0.12); border-left: 4px solid #ff9800; padding: 0.5rem; border-radius: 6px; margin-bottom: 0.6rem;">
+          <p style="margin: 0; color: #ff9800; font-weight: 700; font-size: 0.85rem;">
             ⚠️ EXAMPLE IMAGES ONLY - NOT YOUR ACTUAL SCANS
           </p>
-          <p style="margin: 0.5rem 0 0 0; color: var(--muted); font-size: 0.8rem;">
-            These are reference images from medical literature. <strong>Do NOT use these to self-diagnose.</strong> Your radiologist will provide accurate interpretation.
+          <p style="margin: 0.35rem 0 0 0; color: var(--muted); font-size: 0.78rem;">
+            Reference images only. <strong>Do NOT use these to self-diagnose.</strong>
           </p>
         </div>
       `;
       conditionBox.appendChild(header);
       
-      // Create a grid for condition images
+      // Create a tighter grid for condition images
       const grid = document.createElement('div');
-      grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;';
+      grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.5rem;';
       
       let successfulImageCount = 0;
       
-      detectedConditions.forEach(condition => {
+      likelyConditions.forEach(condition => {
         const conditionItem = document.createElement('div');
-        conditionItem.style.cssText = 'text-align: center; padding: 0.75rem; background: rgba(0,0,0,0.05); border-radius: 8px;';
+        conditionItem.style.cssText = 'text-align: center; padding: 0.5rem; background: rgba(0,0,0,0.03); border-radius: 8px;';
         
         // Condition name
         const name = document.createElement('div');
@@ -1229,7 +1312,7 @@
         const img = document.createElement('img');
         img.src = condition.imageUrl;
         img.alt = condition.altText;
-        img.style.cssText = 'max-width: 100%; height: auto; max-height: 150px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;';
+        img.style.cssText = 'max-width: 100%; height: auto; max-height: 120px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.12); cursor: pointer;';
         img.loading = 'lazy';
         img.title = condition.description;
         
@@ -1273,10 +1356,14 @@
         grid.appendChild(conditionItem);
       });
       
-      conditionBox.appendChild(grid);
-      container.appendChild(conditionBox);
-      
-      console.log('Condition examples displayed: ' + detectedConditions.length);
+        conditionBox.appendChild(grid);
+        container.appendChild(conditionBox);
+
+        console.log('Condition examples displayed: ' + likelyConditions.length);
+      }
+    } else {
+      // Anatomy & reference examples are currently disabled by preference
+      console.log('Skipping educational reference images because SHOW_ANATOMY_DIAGRAMS is false');
     }
   }
 
@@ -1285,6 +1372,56 @@
     document.addEventListener('DOMContentLoaded', initOrganHighlighting);
   } else {
     initOrganHighlighting();
+  }
+
+  // Wire up the anatomy toggle UI (if present) to persist and reload behavior
+  function initAnatomyToggleUI() {
+    try {
+      const toggle = document.getElementById('toggle-anatomy');
+      const label = document.getElementById('toggle-anatomy-label');
+      if (!toggle) return;
+
+      // Initialize state from localStorage
+      const stored = localStorage.getItem('insideimaging_show_anatomy');
+      if (stored !== null) {
+        toggle.checked = (stored === '1' || stored === 'true');
+      } else {
+        toggle.checked = !!SHOW_ANATOMY_DIAGRAMS; // default
+      }
+      // Update label text (same text for now)
+      label.textContent = 'Show anatomy diagrams';
+
+      // Ensure anatomy wrapper visibility matches stored state
+      const anatomyWrapper = document.getElementById('anatomy-wrapper');
+      if (anatomyWrapper) {
+        anatomyWrapper.style.display = toggle.checked ? '' : 'none';
+      }
+
+      toggle.addEventListener('change', function() {
+        try {
+          localStorage.setItem('insideimaging_show_anatomy', toggle.checked ? '1' : '0');
+        } catch (e) {
+          console.warn('organ-highlight: failed to write localStorage', e);
+        }
+        // Reload the organ highlighting to reflect new preference
+        // Simple strategy: clear container and re-run initOrganHighlighting
+        const container = document.getElementById('organ-anatomy-container');
+        if (container) container.innerHTML = '';
+        SHOW_ANATOMY_DIAGRAMS = toggle.checked;
+        // Show/hide the wrapper and re-run highlighting when enabling
+        if (anatomyWrapper) anatomyWrapper.style.display = toggle.checked ? '' : 'none';
+        if (toggle.checked) initOrganHighlighting();
+      });
+    } catch (e) {
+      console.warn('initAnatomyToggleUI error', e);
+    }
+  }
+
+  // Initialize toggle once DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAnatomyToggleUI);
+  } else {
+    initAnatomyToggleUI();
   }
 
 })();

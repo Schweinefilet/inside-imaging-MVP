@@ -80,10 +80,26 @@ html.light .marquee-kicker {
   margin: 0;
 }
 
+/* Ensure headline sits on a semi-transparent pill for legibility */
+.marquee-content h1 {
+  display: inline-block;
+  background: rgba(0,0,0,0.45);
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+}
+
 .marquee-description {
   margin: 0;
   color: rgba(226, 242, 239, 0.88);
   font-size: clamp(1rem, 2.4vw, 1.2rem);
+}
+
+/* Add a subtle panel behind the description text for contrast */
+.marquee-description {
+  background: rgba(0,0,0,0.35);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  display: inline-block;
 }
 
 html.light .marquee-description {

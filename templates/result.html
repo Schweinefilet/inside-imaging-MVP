@@ -320,7 +320,6 @@
       <a href="{{ url_for('dashboard') }}">Dashboard</a>
       <a href="{{ url_for('report_status') }}">Statistics</a>
       <a href="{{ url_for('team') }}">Our Team</a>
-      <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
@@ -356,7 +355,7 @@
     <h1>Report Summary</h1>
 
     <div class="patient-card">
-      <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
+      <!-- Hospital name removed as requested -->
       <div><span class="lbl">Study</span><strong data-study-type="{{ patient.study|default('Unknown', true) }}">{{ patient.study|default('Unknown', true) }}</strong></div>
       {% if patient.name %}
       <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
@@ -435,8 +434,19 @@
         <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
       </div>
       
-      <!-- Placeholder for anatomy sections and educational images - will be populated by JavaScript -->
-      <div id="organ-anatomy-container"></div>
+      <!-- Anatomy toggle control is visible; actual anatomy/reference box starts hidden -->
+      <div style="display:flex; align-items:center; justify-content:flex-end; margin-bottom:0.25rem;">
+        <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.95rem;">
+          <input id="toggle-anatomy" type="checkbox" />
+          <span id="toggle-anatomy-label">Show anatomy diagrams</span>
+        </label>
+      </div>
+
+      <!-- Hidden anatomy & reference box (will be shown when toggle enabled) -->
+      <div id="anatomy-wrapper" class="visual-section-box" style="display: none;">
+        <h2 style="margin-top:0;">Anatomy & Reference</h2>
+        <div id="organ-anatomy-container"></div>
+      </div>
     </div>
 
     {# Old 3-plane reconstruction visualizations removed - using universal organ detection system below #}

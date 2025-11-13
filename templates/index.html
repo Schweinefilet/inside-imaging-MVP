@@ -119,7 +119,6 @@
         <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
         <a href="{{ url_for('report_status') }}">Statistics</a>
         <a href="{{ url_for('team') }}">Our Team</a>
-        <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
         <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
       <div class="nav-auth">
@@ -202,6 +201,8 @@
               <p style="font-size: 0.85em; color: var(--text-muted); margin: 0.5rem 0;">
                 Supported formats: PDF, Word (DOCX), Images (PNG, JPG, HEIC/HEIF, TIFF, WebP, BMP), or plain text
               </p>
+                <label for="context" style="margin-top: 1em;">Context for Visit (optional):</label>
+                <textarea name="context" id="context" rows="3" placeholder="Describe why you visited the doctor, previous diseases, symptoms, etc." style="width:100%;margin-bottom:1em;"></textarea>
               <label for="language">Language:</label>
               <select name="language" id="language">
                 {% for language in languages %}

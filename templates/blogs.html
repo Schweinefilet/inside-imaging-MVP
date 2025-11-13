@@ -34,8 +34,6 @@
         <a href="{{ url_for('dashboard') }}">Dashboard</a>
         <a href="{{ url_for('report_status') }}">Statistics</a>
         <a href="{{ url_for('team') }}">Our Team</a>
-        <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
-        <a href="{{ url_for('blogs') }}" class="active">Insights</a>
         <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
       <div class="nav-auth">
@@ -73,56 +71,72 @@
       </section>
 
       {% if posts %}
-      <section class="blog-grid">
+      <nav class="blog-quick-links" aria-label="Jump to post">
+        <div class="quick-links-inner">
+          {% for post in posts %}
+            <a class="quick-link" href="#post-{{ loop.index }}">{{ post.title }}</a>
+          {% endfor %}
+        </div>
+      </nav>
+      {% endif %}
+
+      {% if posts %}
+      <section class="blog-grid fullscreen-blogs" aria-label="Insights feed">
         {% for post in posts %}
-        <article class="blog-card">
-          <header>
-            <h2>{{ post.title }}</h2>
-            <div class="blog-meta">
-              <span>{{ post.author }}</span>
-              <span>{{ post.date }}</span>
-              <span>{{ post.read_time }}</span>
-            </div>
-          </header>
-          <p class="blog-summary">{{ post.summary }}</p>
-          <footer>
-            <a href="{{ post.url }}">Read full post →</a>
-          </footer>
-          
-          <!-- Author Bio Section -->
-          <div class="author-bio">
-            <div class="author-avatar">
-              {% if post.author_image %}
-              <img src="{{ post.author_image }}" alt="{{ post.author }}" />
-              {% else %}
-              <div class="author-avatar-placeholder">{{ post.author[0] if post.author else 'A' }}</div>
-              {% endif %}
-            </div>
-            <div class="author-info">
-              <h4 class="author-name">{{ post.author }}</h4>
-              <p class="author-description">{{ post.author_bio if post.author_bio else 'Healthcare Professional sharing insights on radiology and patient care.' }}</p>
-              <div class="author-social">
-                {% if post.author_linkedin %}
-                <a href="{{ post.author_linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                </a>
-                {% endif %}
-                {% if post.author_twitter %}
-                <a href="{{ post.author_twitter }}" target="_blank" rel="noopener" aria-label="Twitter/X">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-                {% endif %}
-                {% if post.author_email %}
-                <a href="mailto:{{ post.author_email }}" aria-label="Email">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                </a>
-                {% endif %}
-                {% if post.author_website %}
-                <a href="{{ post.author_website }}" target="_blank" rel="noopener" aria-label="Website">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                </a>
-                {% endif %}
+        <article class="blog-card fullscreen" id="post-{{ loop.index }}">
+          <div class="blog-hero">
+            <div class="hero-content">
+              <div class="hero-text">
+                <h1 class="hero-title">{{ post.title }}</h1>
+                <div class="hero-meta">
+                  <span class="hero-author">{{ post.author }}</span>
+                  {% if post.author_qualifications %}
+                  <span class="hero-quals">{{ post.author_qualifications }}</span>
+                  {% endif %}
+                  <span class="hero-date">{{ post.date }}</span>
+                  <span class="hero-readtime">{{ post.read_time }}</span>
+                </div>
+                <p class="hero-summary">{{ post.summary }}</p>
+                <div class="hero-actions">
+                  {% if post.url %}
+                  <a class="btn-primary" href="{{ post.url }}">Open in magazine →</a>
+                  {% endif %}
+                  {% if not loop.last %}
+                  <a class="btn-secondary" href="#post-{{ loop.index + 1 }}">Next →</a>
+                  {% else %}
+                  <a class="btn-secondary" href="#">Back to top</a>
+                  {% endif %}
+                </div>
               </div>
+              <aside class="hero-author-panel">
+                <div class="author-avatar-lg">
+                  {% if post.author_image %}
+                  <img src="{{ post.author_image }}" alt="{{ post.author }}" />
+                  {% else %}
+                  <div class="author-avatar-placeholder">{{ post.author[0] if post.author else 'A' }}</div>
+                  {% endif %}
+                </div>
+                <h3 class="author-name-lg">{{ post.author }}</h3>
+                <p class="author-quals-lg">{{ post.author_bio if post.author_bio else '' }}</p>
+                {% if post.author_website %}
+                <a class="author-link" href="{{ post.author_website }}" target="_blank" rel="noopener">Website</a>
+                {% endif %}
+              </aside>
+            </div>
+          </div>
+
+          <div class="blog-content-wrap">
+            {% if post.content %}
+              <div class="blog-content">{{ post.content | safe }}</div>
+            {% else %}
+              <p class="blog-summary">{{ post.summary }}</p>
+            {% endif %}
+            <div class="blog-foot">
+              <div class="author-byline">
+                <strong>{{ post.author }}</strong>
+                <div class="author-description">{{ post.author_bio if post.author_bio else '' }}</div>
+              </div>
+              <a class="back-top" href="#">Back to top ↑</a>
             </div>
           </div>
         </article>
@@ -153,5 +167,24 @@
   </div>
 
   <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  <script>
+  // If page contains a hash, smooth-scroll the document to that element.
+  (function(){
+    function scrollToAnchor() {
+      var hash = window.location.hash;
+      if (!hash) return;
+      var id = hash.replace(/^#/, '');
+      var target = document.getElementById(id);
+      if (!target) return;
+      // slight delay to allow layout/paint
+      setTimeout(function(){
+        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(e) { target.scrollIntoView(); }
+      }, 60);
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ scrollToAnchor(); });
+    window.addEventListener('hashchange', function(){ scrollToAnchor(); });
+  })();
+  </script>
 </body>
 </html>

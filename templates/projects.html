@@ -156,10 +156,8 @@
                     </header>
                     <p class="blog-summary">{{ post.summary }}</p>
                     <footer>
-                        <a href="{{ post.url }}">Read full post →</a>
+                        <a href="{{ url_for('blogs') }}#post-{{ loop.index }}">Read full post →</a>
                     </footer>
-                    
-                    <!-- Author Bio Section -->
                     <div class="author-bio">
                         <div class="author-avatar">
                             {% if post.author_image %}

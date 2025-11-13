@@ -51,6 +51,8 @@ def init_db() -> None:
             language TEXT,
             word_count INTEGER DEFAULT 0,
             disease_tags TEXT,
+            username TEXT,
+            context TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
@@ -66,6 +68,8 @@ def init_db() -> None:
         cur.execute("ALTER TABLE patients ADD COLUMN disease_tags TEXT")
     if "username" not in cols:
         cur.execute("ALTER TABLE patients ADD COLUMN username TEXT")
+    if "context" not in cols:
+        cur.execute("ALTER TABLE patients ADD COLUMN context TEXT")
     # Table for users
     cur.execute(
         """
@@ -131,8 +135,8 @@ def add_patient_record(data: Dict[str, Any]) -> int:
         INSERT INTO patients (
             truncated_name, age, sex, date, hospital, study,
             reason, technique, findings, conclusion, concern, language,
-            word_count, disease_tags, username
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            word_count, disease_tags, username, context
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             truncate_name(data.get("name", "")),
@@ -150,6 +154,7 @@ def add_patient_record(data: Dict[str, Any]) -> int:
             word_count,
             disease_str,
             data.get("username", ""),
+            data.get("context", ""),
         ),
     )
     conn.commit()

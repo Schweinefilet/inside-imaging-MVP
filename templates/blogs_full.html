@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="navbar">
+  <a href="/" class="nav-logo">Inside Imaging</a>
+  <nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/magazine">Magazine</a>
+    <a href="/blogs">Blogs</a>
+    <a href="/projects">Projects</a>
+    <a href="/team">Team</a>
+    <a href="/help">Help</a>
+  </nav>
+  <div class="theme-switcher">
+    <input type="checkbox" id="theme-toggle" />
+    <label for="theme-toggle">Dark Mode</label>
+  </div>
+</header>
+<main class="blogs-full">
+  <section class="blogs-hero">
+    <h1>Insights</h1>
+    <p>Practical advice from clinicians who turn complex findings into conversations patients actually understand.</p>
+  </section>
+  <article class="blog-post">
+    <h2>Excellence in Radiography: My Journey as a Valedictorian and Beyond</h2>
+    <div class="blog-meta">Mbuya Benjamin &bull; July 2025 &bull; 7 min read</div>
+    <p>A personal reflection on the path to excellence in radiography, exploring the dedication, challenges, and triumphs that shaped a distinguished career in medical imaging.</p>
+    <hr>
+    <p><strong>Mbuya Benjamin</strong><br>Valedictorian and accomplished radiographer sharing insights on professional growth and excellence in medical imaging.</p>
+    <p>[Full blog post content from magazine goes here]</p>
+  </article>
+  <article class="blog-post">
+    <h2>AI in Medical Radiography, Imaging and Radiotherapy: Innovations and Ethical Considerations</h2>
+    <div class="blog-meta">Jevas Kenyanya &bull; July 2025 &bull; 10 min read</div>
+    <p>Exploring the transformative impact of artificial intelligence in medical imaging and radiotherapy, while addressing the critical ethical considerations that must guide its implementation.</p>
+    <hr>
+    <p><strong>Jevas Kenyanya</strong><br>Medical imaging specialist focused on AI integration and ethical frameworks in healthcare technology.</p>
+    <p>[Full blog post content from magazine goes here]</p>
+  </article>
+  <article class="blog-post">
+    <h2>The Evolution Landscape of Radiology: Current Trends and Future Prospects</h2>
+    <div class="blog-meta">Dr. Tima Nassir Ali Khamis &bull; July 2025 &bull; 12 min read</div>
+    <p>An expert review of radiology's evolution, examining current trends in diagnostic imaging and exploring the innovative technologies shaping the future of patient care.</p>
+    <hr>
+    <p><strong>Dr. Tima Nassir Ali Khamis</strong><br>Radiologist and researcher dedicated to advancing diagnostic imaging practices and technology integration in African healthcare.</p>
+    <p>[Full blog post content from magazine goes here]</p>
+  </article>
+</main>
+{% endblock %}

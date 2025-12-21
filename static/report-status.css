@@ -41,7 +41,7 @@
   .analytics-summary {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .summary-card.span-chart,
   .summary-card.languages-summary {
     grid-column: span 2;
@@ -52,7 +52,7 @@
   .analytics-summary {
     grid-template-columns: 1fr;
   }
-  
+
   .summary-card.span-chart,
   .summary-card.languages-summary {
     grid-column: span 1;
@@ -140,7 +140,7 @@
   .analytics-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .analytics-panel.span-full,
   .analytics-panel.span-2-row1,
   .analytics-panel.span-2 {
@@ -152,11 +152,11 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1rem 1.15rem;
+  padding: 0.85rem 1rem;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -178,7 +178,7 @@
 
 .analytics-panel:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 0 0 1px rgba(16, 185, 129, 0.2);
 }
@@ -210,7 +210,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .stat-list li {
@@ -333,7 +333,7 @@
 
 .hover-card:hover {
   transform: translateY(-3px);
-  box-shadow: 
+  box-shadow:
     0 10px 20px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(16, 185, 129, 0.2);
 }
@@ -343,7 +343,7 @@
 }
 
 html.light .hover-card:hover {
-  box-shadow: 
+  box-shadow:
     0 10px 20px rgba(0, 0, 0, 0.12),
     0 0 0 1px rgba(16, 185, 129, 0.3);
 }

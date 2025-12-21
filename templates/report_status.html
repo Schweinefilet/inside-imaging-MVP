@@ -109,9 +109,6 @@
         <!-- Row 1: Age Distribution and Gender Mix (full width each) -->
         <article class="analytics-panel hover-card span-full">
           <h2>Age Distribution</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-age" width="160" height="160"></canvas>
-          </div>
           <ul class="stat-list">
             {% for label, count in stats.age_ranges.items() %}
             <li><span>{{ label }}</span><span>{{ count }}</span></li>
@@ -120,9 +117,6 @@
         </article>
         <article class="analytics-panel hover-card span-full">
           <h2>Gender Mix</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-gender" width="160" height="160"></canvas>
-          </div>
           <ul class="stat-list">
             <li><span>Female</span><span>{{ stats.gender.female }}</span></li>
             <li><span>Male</span><span>{{ stats.gender.male }}</span></li>
@@ -133,9 +127,6 @@
         <!-- Row 2: Modalities and Top Findings -->
         <article class="analytics-panel hover-card">
           <h2>Modalities</h2>
-          <div class="chart-container">
-            <canvas id="pie-chart-modalities" width="160" height="160"></canvas>
-          </div>
           <ul class="stat-list">
             {% for entry in stats.studies %}
             <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>

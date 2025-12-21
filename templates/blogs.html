@@ -188,6 +188,77 @@
       document.addEventListener('DOMContentLoaded', function () { scrollToAnchor(); });
       window.addEventListener('hashchange', function () { scrollToAnchor(); });
     })();
+
+    // Sticky blog navigation with scroll animation
+    (function () {
+      var quickLinks = document.querySelector('.blog-quick-links');
+      if (!quickLinks) return;
+
+      // Create placeholder to prevent layout shift
+      var placeholder = document.createElement('div');
+      placeholder.className = 'blog-quick-links-placeholder';
+      placeholder.style.display = 'none';
+      quickLinks.parentNode.insertBefore(placeholder, quickLinks.nextSibling);
+
+      var blogsHero = document.querySelector('.blogs-hero');
+      var isSticky = false;
+      var originalHeight = quickLinks.offsetHeight;
+
+      // Trigger sticky after scrolling past hero area
+      var stickyThreshold = 380;
+
+      function updateStickyState() {
+        var scrollY = window.scrollY || window.pageYOffset;
+        var shouldBeSticky = scrollY > stickyThreshold;
+
+        if (shouldBeSticky !== isSticky) {
+          isSticky = shouldBeSticky;
+          if (isSticky) {
+            // Store current height before going fixed
+            originalHeight = quickLinks.offsetHeight;
+            placeholder.style.height = originalHeight + 'px';
+            placeholder.style.display = 'block';
+            quickLinks.classList.add('is-sticky');
+          } else {
+            placeholder.style.display = 'none';
+            quickLinks.classList.remove('is-sticky');
+          }
+        }
+      }
+
+      var ticking = false;
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(function () {
+            updateStickyState();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      // Initial check after layout settles
+      setTimeout(function () {
+        updateStickyState();
+      }, 100);
+
+      // Add smooth scrolling to quick-link buttons
+      var links = quickLinks.querySelectorAll('.quick-link');
+      links.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          var targetId = this.getAttribute('href').replace('#', '');
+          var targetEl = document.getElementById(targetId);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Update URL hash without jumping
+            history.pushState(null, null, '#' + targetId);
+          }
+        });
+      });
+    })();
   </script>
 </body>
 

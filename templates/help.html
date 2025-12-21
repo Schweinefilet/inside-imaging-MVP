@@ -1,23 +1,24 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <title>Help - Inside Imaging</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
 
     <!-- Pre-paint: prevent flash on load -->
     <script>
-    (function(){
-      try {
-        var t = localStorage.getItem('theme');
-        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-        var useLight = t ? (t === 'light') : preferLight;
-        if (useLight) document.documentElement.classList.add('light');
-      } catch(e){}
-    })();
+        (function () {
+            try {
+                var t = localStorage.getItem('theme');
+                var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+                var useLight = t ? (t === 'light') : preferLight;
+                if (useLight) document.documentElement.classList.add('light');
+            } catch (e) { }
+        })();
     </script>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
@@ -26,217 +27,247 @@
 
 
 </head>
+
 <body>
-<div class="page-wrapper">
-    <header class="navbar">
-        <div class="navbar-brand">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
-        </div>
-        <nav class="nav-links">
-            <a href="{{ url_for('projects') }}">Projects</a>
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('report_status') }}">Statistics</a>
-            <a href="{{ url_for('team') }}">Our Team</a>
-            <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
-            <a href="{{ url_for('help_page') }}" class="active">Help</a>
-        </nav>
-        <div class="nav-auth">
-            <!-- Slider toggle (replaces the old button) -->
-            <label class="theme-switch" aria-label="Toggle theme">
-                <span class="theme-row">
-                    <span class="theme-icon" aria-hidden="true">🌙</span>
-                    <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-                    <span class="theme-switch-track" aria-hidden="true"></span>
-                    <span class="theme-icon" aria-hidden="true">☀️</span>
-                </span>
-                <span id="theme-label" class="theme-switch-text">Dark mode</span>
-            </label>
-
-
-
-            {% if session.get('username') %}
-            <div class="user-menu">
-                <button class="user-menu-toggle" type="button" aria-expanded="false">
-                    <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
-                    <span class="user-caret" aria-hidden="true">▾</span>
-                </button>
-                <div class="user-menu-dropdown" role="menu" hidden>
-                    <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
-                    <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
-                </div>
+    <div class="page-wrapper">
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo">
             </div>
-            {% else %}
-            <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-            <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-            {% endif %}
-        </div>
-    </header>
+            <nav class="nav-links">
+                <a href="{{ url_for('projects') }}">Projects</a>
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('report_status') }}">Statistics</a>
+                <a href="{{ url_for('team') }}">Our Team</a>
+                <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
+                <a href="{{ url_for('help_page') }}" class="active">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <!-- Slider toggle (replaces the old button) -->
+                <label class="theme-switch" aria-label="Toggle theme">
+                    <span class="theme-row">
+                        <span class="theme-icon" aria-hidden="true">🌙</span>
+                        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch"
+                            aria-checked="false">
+                        <span class="theme-switch-track" aria-hidden="true"></span>
+                        <span class="theme-icon" aria-hidden="true">☀️</span>
+                    </span>
+                    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+                </label>
 
-    <main class="content">
-        <h1>How Can We Help You?</h1>
-        <p class="tagline">Find answers to frequently asked questions or reach out to our support team for personalized assistance.</p>
-        <div class="search-bar">
-            <input type="text" id="help-search" placeholder="Search for help topics...">
-            <button class="search-btn" onclick="searchHelp()">Search</button>
-        </div>
-        <section class="faq-section">
-            <h2>Frequently Asked Questions</h2>
-            <div class="faq-grid">
-                <div class="faq-card">
-                    <h3>What is Inside Imaging?</h3>
-                    <p>Inside Imaging uses AI to transform complex radiology reports into plain language summaries. We highlight key findings, provide definitions for medical terms, and present information in a way that patients and families can understand.</p>
+
+
+                {% if session.get('username') %}
+                <div class="user-menu">
+                    <button class="user-menu-toggle" type="button" aria-expanded="false">
+                        <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+                        <span class="user-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="user-menu-dropdown" role="menu" hidden>
+                        <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+                        <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
+                    </div>
                 </div>
-                <div class="faq-card">
-                    <h3>How do I get my report translated?</h3>
-                    <p>Go to the Dashboard, upload your radiology report (PDF or text), select your preferred language, and click "Upload & Convert". The AI will process your report and generate a simplified summary with visual highlights.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>What languages are supported?</h3>
-                    <p>We currently support English and Kiswahili, with more languages coming soon. The AI translates medical terminology into simple, everyday language in your chosen language.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>How does the highlighting work?</h3>
-                    <p>Important findings are color-coded: red highlights indicate areas that need attention, while green highlights show normal or reassuring findings. Hover over medical terms to see simple definitions.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>How long does processing take?</h3>
-                    <p>Most reports are processed instantly using AI. Complex reports may take a few seconds. You'll see your results immediately on the screen and can download a PDF copy.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>Is my medical information private?</h3>
-                    <p>Yes, absolutely. All personal information is removed before AI processing. We encrypt your data, never store your full reports permanently, and comply with healthcare privacy standards.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>What file formats can I upload?</h3>
-                    <p>You can upload PDF files, text files (.txt), and image formats (PNG, JPG, JPEG, TIF, TIFF, WEBP, BMP). The system will extract the text from your radiology report for processing.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>Can I save my reports for later?</h3>
-                    <p>Yes! Create a free account to save your translated reports permanently. Without an account, your reports are available during your current session only.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>What if the AI misinterprets something?</h3>
-                    <p>Our AI is trained on medical terminology, but it's not a substitute for professional medical advice. Always consult your healthcare provider if you have questions or concerns about your results.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>Can I share my translated report with my doctor?</h3>
-                    <p>Absolutely. You can download a PDF copy of your translated report and share it with your healthcare team. The PDF includes both the simplified explanation and key findings.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>How accurate is the translation?</h3>
-                    <p>Our AI uses advanced language models trained on medical literature to ensure accuracy. However, we recommend using the translation as a guide and discussing any questions with your healthcare provider.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>What types of imaging reports can you process?</h3>
-                    <p>We can process reports from X-rays, CT scans, MRI scans, ultrasounds, PET scans, and other radiology imaging studies. The format should contain text describing the findings.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>Do you offer bulk processing for healthcare providers?</h3>
-                    <p>We're currently in a pilot phase with select healthcare partners. Contact our support team if you're interested in institutional access or bulk processing capabilities.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>What if my report is in a different language?</h3>
-                    <p>Currently, we process reports written in English and translate them to English or Kiswahili. Support for reports in other source languages is planned for future updates.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>Can I delete my reports and account data?</h3>
-                    <p>Yes. You can delete individual reports from your dashboard or contact support to completely remove your account and all associated data from our system.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>Is there a mobile app available?</h3>
-                    <p>Our website is mobile-responsive and works on smartphones and tablets. A dedicated mobile app is being considered for future development based on user feedback.</p>
-                </div>
-                <div class="faq-card">
-                    <h3>What should I do if the upload fails?</h3>
-                    <p>Make sure your file is in a supported format and contains readable text. If problems persist, try converting your PDF to text, check your internet connection, or contact support for assistance.</p>
-                </div>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+                {% endif %}
             </div>
-        </section>
-        <section class="contact-support">
-            <h2>Contact Support</h2>
-            <div class="contact-grid">
-                <form class="support-form" method="post" action="{{ url_for('contact_support') }}">
-                    <h3>Send us a message</h3>
-                    <label for="support-name">Your Name</label>
-                    <input id="support-name" name="name" type="text" placeholder="Type here..." required>
-                    <label for="support-email">Email Address</label>
-                    <input id="support-email" name="email" type="email" placeholder="Type here..." pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" required>
-                    <label for="support-subject">Subject</label>
-                    <input id="support-subject" name="subject" type="text" placeholder="Type here..." required>
-                    <label for="support-message">Message</label>
-                    <textarea id="support-message" name="message" rows="4" placeholder="Type your message..." required></textarea>
-                    <button type="submit" class="primary-btn">Send Message</button>
-                </form>
-                <div class="contact-info">
-                    <h3>Contact Information</h3>
-                    <p>Address: Coming Soon</p>
-                    <p>Phone: Coming Soon</p>
-                    <p>Email: Coming Soon</p>
-                    <p><strong>Support Hours</strong><br>To be announced</p>
-                </div>
+        </header>
+
+        <main class="content">
+            <h1>How Can We Help You?</h1>
+            <p class="tagline">Find answers to frequently asked questions or reach out to our support team for
+                personalized assistance.</p>
+            <div class="search-bar">
+                <input type="text" id="help-search" placeholder="Search for help topics...">
+                <button class="search-btn" onclick="searchHelp()">Search</button>
             </div>
-        </section>
-    </main>
+            <section class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-card">
+                        <h3>What is Inside Imaging?</h3>
+                        <p>Inside Imaging uses AI to transform complex radiology reports into plain language summaries.
+                            We highlight key findings, provide definitions for medical terms, and present information in
+                            a way that patients and families can understand.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How do I get my report translated?</h3>
+                        <p>Go to the Dashboard, upload your radiology report (PDF or text), select your preferred
+                            language, and click "Upload & Convert". The AI will process your report and generate a
+                            simplified summary with visual highlights.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What languages are supported?</h3>
+                        <p>We currently support English and Kiswahili, with more languages coming soon. The AI
+                            translates medical terminology into simple, everyday language in your chosen language.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How does the highlighting work?</h3>
+                        <p>Important findings are color-coded: red highlights indicate areas that need attention, while
+                            green highlights show normal or reassuring findings. Hover over medical terms to see simple
+                            definitions.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How long does processing take?</h3>
+                        <p>Most reports are processed instantly using AI. Complex reports may take a few seconds. You'll
+                            see your results immediately on the screen and can download a PDF copy.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Is my medical information private?</h3>
+                        <p>Yes, absolutely. All personal information is removed before AI processing. We encrypt your
+                            data, never store your full reports permanently, and comply with healthcare privacy
+                            standards.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What file formats can I upload?</h3>
+                        <p>You can upload PDF files, text files (.txt), and image formats (PNG, JPG, JPEG, TIF, TIFF,
+                            WEBP, BMP). The system will extract the text from your radiology report for processing.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Can I save my reports for later?</h3>
+                        <p>Yes! Create a free account to save your translated reports permanently. Without an account,
+                            your reports are available during your current session only.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What if the AI misinterprets something?</h3>
+                        <p>Our AI is trained on medical terminology, but it's not a substitute for professional medical
+                            advice. Always consult your healthcare provider if you have questions or concerns about your
+                            results.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Can I share my translated report with my doctor?</h3>
+                        <p>Absolutely. You can download a PDF copy of your translated report and share it with your
+                            healthcare team. The PDF includes both the simplified explanation and key findings.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>How accurate is the translation?</h3>
+                        <p>Our AI uses advanced language models trained on medical literature to ensure accuracy.
+                            However, we recommend using the translation as a guide and discussing any questions with
+                            your healthcare provider.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What types of imaging reports can you process?</h3>
+                        <p>We can process reports from X-rays, CT scans, MRI scans, ultrasounds, PET scans, and other
+                            radiology imaging studies. The format should contain text describing the findings.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Do you offer bulk processing for healthcare providers?</h3>
+                        <p>We're currently in a pilot phase with select healthcare partners. Contact our support team if
+                            you're interested in institutional access or bulk processing capabilities.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What if my report is in a different language?</h3>
+                        <p>Currently, we process reports written in English and translate them to English or Kiswahili.
+                            Support for reports in other source languages is planned for future updates.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Can I delete my reports and account data?</h3>
+                        <p>Yes. You can delete individual reports from your dashboard or contact support to completely
+                            remove your account and all associated data from our system.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Is there a mobile app available?</h3>
+                        <p>Our website is mobile-responsive and works on smartphones and tablets. A dedicated mobile app
+                            is being considered for future development based on user feedback.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>What should I do if the upload fails?</h3>
+                        <p>Make sure your file is in a supported format and contains readable text. If problems persist,
+                            try converting your PDF to text, check your internet connection, or contact support for
+                            assistance.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="contact-support">
+                <h2>Contact Support</h2>
+                <div class="contact-grid">
+                    <form class="support-form" method="post" action="{{ url_for('contact_support') }}">
+                        <h3>Send us a message</h3>
+                        <label for="support-name">Your Name</label>
+                        <input id="support-name" name="name" type="text" placeholder="Type here..." required>
+                        <label for="support-email">Email Address</label>
+                        <input id="support-email" name="email" type="email" placeholder="Type here..."
+                            pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" required>
+                        <label for="support-subject">Subject</label>
+                        <input id="support-subject" name="subject" type="text" placeholder="Type here..." required>
+                        <label for="support-message">Message</label>
+                        <textarea id="support-message" name="message" rows="4" placeholder="Type your message..."
+                            required></textarea>
+                        <button type="submit" class="primary-btn">Send Message</button>
+                    </form>
+                    <div class="contact-info">
+                        <h3>Contact Information</h3>
+                        <p>Address: Coming Soon</p>
+                        <p>Phone: Coming Soon</p>
+                        <p>Email: Coming Soon</p>
+                        <p><strong>Support Hours</strong><br>To be announced</p>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-    {% include '_footer.html' %}
-</div>
+        {% include '_footer.html' %}
+    </div>
 
-<!-- Theme logic for the slider -->
-<script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <!-- Theme logic for the slider -->
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 
-<script>
-function searchHelp() {
-    var input = document.getElementById('help-search');
-    var filter = input.value.toLowerCase();
-    var cards = document.querySelectorAll('.faq-card');
-    var found = false;
-    
-    cards.forEach(function(card) {
-        var title = card.querySelector('h3').textContent.toLowerCase();
-        var content = card.querySelector('p').textContent.toLowerCase();
-        if (title.includes(filter) || content.includes(filter)) {
-            card.style.display = '';
-            found = true;
-        } else {
-            card.style.display = 'none';
+    <script>
+        function searchHelp() {
+            var input = document.getElementById('help-search');
+            var filter = input.value.toLowerCase();
+            var cards = document.querySelectorAll('.faq-card');
+            var found = false;
+
+            cards.forEach(function (card) {
+                var title = card.querySelector('h3').textContent.toLowerCase();
+                var content = card.querySelector('p').textContent.toLowerCase();
+                if (title.includes(filter) || content.includes(filter)) {
+                    card.style.display = '';
+                    found = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (!found && filter) {
+                alert('No matching help topics found. Try different keywords.');
+            }
         }
-    });
-    
-    if (!found && filter) {
-        alert('No matching help topics found. Try different keywords.');
-    }
-}
 
-// Allow Enter key to trigger search
-document.addEventListener('DOMContentLoaded', function() {
-    var html = document.documentElement;
-    var saved = localStorage.getItem('theme') || 'dark';
-    if (saved === 'light') html.classList.add('light');
+        // Allow Enter key to trigger search
+        document.addEventListener('DOMContentLoaded', function () {
+            var html = document.documentElement;
+            var saved = localStorage.getItem('theme') || 'dark';
+            if (saved === 'light') html.classList.add('light');
 
-    // Keep your settings dropdown logic
-    var settingsButton = document.getElementById('settings-button');
-    var dropdown = document.getElementById('settings-dropdown');
-    if (settingsButton && dropdown) {
-        settingsButton.addEventListener('click', function() {
-            dropdown.classList.toggle('show');
-        });
-    }
-    var toggleDark = document.getElementById('toggle-dark');
-    var toggleLight = document.getElementById('toggle-light');
-    if (toggleDark) toggleDark.addEventListener('click', function(){ html.classList.remove('light'); localStorage.setItem('theme','dark'); });
-    if (toggleLight) toggleLight.addEventListener('click', function(){ html.classList.add('light'); localStorage.setItem('theme','light'); });
-    
-    // Enable Enter key for search
-    var searchInput = document.getElementById('help-search');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                searchHelp();
+            // Keep your settings dropdown logic
+            var settingsButton = document.getElementById('settings-button');
+            var dropdown = document.getElementById('settings-dropdown');
+            if (settingsButton && dropdown) {
+                settingsButton.addEventListener('click', function () {
+                    dropdown.classList.toggle('show');
+                });
+            }
+            var toggleDark = document.getElementById('toggle-dark');
+            var toggleLight = document.getElementById('toggle-light');
+            if (toggleDark) toggleDark.addEventListener('click', function () { html.classList.remove('light'); localStorage.setItem('theme', 'dark'); });
+            if (toggleLight) toggleLight.addEventListener('click', function () { html.classList.add('light'); localStorage.setItem('theme', 'light'); });
+
+            // Enable Enter key for search
+            var searchInput = document.getElementById('help-search');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchHelp();
+                    }
+                });
             }
         });
-    }
-});
-</script>
+    </script>
 </body>
+
 </html>

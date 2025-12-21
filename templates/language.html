@@ -1,33 +1,35 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Magazine Viewer - Inside Imaging</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
 
   <script>
-  (function(){
-    try{
-      var t = localStorage.getItem('theme');
-      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      var useLight = t ? (t === 'light') : preferLight;
-      if (useLight) document.documentElement.classList.add('light');
-    }catch(e){}
-  })();
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch (e) { }
+    })();
   </script>
 
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/magazine.css">
 </head>
+
 <body>
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging Logo" class="logo">
       </div>
       <nav class="nav-links">
         <a href="{{ url_for('projects') }}" class="active">Projects</a>
@@ -47,33 +49,35 @@
           </span>
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
-          {% if session.get('username') %}
-          <div class="user-menu">
-            <button class="user-menu-toggle" type="button" aria-expanded="false">
-              <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
-              <span class="user-caret" aria-hidden="true">▾</span>
-            </button>
-            <div class="user-menu-dropdown" role="menu" hidden>
-              <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
-              <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
-            </div>
+        {% if session.get('username') %}
+        <div class="user-menu">
+          <button class="user-menu-toggle" type="button" aria-expanded="false">
+            <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+            <span class="user-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="user-menu-dropdown" role="menu" hidden>
+            <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+            <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
           </div>
-          {% else %}
-          <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-          <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-          {% endif %}
+        </div>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% endif %}
       </div>
     </header>
 
     <main class="content magazine-page">
       <section class="magazine-hero">
         <h1>Inside Imaging Magazine</h1>
-        <p>Explore our curated bimonthly magazine featuring in-depth articles, patient success stories, and radiologist insights tailored for patients and clinicians alike.</p>
+        <p>Explore our curated bimonthly magazine featuring in-depth articles, patient success stories, and radiologist
+          insights tailored for patients and clinicians alike.</p>
       </section>
 
       <section class="magazine-toolbar" aria-label="Magazine controls">
         {% if magazine_url %}
-        <a href="{{ magazine_url }}" target="_blank" rel="noopener" aria-label="Open magazine in new tab">Open in new tab</a>
+        <a href="{{ magazine_url }}" target="_blank" rel="noopener" aria-label="Open magazine in new tab">Open in new
+          tab</a>
         <a href="{{ magazine_url }}" download aria-label="Download PDF">Download issue</a>
         {% else %}
         <span style="color: var(--muted);">The latest issue will appear here soon.</span>
@@ -99,13 +103,15 @@
       {% else %}
       <section class="magazine-placeholder">
         <h2>No issue uploaded yet</h2>
-        <p>Upload `static/magazine/latest.pdf` to publish the newest Inside Imaging Magazine issue. Your readers will see it instantly here.</p>
+        <p>Upload `static/magazine/latest.pdf` to publish the newest Inside Imaging Magazine issue. Your readers will
+          see it instantly here.</p>
       </section>
       {% endif %}
 
       <section class="magazine-history">
         <h2>Recent Editions</h2>
-        <p>Highlighting topics from recent issues. Add archives to `static/magazine/` and list them here for quick access.</p>
+        <p>Highlighting topics from recent issues. Add archives to `static/magazine/` and list them here for quick
+          access.</p>
         <ul>
           {% for item in archive %}
           <li>
@@ -126,51 +132,52 @@
 
   <script src="/static/theme.js"></script>
   <script>
-  (function(){
-    var frame = document.querySelector('.magazine-frame iframe');
-    var loader = document.getElementById('magazine-loader');
-    if (!frame || !loader) return;
-    loader.classList.add('is-active');
-    
-    // Use a longer timeout as fallback in case load event doesn't fire
-    var timeoutId = setTimeout(function() {
-      loader.classList.remove('is-active');
-      loader.classList.add('is-hidden');
-    }, 60000); // 60 seconds timeout
-    
-    var hide = function() {
-      clearTimeout(timeoutId);
-      // Add a longer delay to ensure PDF is fully rendered and visible
-      setTimeout(function() {
+    (function () {
+      var frame = document.querySelector('.magazine-frame iframe');
+      var loader = document.getElementById('magazine-loader');
+      if (!frame || !loader) return;
+      loader.classList.add('is-active');
+
+      // Use a longer timeout as fallback in case load event doesn't fire
+      var timeoutId = setTimeout(function () {
         loader.classList.remove('is-active');
         loader.classList.add('is-hidden');
-      }, 6000); // 6 second delay after iframe load
-    };
-    
-    frame.addEventListener('load', hide, { once: true });
-    
-    // Handle page hash navigation for blog post links
-    function navigateToPage() {
-      if (window.location.hash && window.location.hash.includes('page=')) {
-        var hash = window.location.hash;
-        var pageMatch = hash.match(/page=(\d+)/);
-        if (pageMatch && pageMatch[1]) {
-          var pageNum = pageMatch[1];
-          var currentSrc = frame.src;
-          // Remove any existing hash from the iframe src
-          var baseUrl = currentSrc.split('#')[0];
-          // Add the page navigation hash in PDF.js format
-          frame.src = baseUrl + '#page=' + pageNum;
+      }, 60000); // 60 seconds timeout
+
+      var hide = function () {
+        clearTimeout(timeoutId);
+        // Add a longer delay to ensure PDF is fully rendered and visible
+        setTimeout(function () {
+          loader.classList.remove('is-active');
+          loader.classList.add('is-hidden');
+        }, 6000); // 6 second delay after iframe load
+      };
+
+      frame.addEventListener('load', hide, { once: true });
+
+      // Handle page hash navigation for blog post links
+      function navigateToPage() {
+        if (window.location.hash && window.location.hash.includes('page=')) {
+          var hash = window.location.hash;
+          var pageMatch = hash.match(/page=(\d+)/);
+          if (pageMatch && pageMatch[1]) {
+            var pageNum = pageMatch[1];
+            var currentSrc = frame.src;
+            // Remove any existing hash from the iframe src
+            var baseUrl = currentSrc.split('#')[0];
+            // Add the page navigation hash in PDF.js format
+            frame.src = baseUrl + '#page=' + pageNum;
+          }
         }
       }
-    }
-    
-    // Navigate on initial load
-    navigateToPage();
-    
-    // Also handle hash changes (if user clicks another blog link while on magazine page)
-    window.addEventListener('hashchange', navigateToPage);
-  })();
+
+      // Navigate on initial load
+      navigateToPage();
+
+      // Also handle hash changes (if user clicks another blog link while on magazine page)
+      window.addEventListener('hashchange', navigateToPage);
+    })();
   </script>
 </body>
+
 </html>

@@ -26,6 +26,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
+from authlib.integrations.flask_client import OAuth
 
 # local db
 from src import db
@@ -57,6 +58,22 @@ if not os.getenv("OPENAI_MODEL"):
 # --- app ---
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
+
+# OAuth configuration
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.getenv('GOOGLE_CLIENT_ID'),
+    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_params=None,
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    authorize_params=None,
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    client_kwargs={'scope': 'openid email profile'},
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
+)
 
 # CORS
 CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS", "https://schweinefilet.github.io")}})
@@ -1890,6 +1907,38 @@ def login():
             return redirect(url_for("dashboard"))
         flash("Invalid username or password.", "error")
     return render_template("login.html")
+
+
+@app.route("/login/google")
+def login_google():
+    redirect_uri = url_for('authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route("/authorize")
+def authorize():
+    token = google.authorize_access_token()
+    resp = google.get('userinfo')
+    user_info = resp.json()
+    email = user_info['email']
+    google_id = user_info['id']
+    name = user_info.get('name', email.split('@')[0])
+
+    # Check if user exists
+    user = db.get_user_by_google_id(google_id)
+    if not user:
+        # Create user if it doesn't exist
+        # We use a unique username if the original one is taken
+        username = name
+        if db.get_user_by_username(username):
+            username = f"{name}_{google_id[:5]}"
+        
+        db.create_oauth_user(username, email, google_id)
+        user = db.get_user_by_google_id(google_id)
+
+    session["username"] = user["username"]
+    flash("Logged in with Google successfully.", "success")
+    return redirect(url_for("dashboard"))
 
 
 @app.route("/signup", methods=["GET", "POST"])

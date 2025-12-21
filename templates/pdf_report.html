@@ -146,18 +146,33 @@
 
 <body>
   <header>
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging">
     <h1>Sample Simplified Radiology Report</h1>
   </header>
 
 
   <!-- Key facts to match sample -->
   <section class="facts">
-    <div class="fact"><div class="label">Modality</div><div class="value">{{ patient.study or '' }}</div></div>
-    <div class="fact"><div class="label">Date</div><div class="value">{{ patient.date or '' }}</div></div>
-    <div class="fact"><div class="label">Age</div><div class="value">{{ patient.age or '' }}</div></div>
-    <div class="fact"><div class="label">Gender</div><div class="value">{{ patient.sex or '' }}</div></div>
-    <div class="fact"><div class="label">Radiology Procedure Done</div><div class="value">{{ patient.study or '' }}</div></div>
+    <div class="fact">
+      <div class="label">Modality</div>
+      <div class="value">{{ patient.study or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Date</div>
+      <div class="value">{{ patient.date or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Age</div>
+      <div class="value">{{ patient.age or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Gender</div>
+      <div class="value">{{ patient.sex or '' }}</div>
+    </div>
+    <div class="fact">
+      <div class="label">Radiology Procedure Done</div>
+      <div class="value">{{ patient.study or '' }}</div>
+    </div>
     <!-- Hospital name intentionally omitted -->
   </section>
 

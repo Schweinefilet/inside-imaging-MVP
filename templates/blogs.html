@@ -1,33 +1,35 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Insights - Inside Imaging</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
 
   <script>
-  (function(){
-    try {
-      var t = localStorage.getItem('theme');
-      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      var useLight = t ? (t === 'light') : preferLight;
-      if (useLight) document.documentElement.classList.add('light');
-    } catch(e) {}
-  })();
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch (e) { }
+    })();
   </script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='blogs.css') }}">
 </head>
+
 <body>
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging Logo" class="logo">
       </div>
       <nav class="nav-links">
         <a href="{{ url_for('projects') }}">Projects</a>
@@ -37,30 +39,30 @@
         <a href="{{ url_for('help_page') }}">Help</a>
       </nav>
       <div class="nav-auth">
-          <label class="theme-switch" aria-label="Toggle theme">
-            <span class="theme-row">
-              <span class="theme-icon" aria-hidden="true">🌙</span>
-              <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-              <span class="theme-switch-track" aria-hidden="true"></span>
-              <span class="theme-icon" aria-hidden="true">☀️</span>
-            </span>
-            <span id="theme-label" class="theme-switch-text">Dark mode</span>
-          </label>
-          {% if session.get('username') %}
-          <div class="user-menu">
-            <button class="user-menu-toggle" type="button" aria-expanded="false">
-              <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
-              <span class="user-caret" aria-hidden="true">▾</span>
-            </button>
-            <div class="user-menu-dropdown" role="menu" hidden>
-              <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
-              <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
-            </div>
+        <label class="theme-switch" aria-label="Toggle theme">
+          <span class="theme-row">
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+            <span class="theme-switch-track" aria-hidden="true"></span>
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+          </span>
+          <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        </label>
+        {% if session.get('username') %}
+        <div class="user-menu">
+          <button class="user-menu-toggle" type="button" aria-expanded="false">
+            <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+            <span class="user-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="user-menu-dropdown" role="menu" hidden>
+            <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+            <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
           </div>
-          {% else %}
-          <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-          <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-          {% endif %}
+        </div>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+        <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+        {% endif %}
       </div>
     </header>
 
@@ -74,7 +76,7 @@
       <nav class="blog-quick-links" aria-label="Jump to post">
         <div class="quick-links-inner">
           {% for post in posts %}
-            <a class="quick-link" href="#post-{{ loop.index }}">{{ post.title }}</a>
+          <a class="quick-link" href="#post-{{ loop.index }}">{{ post.title }}</a>
           {% endfor %}
         </div>
       </nav>
@@ -127,9 +129,9 @@
 
           <div class="blog-content-wrap">
             {% if post.content %}
-              <div class="blog-content">{{ post.content | safe }}</div>
+            <div class="blog-content">{{ post.content | safe }}</div>
             {% else %}
-              <p class="blog-summary">{{ post.summary }}</p>
+            <p class="blog-summary">{{ post.summary }}</p>
             {% endif %}
             <div class="blog-foot">
               <div class="author-byline">
@@ -154,7 +156,8 @@
 
       <section class="blog-submit">
         <h2>Publish Your Perspective</h2>
-        <p>We feature practical guidance, communication strategies, and patient-centered workflows. Submissions are reviewed weekly.</p>
+        <p>We feature practical guidance, communication strategies, and patient-centered workflows. Submissions are
+          reviewed weekly.</p>
         {% if submit_url %}
         <a href="{{ submit_url }}">Pitch a story →</a>
         {% else %}
@@ -168,23 +171,24 @@
 
   <script src="{{ url_for('static', filename='theme.js') }}"></script>
   <script>
-  // If page contains a hash, smooth-scroll the document to that element.
-  (function(){
-    function scrollToAnchor() {
-      var hash = window.location.hash;
-      if (!hash) return;
-      var id = hash.replace(/^#/, '');
-      var target = document.getElementById(id);
-      if (!target) return;
-      // slight delay to allow layout/paint
-      setTimeout(function(){
-        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(e) { target.scrollIntoView(); }
-      }, 60);
-    }
+    // If page contains a hash, smooth-scroll the document to that element.
+    (function () {
+      function scrollToAnchor() {
+        var hash = window.location.hash;
+        if (!hash) return;
+        var id = hash.replace(/^#/, '');
+        var target = document.getElementById(id);
+        if (!target) return;
+        // slight delay to allow layout/paint
+        setTimeout(function () {
+          try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { target.scrollIntoView(); }
+        }, 60);
+      }
 
-    document.addEventListener('DOMContentLoaded', function(){ scrollToAnchor(); });
-    window.addEventListener('hashchange', function(){ scrollToAnchor(); });
-  })();
+      document.addEventListener('DOMContentLoaded', function () { scrollToAnchor(); });
+      window.addEventListener('hashchange', function () { scrollToAnchor(); });
+    })();
   </script>
 </body>
+
 </html>

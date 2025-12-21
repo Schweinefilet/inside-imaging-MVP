@@ -76,10 +76,23 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL
+            password_hash TEXT,
+            email TEXT UNIQUE,
+            google_id TEXT UNIQUE
         )
         """
     )
+    # Ensure upgrade columns exist for users table
+    cur.execute("PRAGMA table_info(users)")
+    user_cols = [row[1] for row in cur.fetchall()]
+    if "email" not in user_cols:
+        cur.execute("ALTER TABLE users ADD COLUMN email TEXT UNIQUE")
+    if "google_id" not in user_cols:
+        cur.execute("ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE")
+    # password_hash should be nullable for OAuth users
+    # SQLite doesn't support ALTER COLUMN, so we rely on the initial CREATE TABLE 
+    # and the fact that we won't enforce NOT NULL in code for OAuth users.
+
     # Table for feedback/corrections from radiologists
     cur.execute(
         """
@@ -475,6 +488,28 @@ def create_user(username: str, password_hash: str) -> None:
     cur.execute(
         "INSERT INTO users (username, password_hash) VALUES (?, ?)",
         (username, password_hash),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_user_by_google_id(google_id: str) -> Optional[sqlite3.Row]:
+    """Retrieve a user by their Google ID."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE google_id = ?", (google_id,))
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+
+def create_oauth_user(username: str, email: str, google_id: str) -> None:
+    """Create a new user via OAuth."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO users (username, email, google_id) VALUES (?, ?, ?)",
+        (username, email, google_id),
     )
     conn.commit()
     conn.close()

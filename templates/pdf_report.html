@@ -7,267 +7,274 @@
   <style>
     @page {
       size: A4;
-      margin: 24mm 18mm;
+      margin: 20mm;
     }
 
     html,
     body {
       padding: 0;
       margin: 0;
-    }
-
-    body {
-      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
-      font-size: 12.5px;
-      line-height: 1.45;
-      color: #000;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: #ffffff;
     }
 
     * {
-      color: #000 !important;
+      box-sizing: border-box;
     }
-
-    /* ensure no white text survives into PDF */
 
     /* Header */
     header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 12mm;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid #f0f0f0;
     }
 
-    header img {
-      height: 40px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    header h1 {
-      font-size: 16px;
-      margin: 0;
-      letter-spacing: .3px;
-      font-weight: 600;
+    /* Logo Styling - Force black on white background */
+    .brand img {
+      height: 38px;
+      /* Use filter to make logo black - simplified for PDF renderer compatibility */
+      filter: grayscale(100%) brightness(0);
     }
 
-    /* Patient block */
-    .patient-name {
-      font-size: 22px;
+    .brand h1 {
+      font-size: 14pt;
       font-weight: 700;
-      margin: 0 0 6mm;
-      text-transform: uppercase;
+      color: #333;
+      margin: 0;
+      letter-spacing: -0.5px;
     }
 
-    .facts {
+    .report-meta {
+      text-align: right;
+      font-size: 9pt;
+      color: #666;
+    }
+
+    /* Patient Card */
+    .patient-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px 14px;
-      margin-bottom: 10mm;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
     }
 
     .fact {
-      display: grid;
-      grid-template-columns: 160px 1fr;
-      gap: 8px;
-      align-items: baseline;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .fact .label {
-      font-size: 11px;
-      letter-spacing: .6px;
-      font-weight: 700;
+      font-size: 8pt;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6c757d;
+      font-weight: 600;
     }
 
     .fact .value {
-      font-size: 12.5px;
+      font-size: 11pt;
+      font-weight: 600;
+      color: #212529;
     }
 
     /* Sections */
     .section {
-      margin: 0 0 8mm;
+      margin-bottom: 2rem;
     }
 
     .section h2 {
-      font-size: 12px;
-      margin: 0 0 6px;
-      letter-spacing: .6px;
-      font-weight: 800;
+      font-size: 10pt;
       text-transform: uppercase;
-    }
-
-    .box {
-      border: 1px solid #111;
-      border-radius: 4px;
-      padding: 10px 12px;
-    }
-
-    /* Output formatting */
-    .simple-output ul {
-      margin: .25rem 0 0;
-      padding-left: 1.1rem;
-    }
-
-    .simple-output li {
-      margin: .15rem 0;
-    }
-
-    .simple-output strong.negative,
-    .simple-output strong.positive {
+      letter-spacing: 1px;
+      color: #10b981;
+      /* Mint green accent */
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+      margin: 0 0 1rem 0;
       font-weight: 700;
     }
 
-    /* keep emphasis, but black */
+    .content-box {
+      font-size: 11pt;
+      color: #374151;
+    }
 
-    /* Footer org block */
+    .content-box ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .content-box li {
+      margin-bottom: 0.25rem;
+    }
+
+    /* Typography matches result.html style */
+    strong.positive {
+      color: #166534;
+      font-weight: 700;
+      background: #dcfce7;
+      padding: 0 4px;
+      border-radius: 3px;
+    }
+
+    strong.negative {
+      color: #b91c1c;
+      font-weight: 700;
+      background: #fee2e2;
+      padding: 0 4px;
+      border-radius: 3px;
+    }
+
+    /* Footer */
     footer {
-      margin-top: 12mm;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid #f0f0f0;
+      font-size: 9pt;
+      color: #6b7280;
     }
 
-    .org-grid {
+    .footer-grid {
       display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 6px 14px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
     }
 
-    .org-grid .label {
-      font-size: 11px;
-      font-weight: 700;
+    .footer-col h3 {
+      font-size: 8pt;
       text-transform: uppercase;
-      letter-spacing: .6px;
+      margin: 0 0 0.5rem 0;
+      color: #9ca3af;
     }
 
-    /* Fine rules */
-    .rule {
-      height: 1px;
-      background: #111;
-      margin: 10mm 0 7mm;
+    .footer-info div {
+      margin-bottom: 0.25rem;
+    }
+
+    /* Warning box */
+    .warn {
+      background: #fff7ed;
+      border-left: 4px solid #f97316;
+      padding: 1rem;
+      border-radius: 4px;
     }
   </style>
 </head>
 
 <body>
+
   <header>
-    <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging">
-    <h1>Sample Simplified Radiology Report</h1>
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging">
+      <!-- Optional: branding text next to logo if needed, or just logo -->
+    </div>
+    <div class="report-meta">
+      <div><strong>Report Generated:</strong> {{ structured.date if structured.date else "Today" }}</div>
+      <div><strong>Ref ID:</strong> #{{ range(1000, 9999) | random }}</div>
+    </div>
   </header>
 
+  <div class="patient-card">
+    <div class="fact">
+      <span class="label">Patient Name</span>
+      <span class="value">{{ patient.name or 'Not specified' }}</span>
+    </div>
+    <div class="fact">
+      <span class="label">Study Type</span>
+      <span class="value">{{ patient.study or 'Medical Image Analysis' }}</span>
+    </div>
+    <div class="fact">
+      <span class="label">Date of Scan</span>
+      <span class="value">{{ patient.date or 'Unknown' }}</span>
+    </div>
+    <div class="fact">
+      <span class="label">Patient Age</span>
+      <span class="value">{{ patient.age or 'Unknown' }}</span>
+    </div>
+    <div class="fact">
+      <span class="label">Gender</span>
+      <span class="value">{{ patient.sex or 'Unknown' }}</span>
+    </div>
+    <!-- Add more fields if available in patient object -->
+  </div>
 
-  <!-- Key facts to match sample -->
-  <section class="facts">
-    <div class="fact">
-      <div class="label">Modality</div>
-      <div class="value">{{ patient.study or '' }}</div>
+  <div class="section">
+    <h2>Reason for Scan</h2>
+    <div class="content-box">
+      {{ structured.reason|safe }}
     </div>
-    <div class="fact">
-      <div class="label">Date</div>
-      <div class="value">{{ patient.date or '' }}</div>
-    </div>
-    <div class="fact">
-      <div class="label">Age</div>
-      <div class="value">{{ patient.age or '' }}</div>
-    </div>
-    <div class="fact">
-      <div class="label">Gender</div>
-      <div class="value">{{ patient.sex or '' }}</div>
-    </div>
-    <div class="fact">
-      <div class="label">Radiology Procedure Done</div>
-      <div class="value">{{ patient.study or '' }}</div>
-    </div>
-    <!-- Hospital name intentionally omitted -->
-  </section>
+  </div>
 
-  <div class="rule"></div>
+  <div class="section">
+    <h2>Procedure Details</h2>
+    <div class="content-box">
+      {{ structured.technique|safe }}
+    </div>
+  </div>
 
-  <!-- WHAT WAS DONE -->
-  <section class="section">
-    <h2>What Was Done</h2>
-    <div class="box simple-output">{{ structured.technique|safe }}</div>
-  </section>
-
-  <!-- IMPORTANT FINDINGS -->
-  <section class="section">
+  <div class="section">
     <h2>Important Findings</h2>
-    <div class="box simple-output">{{ structured.findings|safe }}</div>
-  </section>
-
-  <!-- CONCLUSIONS -->
-  <section class="section">
-    <h2>Conclusions</h2>
-    <div class="box simple-output">{{ structured.conclusion|safe }}</div>
-  </section>
-
-  <!-- BRAIN VISUALIZATION (print-friendly) - Only show if brain abnormality detected -->
-  {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' and lesion_data %}
-  <section class="section">
-    <h2>Brain Visualization</h2>
-    <div class="box" style="display:flex; flex-direction:column; gap:8px; align-items:center;">
-      <!-- Top / Axial -->
-      <div style="text-align:center;">
-        <svg width="80" height="80" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <ellipse cx="120" cy="120" rx="85" ry="90" fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
-          <ellipse cx="{{ lesion_data.coords[0] }}" cy="{{ lesion_data.coords[1] }}" rx="{{ lesion_data.size }}"
-            ry="{{ (lesion_data.size * 1.2)|int }}" fill="#b30000" />
-        </svg>
-        <p style="font-size:10px; margin:2px 0;">Top (Axial)</p>
-      </div>
-      <!-- Side / Sagittal -->
-      <div style="text-align:center;">
-        <svg width="80" height="80" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path
-            d="M60,120 Q60,50 100,35 Q140,50 160,70 Q175,90 178,120 Q175,150 165,175 Q150,195 120,205 Q90,200 70,175 Q60,150 60,120"
-            fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
-          <ellipse cx="{{ lesion_data.coords[2] }}" cy="{{ lesion_data.coords[3] }}"
-            rx="{{ (lesion_data.size * 0.9)|int }}" ry="{{ (lesion_data.size * 1.1)|int }}" fill="#b30000" />
-        </svg>
-        <p style="font-size:10px; margin:2px 0;">Side (Sagittal)</p>
-      </div>
-      <!-- Front / Coronal -->
-      <div style="text-align:center;">
-        <svg width="80" height="80" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path
-            d="M50,120 Q50,60 80,45 Q110,40 120,40 Q130,40 160,45 Q190,60 190,120 Q185,150 170,175 Q150,195 120,200 Q90,195 70,175 Q55,150 50,120"
-            fill="#e9f6fb" stroke="#333" stroke-width="1.5" />
-          <ellipse cx="{{ lesion_data.coords[4] }}" cy="{{ lesion_data.coords[5] }}"
-            rx="{{ (lesion_data.size * 0.95)|int }}" ry="{{ (lesion_data.size * 1.1)|int }}" fill="#b30000" />
-        </svg>
-        <p style="font-size:10px; margin:2px 0;">Front (Coronal)</p>
-      </div>
+    <div class="content-box">
+      {{ structured.findings|safe }}
     </div>
-    <p style="font-size:11px; color:#222; margin-top:6px;">Lesion location ({{ lesion_data.location }}) and approximate
-      size derived from report text. Not a diagnostic image.</p>
-  </section>
-  {% endif %}
+  </div>
 
-  <!-- NOTE OF CONCERN (optional) -->
+  <div class="section">
+    <h2>Conclusion</h2>
+    <div class="content-box">
+      {{ structured.conclusion|safe }}
+    </div>
+  </div>
+
   {% if structured.concern %}
-  <section class="section">
+  <div class="section">
     <h2>Note of Concern</h2>
-    <div class="box simple-output">{{ structured.concern|safe }}</div>
-  </section>
+    <div class="content-box warn">
+      {{ structured.concern|safe }}
+    </div>
+  </div>
   {% endif %}
 
-  <!-- REASON FOR DOING THE SCAN -->
-  <section class="section">
-    <h2>Reason for Doing the Scan</h2>
-    <div class="box simple-output">{{ structured.reason|safe }}</div>
-  </section>
+  <!-- Visualization removed as requested -->
 
-  <!-- GENERATED BY + Contact Information -->
-  <footer class="section">
-    <h2>Generated By</h2>
-    <div class="box org-grid">
-      <div class="label">Contact Information</div>
-      <div>{{ org.name if org and org.name else 'Inside Imaging' }}</div>
-      <div class="label">Phone Number</div>
-      <div>{{ org.phone if org and org.phone else '' }}</div>
-      <div class="label">Email</div>
-      <div>{{ org.email if org and org.email else '' }}</div>
-      <div class="label">Website</div>
-      <div>{{ org.website if org and org.website else '' }}</div>
-      <div class="label">Office Location</div>
-      <div>{{ org.address if org and org.address else '' }}</div>
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3>Generated By</h3>
+        <div class="footer-info">
+          <div><strong>{{ org.name if org and org.name else 'Inside Imaging AI' }}</strong></div>
+          <div>{{ org.address if org and org.address else '' }}</div>
+          <div>{{ org.website if org and org.website else '' }}</div>
+        </div>
+      </div>
+      <div class="footer-col" style="text-align: right;">
+        <h3>Disclaimer</h3>
+        <p style="margin:0;">
+          This report was generated by an AI assistant for patient education purposes only.
+          It is not a replacement for a professional medical diagnosis.
+          Please consult with your physician for clinical decision making.
+        </p>
+      </div>
     </div>
   </footer>
+
 </body>
 
 </html>

@@ -86,9 +86,12 @@ def init_db() -> None:
     cur.execute("PRAGMA table_info(users)")
     user_cols = [row[1] for row in cur.fetchall()]
     if "email" not in user_cols:
-        cur.execute("ALTER TABLE users ADD COLUMN email TEXT UNIQUE")
+        cur.execute("ALTER TABLE users ADD COLUMN email TEXT")
+    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)")
+    
     if "google_id" not in user_cols:
-        cur.execute("ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE")
+        cur.execute("ALTER TABLE users ADD COLUMN google_id TEXT")
+    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)")
     # password_hash should be nullable for OAuth users
     # SQLite doesn't support ALTER COLUMN, so we rely on the initial CREATE TABLE 
     # and the fact that we won't enforce NOT NULL in code for OAuth users.

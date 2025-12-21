@@ -102,6 +102,25 @@
     .light .ii-text { color: var(--text) !important; }
 
     /* Components */
+    .visual-sections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .visual-section-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .visual-section-box h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--mint);
+      font-size: 1.3rem;
+    }
     .diagram-container{
       position:relative; width:200px; height:500px; margin:1rem auto;
       background-color:var(--panel-2); border-radius:10px; box-shadow:var(--shadow);
@@ -301,7 +320,6 @@
       <a href="{{ url_for('dashboard') }}">Dashboard</a>
       <a href="{{ url_for('report_status') }}">Statistics</a>
       <a href="{{ url_for('team') }}">Our Team</a>
-      <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
       <a href="{{ url_for('help_page') }}">Help</a>
     </nav>
     <div class="nav-auth">
@@ -337,8 +355,8 @@
     <h1>Report Summary</h1>
 
     <div class="patient-card">
-      <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
-      <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
+      <!-- Hospital name removed as requested -->
+      <div><span class="lbl">Study</span><strong data-study-type="{{ patient.study|default('Unknown', true) }}">{{ patient.study|default('Unknown', true) }}</strong></div>
       {% if patient.name %}
       <div><span class="lbl">Name</span><strong>{{ patient.name }}</strong></div>
       {% endif %}
@@ -347,10 +365,89 @@
       <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>
     </div>
 
-    <section>
-      <h2>Body Region Highlight</h2>
-      <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
+    {% if language and (language != 'English' and not is_sw) %}
+      <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
+    {% endif %}
+
+    <div class="report">
+      <section>
+        <h3>{{ 'Sababu ya Uchunguzi' if is_sw else 'Reason for the Scan' }}</h3>
+        <p class="simple-output">{{ structured.reason|default('', true)|safe }}</p>
+      </section>
+      <section>
+        <h3>{{ 'Maelezo ya Utaratibu' if is_sw else 'Procedure Details' }}</h3>
+        <p class="simple-output">{{ structured.technique|default('', true)|safe }}</p>
+      </section>
+      <section class="important-findings">
+        <h3>{{ 'Matokeo Muhimu' if is_sw else 'Important Findings' }}</h3>
+        <div class="simple-output">{{ structured.findings|default('', true)|safe }}</div>
+      </section>
+      <section>
+        <h3>{{ 'Hitimisho' if is_sw else 'Conclusion' }}</h3>
+        <div class="simple-output">{{ structured.conclusion|default('', true)|safe }}</div>
+      </section>
+      {% if structured.concern %}
+      <section class="warn">
+        <h3>{{ 'Tahadhari' if is_sw else 'Note of Concern' }}</h3>
+        <p class="simple-output">{{ structured.concern|safe }}</p>
+      </section>
+      {% endif %}
+    </div>
+
+    <details>
+      <summary>Extracted text</summary>
+      <pre>{{ extracted }}</pre>
+    </details>
+
+    <section class="report-section">
+      <h2>Report Statistics</h2>
+      <div class="stat-badges">
+        <span class="badge">Words: {{ structured.word_count|default(report_stats.words, true) }}</span>
+        <span class="badge">Sentences: {{ structured.sentence_count|default(report_stats.sentences, true) }}</span>
+        <span class="badge positive">Highlighted positive: {{ structured.highlights_positive|default(report_stats.highlights_positive, true) }}</span>
+        <span class="badge negative">Highlighted negative: {{ structured.highlights_negative|default(report_stats.highlights_negative, true) }}</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="label">Comparison</span><span class="value">{{ structured.comparison or 'None' }}</span></div>
+        <div class="stat-card"><span class="label">Oral contrast</span><span class="value">{{ structured.oral_contrast or 'Not stated' }}</span></div>
+      </div>
     </section>
+
+    <section class="report-actions" style="margin:1rem 0;">
+      <form method="post" action="{{ url_for('download_pdf') }}">
+        <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
+        <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
+        <button type="submit" class="btn">Download PDF</button>
+      </form>
+    </section>
+
+    <!-- Hidden data attributes for organ detection -->
+    <div style="display: none;" 
+         data-findings-text="{{ structured.findings|default('', true)|striptags }}"
+         data-conclusion-text="{{ structured.conclusion|default('', true)|striptags }}">
+    </div>
+
+    <!-- Visual sections grid: Body Region Highlight, Anatomy, and Educational Images -->
+    <div class="visual-sections-grid">
+      <div class="visual-section-box">
+        <h2>Body Region Highlight</h2>
+        <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
+      </div>
+      
+      <!-- Anatomy toggle control is visible; actual anatomy/reference box starts hidden -->
+      <div style="display:flex; align-items:center; justify-content:flex-end; margin-bottom:0.25rem;">
+        <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.95rem;">
+          <input id="toggle-anatomy" type="checkbox" />
+          <span id="toggle-anatomy-label">Show anatomy diagrams</span>
+        </label>
+      </div>
+
+      <!-- Hidden anatomy & reference box (will be shown when toggle enabled) -->
+      <div id="anatomy-wrapper" class="visual-section-box" style="display: none;">
+        <h2 style="margin-top:0;">Anatomy & Reference</h2>
+        <div id="organ-anatomy-container"></div>
+      </div>
+    </div>
 
     {# Old 3-plane reconstruction visualizations removed - using universal organ detection system below #}
     {# ANATOMY DIAGRAMS DISABLED - Uncomment sections below to re-enable #}
@@ -704,61 +801,6 @@
 
     {% set lang_lower = (language or 'English')|lower %}
     {% set is_sw = lang_lower in ['kiswahili','swahili'] %}
-    {% if language and (language != 'English' and not is_sw) %}
-      <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
-    {% endif %}
-
-    <section class="report-section">
-      <h2>Report Statistics</h2>
-      <div class="stat-badges">
-        <span class="badge">Words: {{ structured.word_count|default(report_stats.words, true) }}</span>
-        <span class="badge">Sentences: {{ structured.sentence_count|default(report_stats.sentences, true) }}</span>
-        <span class="badge positive">Highlighted positive: {{ structured.highlights_positive|default(report_stats.highlights_positive, true) }}</span>
-        <span class="badge negative">Highlighted negative: {{ structured.highlights_negative|default(report_stats.highlights_negative, true) }}</span>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card"><span class="label">Comparison</span><span class="value">{{ structured.comparison or 'None' }}</span></div>
-        <div class="stat-card"><span class="label">Oral contrast</span><span class="value">{{ structured.oral_contrast or 'Not stated' }}</span></div>
-      </div>
-    </section>
-
-    <section class="report-actions" style="margin:1rem 0;">
-      <form method="post" action="{{ url_for('download_pdf') }}">
-        <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
-        <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
-        <button type="submit" class="btn">Download PDF</button>
-      </form>
-    </section>
-
-    <div class="report">
-      <section>
-        <h3>{{ 'Sababu ya Uchunguzi' if is_sw else 'Reason for the Scan' }}</h3>
-        <p class="simple-output">{{ structured.reason|default('', true)|safe }}</p>
-      </section>
-      <section>
-        <h3>{{ 'Maelezo ya Utaratibu' if is_sw else 'Procedure Details' }}</h3>
-        <p class="simple-output">{{ structured.technique|default('', true)|safe }}</p>
-      </section>
-      <section class="important-findings">
-        <h3>{{ 'Matokeo Muhimu' if is_sw else 'Important Findings' }}</h3>
-        <div class="simple-output">{{ structured.findings|default('', true)|safe }}</div>
-      </section>
-      <section>
-        <h3>{{ 'Hitimisho' if is_sw else 'Conclusion' }}</h3>
-        <div class="simple-output">{{ structured.conclusion|default('', true)|safe }}</div>
-      </section>
-      {% if structured.concern %}
-      <section class="warn">
-        <h3>{{ 'Tahadhari' if is_sw else 'Note of Concern' }}</h3>
-        <p class="simple-output">{{ structured.concern|safe }}</p>
-      </section>
-      {% endif %}
-    </div>
-
-    <details>
-      <summary>Extracted text</summary>
-      <pre>{{ extracted }}</pre>
-    </details>
 
     <p><a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a></p>
   </main>
@@ -1256,5 +1298,6 @@
 
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 <script src="{{ url_for('static', filename='loader.js') }}"></script>
+<script src="{{ url_for('static', filename='organ-highlight.js') }}"></script>
 </body>
 </html>

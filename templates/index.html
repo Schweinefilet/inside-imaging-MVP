@@ -1,34 +1,35 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Inside Imaging</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
-  
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
+
   <!-- Pre-paint: prevent flash on load -->
   <script>
-  (function(){
-    try {
-      var t = localStorage.getItem('theme');
-      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      var useLight = t ? (t === 'light') : preferLight;
-      if (useLight) {
-        document.documentElement.classList.add('light');
-      }
-    } catch(e){}
-  })();
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) {
+          document.documentElement.classList.add('light');
+        }
+      } catch (e) { }
+    })();
   </script>
-  
+
   <link rel="stylesheet" href="/static/main.css">
   <link rel="stylesheet" href="/static/dashboard.css">
   <link rel="stylesheet" href="/static/loader.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='compare.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='testimonials.css') }}">
-  
+
   <style>
     /* Flash message styles */
     #flash-container {
@@ -40,6 +41,7 @@
       display: grid;
       gap: 0.75rem;
     }
+
     .flash-message {
       color: #ffffff;
       padding: 0.9rem 1.2rem;
@@ -53,26 +55,32 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
       backdrop-filter: blur(6px);
     }
+
     .flash-message strong {
       font-size: 0.95rem;
       display: block;
       margin-bottom: 0.2rem;
     }
+
     .flash-body {
       flex: 1 1 auto;
       min-width: 0;
     }
+
     .flash-body span {
       display: block;
       font-size: 0.85rem;
       word-break: break-word;
     }
+
     .flash-error {
       background: rgba(220, 38, 38, 0.92);
     }
+
     .flash-success {
       background: rgba(34, 197, 94, 0.92);
     }
+
     .flash-close {
       background: none;
       border: none;
@@ -84,20 +92,24 @@
       opacity: 0.8;
       transition: opacity 0.2s ease;
     }
+
     .flash-close:hover,
     .flash-close:focus-visible {
       opacity: 1;
     }
+
     @keyframes flashSlideIn {
       from {
         transform: translateY(-12px);
         opacity: 0;
       }
+
       to {
         transform: translateY(0);
         opacity: 1;
       }
     }
+
     @media (max-width: 640px) {
       #flash-container {
         top: 72px;
@@ -108,11 +120,12 @@
     }
   </style>
 </head>
+
 <body>
   <div class="page-wrapper">
     <header class="navbar">
       <div class="navbar-brand">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging Logo" class="logo">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging Logo" class="logo">
       </div>
       <nav class="nav-links">
         <a href="{{ url_for('projects') }}">Projects</a>
@@ -123,25 +136,25 @@
       </nav>
       <div class="nav-auth">
 
-<!-- Slider toggle (replaces the old button) -->
-<label class="theme-switch" aria-label="Toggle theme">
-    <span class="theme-row">
-        <span class="theme-icon" aria-hidden="true">🌙</span>
-        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-        <span class="theme-switch-track" aria-hidden="true"></span>
-        <span class="theme-icon" aria-hidden="true">☀️</span>
-    </span>
-    <span id="theme-label" class="theme-switch-text">Dark mode</span>
-</label>
-<script>
-(function(){
-  var toggle = document.getElementById('theme-toggle');
-  if (!toggle) return;
-  var isLight = document.documentElement.classList.contains('light');
-  toggle.checked = isLight;
-  toggle.setAttribute('aria-checked', isLight ? 'true' : 'false');
-})();
-</script>
+        <!-- Slider toggle (replaces the old button) -->
+        <label class="theme-switch" aria-label="Toggle theme">
+          <span class="theme-row">
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+            <span class="theme-switch-track" aria-hidden="true"></span>
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+          </span>
+          <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        </label>
+        <script>
+          (function () {
+            var toggle = document.getElementById('theme-toggle');
+            if (!toggle) return;
+            var isLight = document.documentElement.classList.contains('light');
+            toggle.checked = isLight;
+            toggle.setAttribute('aria-checked', isLight ? 'true' : 'false');
+          })();
+        </script>
 
         {% if session.get('username') %}
         <div class="user-menu">
@@ -163,29 +176,30 @@
 
     <!-- Flash Messages Popup -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div id="flash-container">
-          {% for category, message in messages %}
-            <div class="flash-message flash-{{ category }}" role="status" aria-live="assertive">
-              <div class="flash-body">
-                <strong>{% if category == 'error' %}❌ Upload Rejected{% else %}✓ Success{% endif %}</strong>
-                <span>{{ message }}</span>
-              </div>
-              <button type="button" onclick="this.parentElement.remove()" class="flash-close" aria-label="Dismiss notification">×</button>
-            </div>
-          {% endfor %}
+    {% if messages %}
+    <div id="flash-container">
+      {% for category, message in messages %}
+      <div class="flash-message flash-{{ category }}" role="status" aria-live="assertive">
+        <div class="flash-body">
+          <strong>{% if category == 'error' %}❌ Upload Rejected{% else %}✓ Success{% endif %}</strong>
+          <span>{{ message }}</span>
         </div>
-        <script>
-          // Auto-dismiss flash messages after 8 seconds
-          setTimeout(function() {
-            var container = document.getElementById('flash-container');
-            if (container) {
-              container.style.animation = 'slideOut 0.3s ease';
-              setTimeout(function() { container.remove(); }, 300);
-            }
-          }, 8000);
-        </script>
-      {% endif %}
+        <button type="button" onclick="this.parentElement.remove()" class="flash-close"
+          aria-label="Dismiss notification">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      // Auto-dismiss flash messages after 8 seconds
+      setTimeout(function () {
+        var container = document.getElementById('flash-container');
+        if (container) {
+          container.style.animation = 'slideOut 0.3s ease';
+          setTimeout(function () { container.remove(); }, 300);
+        }
+      }, 8000);
+    </script>
+    {% endif %}
     {% endwith %}
 
     <main class="content">
@@ -197,12 +211,15 @@
           <section class="upload-section">
             <h2>Upload New Report</h2>
             <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
-              <input type="file" name="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.heic,.heif,.docx,.tif,.tiff,.webp,.bmp" required>
+              <input type="file" name="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.heic,.heif,.docx,.tif,.tiff,.webp,.bmp"
+                required>
               <p style="font-size: 0.85em; color: var(--text-muted); margin: 0.5rem 0;">
                 Supported formats: PDF, Word (DOCX), Images (PNG, JPG, HEIC/HEIF, TIFF, WebP, BMP), or plain text
               </p>
-                <label for="context" style="margin-top: 1em;">Context for Visit (optional):</label>
-                <textarea name="context" id="context" rows="3" placeholder="Describe why you visited the doctor, previous diseases, symptoms, etc." style="width:100%;margin-bottom:1em;"></textarea>
+              <label for="context" style="margin-top: 1em;">Context for Visit (optional):</label>
+              <textarea name="context" id="context" rows="3"
+                placeholder="Describe why you visited the doctor, previous diseases, symptoms, etc."
+                style="width:100%;margin-bottom:1em;"></textarea>
               <label for="language">Language:</label>
               <select name="language" id="language">
                 {% for language in languages %}
@@ -218,16 +235,10 @@
             <p class="transformation-subtitle">Compare raw medical phrasing with patient-friendly wording.</p>
             <div class="compare-container-compact" data-mode="drag">
               <div class="compare-wrapper-compact">
-                <img 
-                  src="{{ url_for('static', filename='after-report.png') }}" 
-                  alt="Simplified patient-friendly report after translation" 
-                  class="compare-image first"
-                />
-                <img 
-                  src="{{ url_for('static', filename='before-report.png') }}" 
-                  alt="Complex medical report before translation" 
-                  class="compare-image second"
-                />
+                <img src="{{ url_for('static', filename='after-report.png') }}"
+                  alt="Simplified patient-friendly report after translation" class="compare-image first" />
+                <img src="{{ url_for('static', filename='before-report.png') }}"
+                  alt="Complex medical report before translation" class="compare-image second" />
                 <div class="compare-slider">
                   <div class="compare-handle"></div>
                 </div>
@@ -247,59 +258,60 @@
             {% if session.get('username') %}
             <p>Your saved reports across all sessions.</p>
             {% else %}
-            <p>Revisit the reports you generated during this session. <a href="{{ url_for('login') }}" style="color: var(--mint);">Log in</a> to save reports permanently.</p>
+            <p>Revisit the reports you generated during this session. <a href="{{ url_for('login') }}"
+                style="color: var(--mint);">Log in</a> to save reports permanently.</p>
             {% endif %}
           </header>
 
           <ul class="reports-history">
             {% if session.get('username') and user_reports %}
-              {% for item in user_reports %}
-              <li class="history-item">
-                <div class="history-info">
-                  <div class="history-primary">
-                    <strong>{{ item.study }}</strong>
-                    <span class="history-language">{{ item.language or 'English' }}</span>
-                  </div>
-                  <div class="history-meta">
-                    <span>{{ item.patient_name }} • {{ item.created_at or 'Just now' }}</span>
-                  </div>
-                  {% if item.disease_tags %}
-                  <div class="history-tags">
-                    {% for tag in item.disease_tags %}
-                    <span>{{ tag }}</span>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
+            {% for item in user_reports %}
+            <li class="history-item">
+              <div class="history-info">
+                <div class="history-primary">
+                  <strong>{{ item.study }}</strong>
+                  <span class="history-language">{{ item.language or 'English' }}</span>
                 </div>
-                <a class="history-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
-              </li>
-              {% endfor %}
+                <div class="history-meta">
+                  <span>{{ item.patient_name }} • {{ item.created_at or 'Just now' }}</span>
+                </div>
+                {% if item.disease_tags %}
+                <div class="history-tags">
+                  {% for tag in item.disease_tags %}
+                  <span>{{ tag }}</span>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+              <a class="history-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
+            </li>
+            {% endfor %}
             {% elif recent_reports %}
-              {% for item in recent_reports %}
-              <li class="history-item">
-                <div class="history-info">
-                  <div class="history-primary">
-                    <strong>{{ item.study }}</strong>
-                    <span class="history-language">{{ item.language or 'English' }}</span>
-                  </div>
-                  <div class="history-meta">
-                    <span>{{ item.created_at or 'Just now' }}</span>
-                  </div>
-                  {% if item.disease_tags %}
-                  <div class="history-tags">
-                    {% for tag in item.disease_tags %}
-                    <span>{{ tag }}</span>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
+            {% for item in recent_reports %}
+            <li class="history-item">
+              <div class="history-info">
+                <div class="history-primary">
+                  <strong>{{ item.study }}</strong>
+                  <span class="history-language">{{ item.language or 'English' }}</span>
                 </div>
-                <a class="history-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
-              </li>
-              {% endfor %}
+                <div class="history-meta">
+                  <span>{{ item.created_at or 'Just now' }}</span>
+                </div>
+                {% if item.disease_tags %}
+                <div class="history-tags">
+                  {% for tag in item.disease_tags %}
+                  <span>{{ tag }}</span>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+              <a class="history-link" href="{{ url_for('report_detail', report_id=item.id) }}">View report →</a>
+            </li>
+            {% endfor %}
             {% else %}
-              <li class="history-item empty">
-                <p>No reports yet. Upload a file to see your history here.</p>
-              </li>
+            <li class="history-item empty">
+              <p>No reports yet. Upload a file to see your history here.</p>
+            </li>
             {% endif %}
           </ul>
 
@@ -350,7 +362,8 @@
               <div class="insight-column">
                 <h4>Gender Mix</h4>
                 <ul class="insight-list">
-                  {% for label, count in {'Female': stats.gender.female, 'Male': stats.gender.male, 'Other': stats.gender.other}.items() %}
+                  {% for label, count in {'Female': stats.gender.female, 'Male': stats.gender.male, 'Other':
+                  stats.gender.other}.items() %}
                   {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
                   <li>
                     <div class="insight-row">
@@ -398,10 +411,13 @@
         <div class="testimonials-container">
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              "This platform has transformed how we communicate complex medical information to our patients. [Testimonial pending pilot program completion]"
+              "This platform has transformed how we communicate complex medical information to our patients.
+              [Testimonial pending pilot program completion]"
             </p>
             <div class="testimonial-author">
-              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
+              <div
+                style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">
+                👤</div>
               <div class="testimonial-info">
                 <p class="testimonial-name">Healthcare Professional</p>
                 <p class="testimonial-title">Pilot Program Participant</p>
@@ -411,10 +427,13 @@
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              "The multilingual support makes a real difference in our diverse patient community. [Feedback from pilot program to be added here]"
+              "The multilingual support makes a real difference in our diverse patient community. [Feedback from pilot
+              program to be added here]"
             </p>
             <div class="testimonial-author">
-              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
+              <div
+                style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">
+                👤</div>
               <div class="testimonial-info">
                 <p class="testimonial-name">Medical Professional</p>
                 <p class="testimonial-title">Early Adopter</p>
@@ -424,10 +443,13 @@
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              "Patients appreciate receiving their reports in plain language. [Real testimonials will be collected during pilot phase]"
+              "Patients appreciate receiving their reports in plain language. [Real testimonials will be collected
+              during pilot phase]"
             </p>
             <div class="testimonial-author">
-              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
+              <div
+                style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">
+                👤</div>
               <div class="testimonial-info">
                 <p class="testimonial-name">Radiology Partner</p>
                 <p class="testimonial-title">Testing Phase</p>
@@ -440,7 +462,9 @@
               "We're excited to be part of this innovative approach to patient care. [Testimonial content pending]"
             </p>
             <div class="testimonial-author">
-              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
+              <div
+                style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">
+                👤</div>
               <div class="testimonial-info">
                 <p class="testimonial-name">Clinical Partner</p>
                 <p class="testimonial-title">Pilot Participant</p>
@@ -450,10 +474,13 @@
 
           <div class="testimonial-card">
             <p class="testimonial-quote">
-              "Early results show promise for improving patient understanding. [Full review coming after pilot completion]"
+              "Early results show promise for improving patient understanding. [Full review coming after pilot
+              completion]"
             </p>
             <div class="testimonial-author">
-              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">👤</div>
+              <div
+                style="width: 60px; height: 60px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted);">
+                👤</div>
               <div class="testimonial-info">
                 <p class="testimonial-name">Healthcare Provider</p>
                 <p class="testimonial-title">Pilot Program</p>
@@ -483,18 +510,19 @@
   <script src="{{ url_for('static', filename='compare.js') }}"></script>
   <script src="{{ url_for('static', filename='testimonials.js') }}"></script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.insight-bar').forEach(function(bar) {
-    var span = bar.querySelector('.insight-progress');
-    if (!span) return;
-    var raw = parseFloat(bar.dataset.progress);
-    var clamped = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 100) : 0;
-    span.style.width = clamped + '%';
-  });
-});
-</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.insight-bar').forEach(function (bar) {
+        var span = bar.querySelector('.insight-progress');
+        if (!span) return;
+        var raw = parseFloat(bar.dataset.progress);
+        var clamped = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 100) : 0;
+        span.style.width = clamped + '%';
+      });
+    });
+  </script>
 
   <script src="/static/loader.js"></script>
 </body>
+
 </html>

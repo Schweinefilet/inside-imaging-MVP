@@ -1,180 +1,171 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <title>Our Team - Inside Imaging</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
-    
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
+
     <!-- Pre-paint: prevent flash on load -->
     <script>
-    (function(){
-      try {
-        var t = localStorage.getItem('theme');
-        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-        var useLight = t ? (t === 'light') : preferLight;
-        if (useLight) document.documentElement.classList.add('light');
-      } catch(e){}
-    })();
+        (function () {
+            try {
+                var t = localStorage.getItem('theme');
+                var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+                var useLight = t ? (t === 'light') : preferLight;
+                if (useLight) document.documentElement.classList.add('light');
+            } catch (e) { }
+        })();
     </script>
-    
+
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='team.css') }}">
 </head>
+
 <body>
-<div class="page-wrapper">
-    <header class="navbar">
-        <div class="navbar-brand">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
-        </div>
-        <nav class="nav-links">
-            <a href="{{ url_for('projects') }}">Projects</a>
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('report_status') }}">Statistics</a>
-            <a href="{{ url_for('team') }}" class="active">Our Team</a>
-            <a href="{{ url_for('help_page') }}">Help</a>
-        </nav>
-        <div class="nav-auth">
-            <!-- Slider toggle -->
-            <label class="theme-switch" aria-label="Toggle theme">
-                <span class="theme-row">
-                    <span class="theme-icon" aria-hidden="true">🌙</span>
-                    <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-                    <span class="theme-switch-track" aria-hidden="true"></span>
-                    <span class="theme-icon" aria-hidden="true">☀️</span>
-                </span>
-                <span id="theme-label" class="theme-switch-text">Dark mode</span>
-            </label>
-
-            {% if session.get('username') %}
-            <div class="user-menu">
-                <button class="user-menu-toggle" type="button" aria-expanded="false">
-                    <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
-                    <span class="user-caret" aria-hidden="true">▾</span>
-                </button>
-                <div class="user-menu-dropdown" role="menu" hidden>
-                    <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
-                    <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
-                </div>
+    <div class="page-wrapper">
+        <header class="navbar">
+            <div class="navbar-brand">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo">
             </div>
-            {% else %}
-            <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-            <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-            {% endif %}
-        </div>
-    </header>
+            <nav class="nav-links">
+                <a href="{{ url_for('projects') }}">Projects</a>
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('report_status') }}">Statistics</a>
+                <a href="{{ url_for('team') }}" class="active">Our Team</a>
+                <a href="{{ url_for('help_page') }}">Help</a>
+            </nav>
+            <div class="nav-auth">
+                <!-- Slider toggle -->
+                <label class="theme-switch" aria-label="Toggle theme">
+                    <span class="theme-row">
+                        <span class="theme-icon" aria-hidden="true">🌙</span>
+                        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch"
+                            aria-checked="false">
+                        <span class="theme-switch-track" aria-hidden="true"></span>
+                        <span class="theme-icon" aria-hidden="true">☀️</span>
+                    </span>
+                    <span id="theme-label" class="theme-switch-text">Dark mode</span>
+                </label>
 
-    <main class="content team-page">
-        <section class="team-hero">
-            <h1>Meet Our Team</h1>
-            <p class="team-tagline">Dedicated professionals working to make healthcare information more accessible.</p>
-        </section>
-
-        <section class="team-grid">
-            <article class="team-member">
-                <div class="member-photo">
-                    <img src="https://ui-avatars.com/api/?name=Team+Member+1&size=400&background=22c55e&color=000&bold=true" alt="Team Member 1">
-                </div>
-                <div class="member-info">
-                    <h2>Team Member</h2>
-                    <p class="member-role">Medical Director</p>
-                    <p class="member-bio">Experienced healthcare professional with expertise in diagnostic imaging and clinical AI applications. Ensures our platform maintains medical accuracy while delivering accessible patient-friendly content.</p>
-                    <div class="member-links">
-                        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-                        <a href="#" target="_blank" rel="noopener">Twitter</a>
+                {% if session.get('username') %}
+                <div class="user-menu">
+                    <button class="user-menu-toggle" type="button" aria-expanded="false">
+                        <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+                        <span class="user-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="user-menu-dropdown" role="menu" hidden>
+                        <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+                        <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
                     </div>
                 </div>
-            </article>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
+                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
+                {% endif %}
+            </div>
+        </header>
 
-            <article class="team-member">
-                <div class="member-photo">
-                    <img src="https://ui-avatars.com/api/?name=Team+Member+2&size=400&background=14b8a6&color=fff&bold=true" alt="Team Member 2">
-                </div>
-                <div class="member-info">
-                    <h2>Team Member</h2>
-                    <p class="member-role">Product Lead</p>
-                    <p class="member-bio">Healthcare technology specialist focused on improving how patients understand medical information. Drives product strategy and oversees platform development initiatives.</p>
-                    <div class="member-links">
-                        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-                        <a href="#" target="_blank" rel="noopener">Twitter</a>
+        <main class="content team-page">
+            <section class="team-hero">
+                <h1>Meet Our Team</h1>
+                <p class="team-tagline">Dedicated professionals working to make healthcare information more accessible.
+                </p>
+            </section>
+
+            <section class="team-grid">
+                <article class="team-member">
+                    <div class="member-photo">
+                        <img src="https://ui-avatars.com/api/?name=Team+Member+1&size=400&background=22c55e&color=000&bold=true"
+                            alt="Team Member 1">
                     </div>
-                </div>
-            </article>
-
-            <article class="team-member">
-                <div class="member-photo">
-                    <img src="https://ui-avatars.com/api/?name=Team+Member+3&size=400&background=10b981&color=000&bold=true" alt="Team Member 3">
-                </div>
-                <div class="member-info">
-                    <h2>Team Member</h2>
-                    <p class="member-role">Patient Experience Lead</p>
-                    <p class="member-bio">Healthcare educator specializing in health literacy and patient communication. Designs frameworks that make complex medical information understandable and actionable for diverse audiences.</p>
-                    <div class="member-links">
-                        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-                        <a href="#" target="_blank" rel="noopener">Twitter</a>
+                    <div class="member-info">
+                        <h2>Cliff Oguk</h2>
+                        <p class="member-role">Founder; Diagnostic Radiographer</p>
+                        <p class="member-bio">to be filled...</p>
+                        <div class="member-links">
+                            <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+                            <a href="#" target="_blank" rel="noopener">Twitter</a>
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
 
-            <article class="team-member">
-                <div class="member-photo">
-                    <img src="https://ui-avatars.com/api/?name=Team+Member+4&size=400&background=059669&color=fff&bold=true" alt="Team Member 4">
-                </div>
-                <div class="member-info">
-                    <h2>Team Member</h2>
-                    <p class="member-role">Engineering Lead</p>
-                    <p class="member-bio">Technology specialist with expertise in machine learning and natural language processing. Develops and maintains our AI translation systems and secure healthcare infrastructure.</p>
-                    <div class="member-links">
-                        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-                        <a href="#" target="_blank" rel="noopener">GitHub</a>
+                <article class="team-member">
+                    <div class="member-photo">
+                        <img src="{{ url_for('static', filename='images/team/keith.jpeg') }}" alt="Keith Duong">
                     </div>
-                </div>
-            </article>
-
-            <article class="team-member">
-                <div class="member-photo">
-                    <img src="https://ui-avatars.com/api/?name=Team+Member+5&size=400&background=047857&color=fff&bold=true" alt="Team Member 5">
-                </div>
-                <div class="member-info">
-                    <h2>Team Member</h2>
-                    <p class="member-role">Design Lead</p>
-                    <p class="member-bio">Designer focused on accessibility and medical visualization. Creates intuitive interfaces and interactive diagrams that help users better understand their health information.</p>
-                    <div class="member-links">
-                        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-                        <a href="#" target="_blank" rel="noopener">Portfolio</a>
+                    <div class="member-info">
+                        <h2>Keith Duong</h2>
+                        <p class="member-role">Full-stack Developer</p>
+                        <p class="member-bio">Full-stack developer specializing in frontend interfaces and application
+                            logic. Built Inside Imaging using Flask, HTML, CSS, and JavaScript—including interactive
+                            report diagrams, PDF viewer, authentication, statistics dashboard, and dark/light mode
+                            support with SQLite backend integration. Focused on designing patient-facing interfaces that
+                            translate clinical requirements into practical web tools.</p>
+                        <div class="member-links">
+                            <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+                            <a href="#" target="_blank" rel="noopener">Twitter</a>
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
 
-            <article class="team-member">
-                <div class="member-photo">
-                    <img src="https://ui-avatars.com/api/?name=Team+Member+6&size=400&background=065f46&color=fff&bold=true" alt="Team Member 6">
-                </div>
-                <div class="member-info">
-                    <h2>Team Member</h2>
-                    <p class="member-role">Clinical Advisor</p>
-                    <p class="member-bio">Healthcare professional advising on clinical best practices and patient communication standards. Ensures our tools align with real-world medical workflows and professional guidelines.</p>
-                    <div class="member-links">
-                        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-                        <a href="#" target="_blank" rel="noopener">Twitter</a>
+                <article class="team-member">
+                    <div class="member-photo">
+                        <img src="{{ url_for('static', filename='images/team/unmesh.jpeg') }}" alt="Unmesh Reza">
                     </div>
-                </div>
-            </article>
-        </section>
+                    <div class="member-info">
+                        <h2>Unmesh Reza</h2>
+                        <p class="member-role">Backend Developer</p>
+                        <p class="member-bio">Backend engineer specializing in AI integration and cloud deployment.
+                            Built Inside Imaging's Flask backend with OpenAI API integration for medical language
+                            processing and designed SQLite database for secure data handling. Deployed and managed
+                            application on AWS Elastic Beanstalk, optimizing for reliability, scalability, and
+                            performance. Focused on building robust server-side systems and deploying AI-powered
+                            applications in production.</p>
+                        <div class="member-links">
+                            <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+                            <a href="#" target="_blank" rel="noopener">Twitter</a>
+                        </div>
+                    </div>
+                </article>
 
-        <section class="team-cta">
-            <h2>Join Our Mission</h2>
-            <p>We're building tools to make healthcare information more accessible for everyone.</p>
-            <a href="{{ url_for('help_page') }}" class="btn-primary">Get in Touch</a>
-        </section>
-    </main>
+                <article class="team-member">
+                    <div class="member-photo">
+                        <img src="{{ url_for('static', filename='images/team/savannah.jpeg') }}" alt="Savannah Prozik">
+                    </div>
+                    <div class="member-info">
+                        <h2>Savannah Prozik</h2>
+                        <p class="member-role">Marketing Lead</p>
+                        <p class="member-bio">Multidisciplinary contributor with clinical, marketing, and research
+                            experience. Manages Inside Imaging's grant applications and video marketing, creating
+                            content with Canva for visual storytelling and advertisements. Brings strong
+                            patient-centered and technical communication skills, digital marketing strategy, project
+                            coordination, and grant writing expertise. Applies analytical and research-based thinking to
+                            ensure content remains accurate, accessible, and grounded in patient needs—bridging
+                            healthcare, technology, and community engagement.</p>
+                        <div class="member-links">
+                            <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+                            <a href="#" target="_blank" rel="noopener">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+            </section>
 
-    {% include '_footer.html' %}
-</div>
+            <section class="team-cta">
+                <h2>Join Our Mission</h2>
+                <p>We're building tools to make healthcare information more accessible for everyone.</p>
+                <a href="{{ url_for('help_page') }}" class="btn-primary">Get in Touch</a>
+            </section>
+        </main>
 
-<script src="{{ url_for('static', filename='theme.js') }}"></script>
+        {% include '_footer.html' %}
+    </div>
+
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
+
 </html>

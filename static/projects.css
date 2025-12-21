@@ -83,7 +83,7 @@ html.light .marquee-kicker {
 /* Ensure headline sits on a semi-transparent pill for legibility */
 .marquee-content h1 {
   display: inline-block;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   padding: 0.25rem 0.6rem;
   border-radius: 8px;
 }
@@ -96,7 +96,7 @@ html.light .marquee-kicker {
 
 /* Add a subtle panel behind the description text for contrast */
 .marquee-description {
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   display: inline-block;
@@ -114,55 +114,67 @@ html.light .marquee-description {
   margin-top: 0.5rem;
 }
 
+/* =============================================================================
+   BUTTON STYLES - General Page Buttons
+   NOTE: These styles apply to buttons OUTSIDE the 3D marquee.
+   For marquee buttons ("Try our platform", "View our Projects"), see:
+   → static/marquee-3d.css (.marquee-3d-overlay .btn-primary/secondary)
+   ============================================================================= */
+
 .btn-primary,
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.7rem 1.5rem;
+  padding: 0.75rem 1.6rem;
   border-radius: 999px;
   font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
-  transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.2s ease, color 0.2s ease;
   border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
+/* Primary Button (Filled Mint) */
 .btn-primary {
-  background: var(--mint, #10b981);
-  color: #041a12;
-  box-shadow: 0 16px 35px rgba(16, 185, 129, 0.32);
+  background: var(--mint);
+  color: #051e14;
+  border-color: color-mix(in oklab, var(--mint) 30%, transparent);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.25);
 }
 
 .btn-primary:hover,
 .btn-primary:focus-visible {
-  transform: translateY(-2px);
-  background: color-mix(in oklab, var(--mint) 85%, #ffffff 15%);
-  box-shadow: 0 22px 40px rgba(16, 185, 129, 0.42);
+  transform: translateY(-4px) scale(1.02);
+  background: color-mix(in oklab, var(--mint) 90%, #ffffff);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.35);
+  outline: none;
 }
 
+/* Secondary Button (Outlined/Ghost) */
 .btn-secondary {
-  background: transparent;
-  color: #e6f8f0;
-  border-color: rgba(230, 248, 240, 0.45);
-}
-
-html.light .btn-secondary {
-  color: #0f2b26;
-  border-color: rgba(11, 115, 84, 0.35);
+  background: rgba(30, 40, 50, 0.95);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-secondary:hover,
 .btn-secondary:focus-visible {
-  transform: translateY(-2px);
-  background: rgba(230, 248, 240, 0.14);
-  box-shadow: 0 18px 32px rgba(8, 12, 18, 0.28);
+  transform: translateY(-4px) scale(1.02);
+  background: rgba(40, 55, 65, 1);
+  color: var(--mint);
+  border-color: var(--mint);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  outline: none;
 }
 
-html.light .btn-secondary:hover,
-html.light .btn-secondary:focus-visible {
-  background: rgba(15, 43, 38, 0.08);
-  box-shadow: 0 18px 30px rgba(15, 43, 32, 0.2);
-}
+/* No light mode overrides - buttons look the same in both themes */
 
 .marquee-plane {
   position: absolute;
@@ -220,13 +232,23 @@ html.light .marquee-card {
 }
 
 @keyframes marquee-slide-slow {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes marquee-slide-slow-alt {
-  from { transform: translateX(-25%); }
-  to { transform: translateX(-75%); }
+  from {
+    transform: translateX(-25%);
+  }
+
+  to {
+    transform: translateX(-75%);
+  }
 }
 
 .portfolio-section {

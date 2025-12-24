@@ -19,6 +19,61 @@ from typing import Dict, Tuple, Optional
 # header. Most hospital names and department headings are presented like this.
 UPPER_LINE = re.compile(r"^[A-Z0-9&@/()'’.,\- ]{12,}$")
 
+def _simplify_study_name(study: str) -> str:
+    """Simplify verbose study descriptions to concise format.
+    
+    Examples:
+        "Multiplanar multisequential MRI scans of the lumbar spine were obtained"
+        -> "MRI of lumbar spine"
+        
+        "CT (special x-ray) of your tummy and pelvis with contrast"
+        -> "CT of abdomen and pelvis"
+    """
+    if not study:
+        return study
+    
+    # Extract modality (MRI, CT, X-ray, etc.)
+    modality_match = re.search(r"\b(MRI|CT|X-RAY|ULTRASOUND|MAMMOGRAM|PET|ANGIOGRAPHY|FLUOROSCOPY)\b", study, re.IGNORECASE)
+    if not modality_match:
+        return study  # Can't simplify if no modality found
+    
+    modality = modality_match.group(1).upper()
+    if modality == "X-RAY":
+        modality = "X-ray"
+    
+    # Extract body region - look for common anatomical terms
+    body_regions = {
+        r"\b(lumbar|lower back|L[\s-]?spine)\b": "lumbar spine",
+        r"\b(cervical|neck|C[\s-]?spine)\b": "cervical spine",
+        r"\b(thoracic|T[\s-]?spine)\b": "thoracic spine",
+        r"\b(spine|spinal)\b": "spine",
+        r"\b(brain|head|cranial)\b": "brain",
+        r"\b(chest|thorax|lung)\b": "chest",
+        r"\b(abdomen|abdominal|tummy|belly)\b": "abdomen",
+        r"\b(pelvis|pelvic)\b": "pelvis",
+        r"\b(knee)\b": "knee",
+        r"\b(shoulder)\b": "shoulder",
+        r"\b(hip)\b": "hip",
+        r"\b(ankle)\b": "ankle",
+        r"\b(foot|feet)\b": "foot",
+        r"\b(hand)\b": "hand",
+        r"\b(wrist)\b": "wrist",
+        r"\b(elbow)\b": "elbow",
+    }
+    
+    regions_found = []
+    for pattern, region_name in body_regions.items():
+        if re.search(pattern, study, re.IGNORECASE):
+            if region_name not in regions_found:
+                regions_found.append(region_name)
+    
+    if regions_found:
+        region_str = " and ".join(regions_found)
+        return f"{modality} of {region_str}"
+    else:
+        # Fallback: just return the modality if we can't identify body region
+        return modality
+
 def _norm(s: str) -> str:
     """Normalize whitespace and common dash characters in a string.
 
@@ -105,11 +160,33 @@ def parse_metadata(text: str) -> Dict[str, str]:
     if m:
         date = m.group(1).strip()
 
-    # Study type such as CT, MRI etc. (look for an all-caps line beginning with CT/MRI etc.)
+    # Study type detection - extract from Procedure Details section first
     study = ""
-    m = re.search(r"(?m)^(CT|MRI|X[- ]?RAY|ULTRASOUND|USG)[^\n]{0,60}$", t)
-    if m:
-        study = m.group(0).strip()
+    
+    # Strategy 1: Look for "Procedure Details" or similar headers and extract the description
+    # This captures the full description like "CT (special x-ray) of your chest..."
+    proc_match = re.search(
+        r"(?im)^(?:PROCEDURE\s+DETAILS?|EXAMINATION|STUDY|EXAM)(?:[:\s]*)\n+([^\n]{10,150})",
+        t
+    )
+    if proc_match:
+        study = proc_match.group(1).strip()
+    
+    # Strategy 2: If header had content on same line (e.g., "EXAMINATION: CT Chest")
+    if not study:
+        m = re.search(r"(?im)^(?:EXAMINATION|STUDY|PROCEDURE|EXAM)(?:\s+DETAILS)?[:\s]+([^\n]{3,100})", t)
+        if m:
+            study = m.group(1).strip()
+    
+    # Strategy 3: Fallback to detecting modality keywords at start of line
+    if not study:
+        m = re.search(r"(?im)^(CT|MRI|X[- ]?RAY|ULTRASOUND|USG|MAMMOGRAM|PET|ANGIOGRAPHY|FLUOROSCOPY)[^\n]{0,80}", t)
+        if m:
+            study = m.group(0).strip()
+    
+    # Simplify verbose study descriptions to concise format (e.g., "MRI of lumbar spine")
+    if study:
+        study = _simplify_study_name(study)
 
     return {
         "hospital": hospital,

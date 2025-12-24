@@ -192,23 +192,29 @@ def _parse_age(raw: Any) -> Optional[int]:
 
 
 _DISEASE_KEYWORDS = {
-    "oncology": ["tumor", "mass", "neoplasm", "malignan", "carcinoma"],
-    "fracture": ["fracture", "break", "compression fracture"],
-    "infection": ["infection", "abscess", "pneumonia", "sepsis"],
-    "inflammation": ["inflamm", "itis", "colitis", "hepatitis"],
-    "hemorrhage": ["hemorrhage", "bleed", "hematoma"],
-    "degeneration": ["degeneration", "arthrosis", "arthritis", "sclerosis"],
-    "vascular": ["aneurysm", "stenosis", "thrombus", "embol"],
-    "normal": ["normal", "unremarkable", "no acute", "negative"],
+    "oncology": ["tumor", "mass", "neoplasm", "malignan", "carcinoma", "metastasis", "lymphadenopathy", "nodule"],
+    "fracture": ["fracture", "break", "compression fracture", "dislocation", "subluxation"],
+    "infection": ["infection", "abscess", "pneumonia", "sepsis", "consolidation", "infiltrate", "bronchitis"],
+    "inflammation": ["inflamm", "itis", "colitis", "hepatitis", "diverticulitis", "pancreatitis"],
+    "hemorrhage": ["hemorrhage", "bleed", "hematoma", "contusion"],
+    "degeneration": ["degeneration", "arthrosis", "arthritis", "sclerosis", "spondylosis", "fibrosis", "stenosis", "osteophytes"],
+    "vascular": ["aneurysm", "stenosis", "thrombus", "embol", "infarct", "ischemia", "calcification"],
+    "lung_disease": ["copd", "emphysema", "bronchiectasis", "bullae", "bulla", "effusion", "pneumothorax", "air pocket"],
+    "normal": ["normal", "unremarkable", "no acute", "negative", "clear", "intact"],
 }
 
 
-def _detect_disease_tags(text: str) -> List[str]:
+def detect_disease_tags(text: str) -> List[str]:
     low = (text or "").lower()
     tags = []
     for label, keywords in _DISEASE_KEYWORDS.items():
         if any(keyword in low for keyword in keywords):
             tags.append(label)
+    
+    # If other tags exist, remove 'normal' if present
+    if "normal" in tags and len(tags) > 1:
+        tags.remove("normal")
+        
     if not tags:
         return ["general"]
     return sorted(set(tags))
@@ -218,7 +224,7 @@ def _format_tags_display(tags: List[str]) -> List[str]:
     return [t.replace("_", " ").strip().title() for t in tags if t]
 
 
-def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str, username: str = "") -> int:
+def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], report_stats: Dict[str, Any], language: str, username: str = "", context: str = "") -> int:
     """Persist a summarized encounter for analytics without storing PHI."""
     text_blob = " ".join(
         filter(
@@ -230,7 +236,7 @@ def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], repo
             ],
         )
     )
-    disease_tags = _detect_disease_tags(text_blob)
+    disease_tags = detect_disease_tags(text_blob)
 
     record = {
         "name": patient.get("name", ""),
@@ -248,6 +254,7 @@ def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], repo
         "word_count": report_stats.get("words", 0),
         "disease_tags": disease_tags,
         "username": username,
+        "context": context,
     }
     return add_patient_record(record)
 

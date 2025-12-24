@@ -1484,6 +1484,12 @@ def upload():
 
     # Detect abnormality and organ for smart visualization
     diagnosis = _detect_abnormality_and_organ(structured, patient)
+    
+    # Calculate disease tags for immediate display
+    findings_blob = (structured.get("findings") or "") + (structured.get("conclusion") or "") + (structured.get("concern") or "")
+    disease_tags = db.detect_disease_tags(findings_blob)
+    
+
 
     # persist for later pages like /payment and PDF download
     session["structured"] = structured
@@ -1523,6 +1529,7 @@ def upload():
         language=lang,
         report_stats=report_stats,
         diagnosis=diagnosis,
+        disease_tags=disease_tags,
     )
 
 
@@ -1559,6 +1566,10 @@ def report_detail(report_id: int):
     study = {"organ": patient.get("study") or "Unknown"}
     diagnosis = _detect_abnormality_and_organ(structured, patient)
     session["diagnosis"] = diagnosis
+    
+    disease_tags = record.get("disease_tags") or []
+    if isinstance(disease_tags, str) and disease_tags:
+        disease_tags = [t.strip() for t in disease_tags.split(",") if t.strip()]
 
     return render_template(
         "result.html",
@@ -1570,6 +1581,7 @@ def report_detail(report_id: int):
         language=language,
         report_stats=report_stats,
         diagnosis=diagnosis,
+        disease_tags=disease_tags,
     )
 
 

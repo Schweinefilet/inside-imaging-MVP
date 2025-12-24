@@ -146,15 +146,7 @@
           </span>
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
-        <script>
-          (function () {
-            var toggle = document.getElementById('theme-toggle');
-            if (!toggle) return;
-            var isLight = document.documentElement.classList.contains('light');
-            toggle.checked = isLight;
-            toggle.setAttribute('aria-checked', isLight ? 'true' : 'false');
-          })();
-        </script>
+
 
         {% if session.get('username') %}
         <div class="user-menu">
@@ -402,6 +394,8 @@
       </div>
 
       <!-- Animated Testimonials Section -->
+      <!-- TODO: Stashed for later use. Needed for pilot program validation. -->
+      {% if false %}
       <section class="testimonials-section">
         <div class="testimonials-header">
           <h2>Trusted by Healthcare Professionals</h2>
@@ -501,6 +495,7 @@
           <button class="testimonial-nav-btn next" aria-label="Next testimonial">›</button>
         </div>
       </section>
+      {% endif %}
     </main>
 
     {% include '_footer.html' %}

@@ -116,41 +116,15 @@
 }
 
 .auth-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--mint) 90%, #ffffff) 0%, #059669 100%);
 }
 
 .auth-submit:active {
-    transform: translateY(0);
+    opacity: 0.9;
 }
 
-/* Gradient overlay effects */
-.btn-gradient,
-.btn-gradient-blur {
-    position: absolute;
-    inset: 0;
-    border-radius: 8px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.btn-gradient {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-}
-
-.btn-gradient-blur {
-    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
-    filter: blur(20px);
-}
-
-.auth-submit:hover .btn-gradient {
-    opacity: 1;
-}
-
-.auth-submit:hover .btn-gradient-blur {
-    opacity: 0.8;
-}
+/* btn-gradient spans are intentionally empty */
 
 /* Divider */
 .auth-divider {
@@ -206,7 +180,6 @@
 .social-btn:hover {
     background: var(--panel);
     border-color: var(--mint);
-    transform: translateY(-1px);
 }
 
 .social-icon {

@@ -10,7 +10,7 @@
 .content h2 {
     margin-top: 0;
     margin-bottom: 0.5rem;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--mint);
 }
 
@@ -246,8 +246,8 @@
     position: relative;
     padding: 1.1rem 1.25rem;
     border-radius: 16px;
-    background: linear-gradient(145deg, color-mix(in oklab, var(--panel) 80%, rgba(62, 230, 176, 0.12)), color-mix(in oklab, var(--panel-2) 70%, rgba(15, 23, 42, 0.55)));
-    border: 1px solid color-mix(in oklab, var(--mint) 20%, var(--border));
+    background: var(--panel);
+    border: 1px solid var(--border);
     box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
     overflow: hidden;
 }
@@ -348,7 +348,7 @@
     width: 0;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, rgba(62, 230, 176, 0.85), rgba(62, 230, 176, 0.45));
+    background: var(--mint);
     transition: width 0.4s ease;
 }
 

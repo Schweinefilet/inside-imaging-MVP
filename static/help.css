@@ -8,27 +8,37 @@
 
 .search-bar input {
   flex: 4;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-primary);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.search-bar input:focus {
+  border-color: var(--mint);
 }
 
 .search-btn {
-  flex: 1;
-  padding: 0.75rem;
-  background: var(--mint-500);
-  color: var(--text-on-primary);
+  flex: 0 0 auto;
+  padding: 0.75rem 1.25rem;
+  background: var(--mint);
+  color: #051e14;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s ease;
+  min-height: 44px;
 }
 
 .search-btn:hover {
-  background: var(--mint-600);
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
 }
 
 .faq-section {
@@ -43,15 +53,23 @@
 }
 
 .faq-card {
-  background: var(--surface-alt);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 1.25rem;
 }
 
 .faq-card h3 {
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--mint);
+}
+
+.faq-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .contact-support {
@@ -69,73 +87,72 @@
 .contact-info {
   flex: 1;
   min-width: 280px;
-  background: var(--surface-alt);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
   box-sizing: border-box;
 }
 
 .support-form h3 {
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  color: var(--mint);
 }
 
 .support-form label {
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
   display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
 }
 
 .support-form input,
 .support-form textarea {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--surface);
-  color: var(--text-primary);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
   margin-bottom: 0.5rem;
+  font: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.support-form input:focus,
+.support-form textarea:focus {
+  border-color: var(--mint);
 }
 
 .support-form textarea {
   resize: vertical;
+  min-height: 120px;
+}
+
+.contact-info h3 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  color: var(--mint);
 }
 
 .contact-info p {
   margin-bottom: 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
-/* ========================================
-   Light Mode Overrides
-   ======================================== */
-
-html.light .help-container {
-  background: var(--panel);
-  border-color: var(--border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-html.light .help-container h1,
-html.light .help-container h2,
-html.light .help-container h3 {
-  color: var(--mint);
-}
-
-html.light .help-container p,
-html.light .help-container li {
-  color: rgba(10, 30, 28, 0.85);
-}
-
-html.light .help-section {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: var(--border);
-}
-
-html.light .help-link {
-  color: var(--mint);
-}
-
-html.light .help-link:hover {
-  color: #059669;
+@media (max-width: 600px) {
+  .contact-grid {
+    flex-direction: column;
+  }
+  .search-bar {
+    flex-direction: column;
+  }
+  .search-btn {
+    width: 100%;
+  }
 }

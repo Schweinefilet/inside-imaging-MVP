@@ -10,17 +10,18 @@
 .payment-form {
   flex: 1;
   min-width: 280px;
-  background: var(--surface-alt);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
   box-sizing: border-box;
 }
 
 .report-details h2,
 .payment-form h2 {
-  margin-bottom: 1rem;
+  margin: 0 0 1rem;
   font-size: 1.3rem;
+  color: var(--mint);
 }
 
 .details-list {
@@ -33,20 +34,26 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  color: var(--text-primary);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.details-list li .label {
+  color: var(--muted);
 }
 
 .payment-summary {
   margin-top: 1rem;
   padding: 1rem;
-  background: var(--surface);
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 8px;
 }
 
 .payment-summary h3 {
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.5rem;
   font-size: 1.1rem;
+  color: var(--mint);
 }
 
 .payment-summary ul {
@@ -59,17 +66,19 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text);
 }
 
 .payment-summary li.total .value {
-  color: var(--mint-500);
-  font-weight: bold;
+  color: var(--mint);
+  font-weight: 700;
 }
 
 .payment-summary .token-note {
   margin-top: 0.75rem;
   font-size: 0.85rem;
-  color: var(--muted, #94a3b8);
+  color: var(--muted);
   text-align: center;
 }
 
@@ -81,23 +90,32 @@
 .payment-form label {
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  color: var(--muted);
 }
 
 .payment-form input,
 .payment-form select {
-  padding: 0.5rem;
+  padding: 0.65rem 0.85rem;
   margin-bottom: 0.5rem;
-  background: var(--surface);
+  background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-primary);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.payment-form input:focus,
+.payment-form select:focus {
+  border-color: var(--mint);
 }
 
 /* Fix dark mode dropdown text visibility */
 .payment-form select option {
-  background: var(--panel, #1a1a1a);
-  color: var(--text, #ffffff);
+  background: var(--panel);
+  color: var(--text);
 }
 
 .payment-form .form-row {
@@ -111,24 +129,24 @@
 
 .primary-btn {
   margin-top: 0.5rem;
-  padding: 0.7rem 1rem;
+  padding: 0.75rem 1rem;
   background: var(--mint);
-  color: #0f1117;
+  color: #051e14;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-  transition: background 0.2s ease, transform 0.1s ease;
+  min-height: 44px;
+  transition: background 0.18s ease;
 }
 
 .primary-btn:hover {
-  background: #14b8a6;
-  transform: translateY(-1px);
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
 }
 
 .primary-btn:active {
-  transform: translateY(0);
+  opacity: 0.9;
 }
 
 /* Light mode: darker text on mint */
@@ -139,53 +157,12 @@
 .secure-note {
   margin-top: 0.75rem;
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--muted);
 }
 
-/* ========================================
-   Light Mode Overrides
-   ======================================== */
-
-html.light .payment-card {
-  background: var(--panel);
-  border-color: var(--border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-html.light .payment-card h2,
-html.light .payment-card h3 {
-  color: var(--mint);
-}
-
-html.light .payment-card p {
-  color: rgba(10, 30, 28, 0.75);
-}
-
-html.light .payment-form label {
-  color: rgba(10, 30, 28, 0.85);
-}
-
-html.light .payment-form input,
-html.light .payment-form select {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--border);
-  color: rgba(10, 30, 28, 0.95);
-}
-
-html.light .payment-form select option {
-  background: #ffffff;
-  color: rgba(10, 30, 28, 0.95);
-}
-
-html.light .primary-btn {
-  background: var(--mint);
-  color: #051e14;
-}
-
-html.light .primary-btn:hover {
-  background: color-mix(in oklab, var(--mint) 85%, #ffffff);
-}
-
-html.light .secure-note {
-  color: rgba(10, 30, 28, 0.68);
+@media (max-width: 600px) {
+  .payment-form .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }

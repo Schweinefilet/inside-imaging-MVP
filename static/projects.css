@@ -80,26 +80,10 @@ html.light .marquee-kicker {
   margin: 0;
 }
 
-/* Ensure headline sits on a semi-transparent pill for legibility */
-.marquee-content h1 {
-  display: inline-block;
-  background: rgba(0, 0, 0, 0.45);
-  padding: 0.25rem 0.6rem;
-  border-radius: 8px;
-}
-
 .marquee-description {
   margin: 0;
   color: rgba(226, 242, 239, 0.88);
   font-size: clamp(1rem, 2.4vw, 1.2rem);
-}
-
-/* Add a subtle panel behind the description text for contrast */
-.marquee-description {
-  background: rgba(0, 0, 0, 0.35);
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  display: inline-block;
 }
 
 html.light .marquee-description {
@@ -114,67 +98,52 @@ html.light .marquee-description {
   margin-top: 0.5rem;
 }
 
-/* =============================================================================
-   BUTTON STYLES - General Page Buttons
-   NOTE: These styles apply to buttons OUTSIDE the 3D marquee.
-   For marquee buttons ("Try our platform", "View our Projects"), see:
-   → static/marquee-3d.css (.marquee-3d-overlay .btn-primary/secondary)
-   ============================================================================= */
-
 .btn-primary,
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.6rem;
+  padding: 0.7rem 1.5rem;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 0.95rem;
   text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.2s ease, color 0.2s ease;
   border: 1px solid transparent;
-  cursor: pointer;
-  transition:
-    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
 }
 
-/* Primary Button (Filled Mint) */
 .btn-primary {
-  background: var(--mint);
-  color: #051e14;
-  border-color: color-mix(in oklab, var(--mint) 30%, transparent);
-  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.25);
+  background: var(--mint, #10b981);
+  color: #041a12;
 }
 
 .btn-primary:hover,
 .btn-primary:focus-visible {
-  transform: translateY(-4px) scale(1.02);
-  background: color-mix(in oklab, var(--mint) 90%, #ffffff);
-  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.35);
-  outline: none;
+  background: color-mix(in oklab, var(--mint) 85%, #ffffff 15%);
 }
 
-/* Secondary Button (Outlined/Ghost) */
 .btn-secondary {
-  background: rgba(30, 40, 50, 0.95);
-  color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: #e6f8f0;
+  border-color: rgba(230, 248, 240, 0.45);
+}
+
+html.light .btn-secondary {
+  color: #0f2b26;
+  border-color: rgba(11, 115, 84, 0.35);
 }
 
 .btn-secondary:hover,
 .btn-secondary:focus-visible {
-  transform: translateY(-4px) scale(1.02);
-  background: rgba(40, 55, 65, 1);
-  color: var(--mint);
-  border-color: var(--mint);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-  outline: none;
+  transform: translateY(-2px);
+  background: rgba(230, 248, 240, 0.14);
+  box-shadow: 0 18px 32px rgba(8, 12, 18, 0.28);
 }
 
-/* No light mode overrides - buttons look the same in both themes */
+html.light .btn-secondary:hover,
+html.light .btn-secondary:focus-visible {
+  background: rgba(15, 43, 38, 0.08);
+  box-shadow: 0 18px 30px rgba(15, 43, 32, 0.2);
+}
 
 .marquee-plane {
   position: absolute;
@@ -232,23 +201,13 @@ html.light .marquee-card {
 }
 
 @keyframes marquee-slide-slow {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 @keyframes marquee-slide-slow-alt {
-  from {
-    transform: translateX(-25%);
-  }
-
-  to {
-    transform: translateX(-75%);
-  }
+  from { transform: translateX(-25%); }
+  to { transform: translateX(-75%); }
 }
 
 .portfolio-section {
@@ -283,9 +242,9 @@ html.light .marquee-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 18px;
-  padding: 1.15rem;
+  padding: 1.75rem;
   display: grid;
-  gap: 0.5rem;
+  gap: 0.9rem;
   box-shadow: 0 20px 38px rgba(4, 7, 11, 0.45);
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
@@ -296,8 +255,8 @@ html.light .project-card {
 
 .project-card:hover,
 .project-card:focus-within {
-  transform: translateY(-6px);
-  box-shadow: 0 32px 48px rgba(4, 7, 11, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 22px 36px rgba(4, 7, 11, 0.4);
 }
 
 .project-icon {
@@ -340,64 +299,6 @@ html.light .project-card p {
 .project-link:hover,
 .project-link:focus-visible {
   text-decoration: underline;
-}
-
-.project-poster {
-  margin: 1rem 0 1.5rem;
-}
-
-.poster-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 3rem 2rem;
-  border-radius: 12px;
-  background: rgba(82, 113, 140, 0.1);
-  border: 2px dashed rgba(82, 113, 140, 0.3);
-}
-
-html.light .poster-placeholder {
-  background: rgba(8, 81, 83, 0.08);
-  border-color: rgba(8, 81, 83, 0.2);
-}
-
-.poster-placeholder span {
-  font-size: 3rem;
-}
-
-.poster-placeholder p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.7;
-}
-
-.project-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.platform-description {
-  background: rgba(82, 113, 140, 0.15);
-  backdrop-filter: blur(8px);
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  margin: 1rem 0;
-  border: 1px solid rgba(82, 113, 140, 0.2);
-}
-
-html.light .platform-description {
-  background: rgba(8, 81, 83, 0.12);
-  border-color: rgba(8, 81, 83, 0.25);
-}
-
-.platform-description p {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
 }
 
 .project-pill {

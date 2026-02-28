@@ -81,7 +81,7 @@
                 personalized assistance.</p>
             <div class="search-bar">
                 <input type="text" id="help-search" placeholder="Search for help topics...">
-                <button class="search-btn" onclick="searchHelp()">Search</button>
+                <button class="search-btn" id="search-btn">Search</button>
             </div>
             <section class="faq-section">
                 <h2>Frequently Asked Questions</h2>
@@ -237,11 +237,12 @@
             }
         }
 
-        // Allow Enter key to trigger search
         document.addEventListener('DOMContentLoaded', function () {
+            var searchBtn = document.getElementById('search-btn');
+            if (searchBtn) {
+                searchBtn.addEventListener('click', searchHelp);
+            }
 
-
-            // Enable Enter key for search
             var searchInput = document.getElementById('help-search');
             if (searchInput) {
                 searchInput.addEventListener('keypress', function (e) {

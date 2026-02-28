@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Tuple
 import os
+import logging
 import boto3, base64
 
 
@@ -36,14 +37,21 @@ def from_pdf(path: Path) -> str:
 
 def from_image(path: Path) -> str:
     """Extract text from an image file using Amazon Textract DetectDocumentText."""
-    import boto3  # local import okay too
     client = boto3.client("textract", region_name=os.getenv("AWS_REGION", "us-east-1"))
 
-    # Read image bytes (DetectDocumentText Bytes supports JPEG/PNG/TIFF)
-    with open(path, "rb") as f:
-        image_bytes = f.read()
+    try:
+        with open(path, "rb") as f:
+            image_bytes = f.read()
+    except OSError as e:
+        logging.exception("Failed to read image file %s", path)
+        raise RuntimeError(f"Could not read image file: {e}") from e
 
-    resp = client.detect_document_text(Document={"Bytes": image_bytes})
+    try:
+        resp = client.detect_document_text(Document={"Bytes": image_bytes})
+    except Exception as e:
+        logging.exception("Textract API call failed for %s", path)
+        raise RuntimeError(f"Textract extraction failed: {e}") from e
+
     # Textract returns Blocks; pull LINE text in order
     lines = []
     for block in resp.get("Blocks", []):

@@ -1153,204 +1153,6 @@ def _triage_radiology_report(text: str) -> tuple[bool, dict]:
     return True, diagnostics
 
 
-def _extract_focus_details(raw_text: str, organ: str | None) -> dict:
-    if not organ:
-        return {}
-
-    low = (raw_text or "").lower()
-    focus: dict = {"organ": organ}
-
-    if organ == 'lung':
-        has_right = bool(re.search(r'\bright[^.,;]{0,40}(lung|lobe)', low))
-        has_left = bool(re.search(r'\bleft[^.,;]{0,40}(lung|lobe)', low))
-        has_bilateral = bool(re.search(r'\bbilateral\b|\bboth\s+lungs?\b|\ball\s+lobes\b', low))
-        if has_bilateral or (has_right and has_left):
-            focus['laterality'] = 'bilateral'
-        elif has_right:
-            focus['laterality'] = 'right'
-        elif has_left:
-            focus['laterality'] = 'left'
-
-        if re.search(r'\b(apex|apical|upper\s+lobe|upper\s+zone|superior\s+segment)\b', low):
-            focus['zone'] = 'upper'
-        elif re.search(r'\bmiddle\s+lobe\b|\bmid\s+lobe\b|\bperihilar\b', low):
-            focus['zone'] = 'middle'
-        elif re.search(r'\b(lower\s+lobe|lower\s+zone|basal|base|inferior\s+segment)\b', low):
-            focus['zone'] = 'lower'
-
-    elif organ == 'kidney':
-        has_right = bool(re.search(r'\bright[^.,;]{0,30}(kidney|renal)', low))
-        has_left = bool(re.search(r'\bleft[^.,;]{0,30}(kidney|renal)', low))
-        has_bilateral = bool(re.search(r'\bbilateral\b|\bboth\s+kidneys\b|\ball\s+renal\b', low))
-        if has_bilateral or (has_right and has_left):
-            focus['laterality'] = 'bilateral'
-        elif has_right:
-            focus['laterality'] = 'right'
-        elif has_left:
-            focus['laterality'] = 'left'
-
-        if re.search(r'\bupper\s+pole\b|\bsuperior\s+pole\b', low):
-            focus['zone'] = 'upper'
-        elif re.search(r'\blower\s+pole\b|\binferior\s+pole\b', low):
-            focus['zone'] = 'lower'
-        elif re.search(r'\bmid(?:dle)?\s+pole\b|\binterpolar\b', low):
-            focus['zone'] = 'mid'
-
-    elif organ == 'liver':
-        has_right = bool(re.search(r'\bright\s+(hepatic\s+)?lobe\b', low))
-        has_left = bool(re.search(r'\bleft\s+(hepatic\s+)?lobe\b', low))
-        has_bilateral = bool(re.search(r'\bboth\s+lobe\b|\bdiffuse\b|\bbilateral\b', low))
-        if has_bilateral or (has_right and has_left):
-            focus['laterality'] = 'bilateral'
-        elif has_right:
-            focus['laterality'] = 'right'
-        elif has_left:
-            focus['laterality'] = 'left'
-
-        segment_hits = re.findall(r'\bsegment\s+([ivx]{1,4})\b', low)
-        if segment_hits:
-            segment_map = {
-                'i': 'caudate',
-                'ii': 'left', 'iii': 'left', 'iv': 'left', 'iva': 'left', 'ivb': 'left',
-                'v': 'right', 'vi': 'right', 'vii': 'right', 'viii': 'right'
-            }
-            first = segment_hits[0]
-            focus['segment'] = first.upper()
-            zone = segment_map.get(first.lower())
-            if zone:
-                focus['segment_group'] = zone
-                if zone in ('left', 'right') and 'laterality' not in focus:
-                    focus['laterality'] = zone
-
-    elif organ == 'spine':
-        levels: set[str] = set()
-        for token in re.findall(r'\b[cClLtTsS][0-9]{1,2}\b', low):
-            levels.add(token.upper())
-        for start, end in re.findall(r'\b([cClLtTsS][0-9]{1,2})\s*[-–to]+\s*([cClLtTsS]?[0-9]{1,2})\b', low):
-            levels.add(start.upper())
-            if end:
-                prefix = end[0] if end and end[0].isalpha() else start[0]
-                digits = end[1:] if end and end[0].isalpha() else end
-                levels.add((prefix + digits).upper())
-        if levels:
-            order_map = {'C': 0, 'T': 1, 'L': 2, 'S': 3}
-            focus['levels'] = sorted(levels, key=lambda lvl: (order_map.get(lvl[0], 4), int(re.sub(r'[^0-9]', '', lvl) or 0)))
-            if any(lvl.startswith('L') for lvl in levels):
-                focus['region'] = 'lumbar'
-            elif any(lvl.startswith('T') for lvl in levels):
-                focus['region'] = 'thoracic'
-            elif any(lvl.startswith('C') for lvl in levels):
-                focus['region'] = 'cervical'
-            elif any(lvl.startswith('S') for lvl in levels):
-                focus['region'] = 'sacral'
-
-    elif organ == 'brain':
-        if re.search(r'\bright[^.]{0,40}(frontal|parietal|temporal|occipital|hemisphere)', low):
-            focus['laterality'] = 'right'
-        elif re.search(r'\bleft[^.]{0,40}(frontal|parietal|temporal|occipital|hemisphere)', low):
-            focus['laterality'] = 'left'
-
-        for region_key, label in [
-            ('frontal', 'frontal'),
-            ('parietal', 'parietal'),
-            ('temporal', 'temporal'),
-            ('occipital', 'occipital'),
-            ('cerebell', 'cerebellum'),
-            ('brainstem', 'brainstem')
-        ]:
-            if region_key in low:
-                focus.setdefault('regions', []).append(label)
-
-        if 'regions' in focus:
-            focus['regions'] = list(dict.fromkeys(focus['regions']))
-
-    if len(focus) <= 1:
-        return {}
-    return focus
-
-
-def _detect_abnormality_and_organ(structured: dict, patient: dict) -> dict:
-    """
-    Detect if report shows abnormalities and identify the affected organ.
-    Returns: {'has_abnormality': bool, 'organ': str, 'abnormality_type': str}
-    """
-    import re
-    
-    conclusion = (structured.get("conclusion") or "").lower()
-    findings = (structured.get("findings") or "").lower()
-    study = (patient.get("study") or "").lower()
-    
-    # Strip HTML tags
-    conclusion = re.sub(r'<[^>]+>', ' ', conclusion)
-    findings = re.sub(r'<[^>]+>', ' ', findings)
-    combined = conclusion + ' ' + findings + ' ' + study
-    
-    # Normal scan indicators
-    normal_indicators = [
-        r'\bnormal\b', r'\bunremarkable\b', r'\bno\s+abnormalit', r'\bwithin\s+normal\s+limits\b',
-        r'\bno\s+significant\b', r'\bno\s+acute\b', r'\bclear\b.*\blungs?\b', r'\bintact\b'
-    ]
-    
-    # Abnormality indicators
-    abnormal_indicators = [
-        r'\bmass\b', r'\btumou?r\b', r'\blesion\b', r'\bmeningioma\b', r'\bcancer\b',
-        r'\bfracture\b', r'\bbleed\b', r'\bhemorrhage\b', r'\binfarct\b', r'\bstroke\b',
-        r'\bedema\b', r'\bswelling\b', r'\bobstruction\b', r'\benlarged\b',
-        r'\badenopathy\b', r'\bnodule\b', r'\bhydro\w+\b', r'\bherniation\b',
-        r'\bshift\b', r'\bcompression\b', r'\beffusion\b', r'\bpneumonia\b'
-    ]
-    
-    # Count indicators
-    normal_count = sum(1 for pattern in normal_indicators if re.search(pattern, combined, re.I))
-    abnormal_count = sum(1 for pattern in abnormal_indicators if re.search(pattern, combined, re.I))
-    
-    has_abnormality = abnormal_count > 0 and abnormal_count >= normal_count
-    
-    # Organ detection (order matters - more specific first)
-    organ = None
-    # Brain/head - but NOT "head of pancreas" or other anatomical heads
-    if re.search(r'\b(brain|skull|cerebral|intracranial|cranial)\b', combined, re.I):
-        organ = 'brain'
-    elif re.search(r'\bhead\b', combined, re.I) and not re.search(r'\bhead\s+of\s+(pancreas|femur)\b', combined, re.I):
-        organ = 'brain'
-    elif re.search(r'\b(lung|pulmonary|chest|thorax|bronch)\b', combined, re.I):
-        organ = 'lung'
-    elif re.search(r'\b(liver|hepatic)\b', combined, re.I):
-        organ = 'liver'
-    elif re.search(r'\b(kidney|renal)\b', combined, re.I):
-        organ = 'kidney'
-    elif re.search(r'\b(spine|spinal|cervical|lumbar|thoracic|vertebra)\b', combined, re.I):
-        organ = 'spine'
-    elif re.search(r'\b(abdomen|abdominal|belly|pancreas|pancreatic)\b', combined, re.I):
-        organ = 'abdomen'
-    elif re.search(r'\b(pelvis|pelvic)\b', combined, re.I):
-        organ = 'pelvis'
-    
-    # Abnormality type
-    abnormality_type = None
-    if has_abnormality:
-        if re.search(r'\bmass\b|\btumou?r\b|\blesion\b|\bmeningioma\b|\bcancer\b', combined, re.I):
-            abnormality_type = 'mass'
-        elif re.search(r'\bfracture\b', combined, re.I):
-            abnormality_type = 'fracture'
-        elif re.search(r'\bbleed\b|\bhemorrhage\b', combined, re.I):
-            abnormality_type = 'bleed'
-        elif re.search(r'\bedema\b|\bswelling\b', combined, re.I):
-            abnormality_type = 'edema'
-        elif re.search(r'\binfection\b|\bpneumonia\b', combined, re.I):
-            abnormality_type = 'infection'
-        else:
-            abnormality_type = 'other'
-    
-    focus = _extract_focus_details(combined, organ) if organ else {}
-
-    return {
-        'has_abnormality': has_abnormality,
-        'organ': organ,
-        'abnormality_type': abnormality_type,
-        'focus': focus
-    }
-
 
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
@@ -1491,9 +1293,6 @@ def upload():
         "highlights_negative": high_html.count('class="ii-neg"'),
     }
 
-    # Detect abnormality and organ for smart visualization
-    diagnosis = _detect_abnormality_and_organ(structured, patient)
-    
     # Calculate disease tags for immediate display
     findings_blob = (structured.get("findings") or "") + (structured.get("conclusion") or "") + (structured.get("concern") or "")
     disease_tags = db.detect_disease_tags(findings_blob)
@@ -1504,7 +1303,6 @@ def upload():
     session["structured"] = structured
     session["patient"] = patient
     session["language"] = lang
-    session["diagnosis"] = diagnosis
     session["context"] = context
 
     report_id = None
@@ -1537,7 +1335,7 @@ def upload():
         study=study,
         language=lang,
         report_stats=report_stats,
-        diagnosis=diagnosis,
+        report_stats=report_stats,
         disease_tags=disease_tags,
     )
 
@@ -1573,9 +1371,6 @@ def report_detail(report_id: int):
     session["language"] = language
 
     study = {"organ": patient.get("study") or "Unknown"}
-    diagnosis = _detect_abnormality_and_organ(structured, patient)
-    session["diagnosis"] = diagnosis
-    
     disease_tags = record.get("disease_tags") or []
     if isinstance(disease_tags, str) and disease_tags:
         disease_tags = [t.strip() for t in disease_tags.split(",") if t.strip()]
@@ -1589,7 +1384,7 @@ def report_detail(report_id: int):
         study=study,
         language=language,
         report_stats=report_stats,
-        diagnosis=diagnosis,
+        report_stats=report_stats,
         disease_tags=disease_tags,
     )
 

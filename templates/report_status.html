@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Statistics - Inside Imaging</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
 
   <!-- Pre-paint: identical to working pages -->
   <script>
-  (function(){
-    try {
-      var t = localStorage.getItem('theme');
-      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      var useLight = t ? (t === 'light') : preferLight;
-      if (useLight) document.documentElement.classList.add('light');
-    } catch(e){}
-  })();
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch (e) { }
+    })();
   </script>
 
   <link rel="stylesheet" href="/static/main.css">
@@ -25,21 +26,24 @@
   <link rel="stylesheet" href="/static/report-status.css">
   <script src="/static/charts.js"></script>
 </head>
+
 <body>
   <div class="page-wrapper">
     <!-- Navigation Bar -->
     <header class="navbar">
       <div class="navbar-brand">
-  <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo" class="logo">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo">
       </div>
 
-    <nav class="nav-links">
-      <a href="{{ url_for('dashboard') }}">Dashboard</a>
-      <a href="{{ url_for('projects') }}">Projects</a>
-      <a href="{{ url_for('report_status') }}" class="active">Statistics</a>
-      <a href="{{ url_for('payment') }}">Payment</a>
-      <a href="{{ url_for('help_page') }}">Help</a>
-    </nav>      <div class="nav-auth">
+      <nav class="nav-links">
+        <a href="{{ url_for('projects') }}">Projects</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('report_status') }}" class="active">Statistics</a>
+        <a href="{{ url_for('team') }}">Our Team</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+      </nav>
+      <div class="nav-auth">
         <label class="theme-switch" aria-label="Toggle theme">
           <span class="theme-row">
             <span class="theme-icon" aria-hidden="true">🌙</span>
@@ -160,13 +164,18 @@
               <div class="chart-container" style="display:none">
                 <canvas id="pie-chart-modalities" width="200" height="200"></canvas>
               </div>
-              <ul class="stat-list">
+              <ul class="stat-list" id="modalities-list">
                 {% for entry in stats.studies %}
-                <li><span>{{ entry.label }}</span><span>{{ entry.count }}</span></li>
+                <li class="modality-item {% if loop.index > 5 %}is-hidden{% endif %}">
+                  <span>{{ entry.label }}</span><span>{{ entry.count }}</span>
+                </li>
                 {% else %}
                 <li><span>No data yet</span><span>0</span></li>
                 {% endfor %}
               </ul>
+              {% if stats.studies|length > 5 %}
+              <button id="toggle-modalities" class="view-more-btn" type="button">View More</button>
+              {% endif %}
             </article>
           </div>
           <article class="analytics-panel hover-card">
@@ -199,6 +208,22 @@
       <script>
         // Parse the data from the JSON script tag
         window.statsData = JSON.parse(document.getElementById('stats-data').textContent);
+
+        // Toggle modalities list
+        document.getElementById('toggle-modalities')?.addEventListener('click', function () {
+          const list = document.getElementById('modalities-list');
+          const isExpanded = this.textContent === 'View Less';
+
+          if (isExpanded) {
+            list.querySelectorAll('.modality-item').forEach((item, idx) => {
+              if (idx >= 5) item.classList.add('is-hidden');
+            });
+            this.textContent = 'View More';
+          } else {
+            list.querySelectorAll('.modality-item').forEach(item => item.classList.remove('is-hidden'));
+            this.textContent = 'View Less';
+          }
+        });
       </script>
     </main>
 
@@ -208,4 +233,5 @@
   <!-- Shared theme logic; no page-local theme code -->
   <script src="/static/theme.js"></script>
 </body>
+
 </html>

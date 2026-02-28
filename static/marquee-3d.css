@@ -11,13 +11,11 @@
     overflow: hidden;
     position: relative;
     backdrop-filter: blur(10px);
+    transform: translate3d(0, 0, 0);
+    /* Force GPU layer */
 }
 
-/* Force dark background even in light mode */
-html.light .marquee-3d-container {
-    background: rgba(10, 10, 10, 0.9);
-    border: 1px solid rgba(34, 197, 94, 0.2);
-}
+/* Light mode styles are consolidated at the end of this file */
 
 .marquee-3d-overlay {
     position: absolute;
@@ -185,7 +183,7 @@ html.light .marquee-3d-overlay .marquee-description {
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
-    transform: rotateX(25deg) rotateZ(-5deg) translateY(-120px);
+    transform: rotateX(25deg) rotateZ(-5deg) translateY(-120px) translate3d(0, 0, 0);
 }
 
 .marquee-3d-row {
@@ -195,6 +193,8 @@ html.light .marquee-3d-overlay .marquee-description {
     transform-style: preserve-3d;
     will-change: transform;
     white-space: nowrap;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Diagonal movement - combining horizontal and vertical with more separation */
@@ -222,31 +222,31 @@ html.light .marquee-3d-overlay .marquee-description {
 /* Diagonal animations - moving both X and Y with wider range for continuous loop */
 @keyframes marqueeScrollDiagonal1 {
     from {
-        transform: translateX(0) translateY(0) translateZ(0);
+        transform: translateX(0) translateY(0) translate3d(0, 0, 0);
     }
 
     to {
-        transform: translateX(-50%) translateY(-10%) translateZ(0);
+        transform: translateX(-50%) translateY(-10%) translate3d(0, 0, 0);
     }
 }
 
 @keyframes marqueeScrollDiagonal2 {
     from {
-        transform: translateX(-50%) translateY(0) translateZ(0);
+        transform: translateX(-50%) translateY(0) translate3d(0, 0, 0);
     }
 
     to {
-        transform: translateX(0%) translateY(10%) translateZ(0);
+        transform: translateX(0%) translateY(10%) translate3d(0, 0, 0);
     }
 }
 
 @keyframes marqueeScrollDiagonal3 {
     from {
-        transform: translateX(0) translateY(0) translateZ(0);
+        transform: translateX(0) translateY(0) translate3d(0, 0, 0);
     }
 
     to {
-        transform: translateX(-50%) translateY(8%) translateZ(0);
+        transform: translateX(-50%) translateY(8%) translate3d(0, 0, 0);
     }
 }
 
@@ -262,6 +262,9 @@ html.light .marquee-3d-overlay .marquee-description {
     transition: all 0.3s ease;
     flex-shrink: 0;
     transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
 }
 
 .marquee-3d-item:hover {
@@ -356,36 +359,41 @@ html.light .marquee-3d-overlay .marquee-description {
     }
 }
 
-/* Dark mode (default) */
+/* Dark mode (default) - Original look with white-backed icons */
 :root:not(.light) .marquee-3d-container {
-    background: rgba(10, 10, 10, 0.6);
+    background: rgba(10, 10, 10, 0.82);
     border-color: rgba(34, 197, 94, 0.15);
 }
 
 :root:not(.light) .marquee-3d-item {
-    background: rgba(0, 0, 0, 0.6);
+    background: #ffffff;
+    /* User requested: white images background */
     border-color: rgba(34, 197, 94, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-:root:not(.light) .marquee-3d-wrapper::before {
-    background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+:root:not(.light) .marquee-3d-item img {
+    /* Restore original blue-on-white appearance */
+    filter: brightness(0.9) contrast(1.1);
 }
 
-:root:not(.light) .marquee-3d-wrapper::after {
-    background: linear-gradient(0deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
-}
-
-/* Light mode - keep marquee dark */
+/* Light mode - Hero Marquee Inversion */
 :root.light .marquee-3d-container {
-    background: rgba(10, 10, 10, 0.95) !important;
-    border-color: rgba(34, 197, 94, 0.2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
 :root.light .marquee-3d-item {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(5, 150, 105, 0.2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    background: #080808;
+    /* Black background for the cards as requested */
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+:root.light .marquee-3d-item img {
+    /* Invert white background to black, restore blue hue, and brighten */
+    filter: invert(1) hue-rotate(180deg) brightness(1.2) contrast(1.1);
 }
 
 :root.light .marquee-3d-item:hover {
@@ -393,9 +401,18 @@ html.light .marquee-3d-overlay .marquee-description {
 }
 
 :root.light .marquee-3d-wrapper::before {
-    background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, transparent 100%);
 }
 
 :root.light .marquee-3d-wrapper::after {
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0.95) 0%, transparent 100%);
+}
+
+/* Edge Fades for Dark Mode */
+:root:not(.light) .marquee-3d-wrapper::before {
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+}
+
+:root:not(.light) .marquee-3d-wrapper::after {
     background: linear-gradient(0deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
 }

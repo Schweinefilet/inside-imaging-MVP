@@ -4,6 +4,7 @@ import io
 import re
 import json
 import logging
+from pathlib import Path
 import boto3
 from botocore.config import Config
 
@@ -33,31 +34,37 @@ from src import db
 
 _AWS_REGION = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1"
 
-_textract_client = None
-def _textract():
-    global _textract_client
-    if _textract_client is None:
-        _textract_client = None
-        def _textract():
-            global _textract_client
-            if _textract_client is None:
-                _textract_client = boto3.client(
-                    "textract",
-                    region_name=_AWS_REGION,
-                    config=Config(retries={"max_attempts": 3, "mode": "standard"})
-                )
-            return _textract_client
+# Configure logging before any logging calls
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
 logging.info("INSIDEIMAGING_ALLOW_LLM=%r", os.getenv("INSIDEIMAGING_ALLOW_LLM"))
 logging.info("OPENAI_MODEL=%r", os.getenv("OPENAI_MODEL"))
 
-# Set default model to gpt-5 if not specified
+# Set default model if not specified
 if not os.getenv("OPENAI_MODEL"):
-    os.environ["OPENAI_MODEL"] = "gpt-5"
-    logging.info("Defaulting OPENAI_MODEL to gpt-5")
+    os.environ["OPENAI_MODEL"] = "gpt-4o"
+    logging.info("Defaulting OPENAI_MODEL to gpt-4o")
+
+# Lazy-loading singleton for the AWS Textract client
+_textract_client = None
+
+def _textract():
+    global _textract_client
+    if _textract_client is None:
+        _textract_client = boto3.client(
+            "textract",
+            region_name=_AWS_REGION,
+            config=Config(retries={"max_attempts": 3, "mode": "standard"})
+        )
+    return _textract_client
 
 # --- app ---
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
+_secret_key = os.environ.get("SECRET_KEY")
+if not _secret_key:
+    logging.warning("SECRET_KEY env var not set — using insecure default. Set SECRET_KEY in production.")
+    _secret_key = "supersecretkey"
+app.secret_key = _secret_key
 
 # OAuth configuration
 oauth = OAuth(app)
@@ -75,8 +82,10 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
 )
 
-# CORS
-CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGINS", "https://schweinefilet.github.io")}})
+# CORS — CORS_ORIGINS can be a comma-separated list of allowed origins
+_cors_origins_raw = os.getenv("CORS_ORIGINS", "")
+_cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()] or ["https://schweinefilet.github.io"]
+CORS(app, resources={r"/*": {"origins": _cors_origins}})
 
 # available languages
 LANGUAGES = ["English", "Kiswahili"]
@@ -843,7 +852,7 @@ except Exception:
 LAY_GLOSS = None
 try:
     if Glossary:
-        gloss_path = os.path.join(os.path.dirname(__file__), "data", "glossary.csv")
+        gloss_path = str(Path(__file__).parent / "data" / "glossary.csv")
         if os.path.exists(gloss_path):
             LAY_GLOSS = Glossary.load(gloss_path)
 except Exception:

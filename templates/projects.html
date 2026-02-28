@@ -119,7 +119,7 @@
                         <h3>Exposure Button Series</h3>
                         <p>Candid conversations with radiology leaders, exploring the stories behind the scans.</p>
                         <div class="project-links">
-                            <a class="project-link" href="#" onclick="alert('Poster coming soon!'); return false;">
+                            <a class="project-link" href="#" id="poster-link">
                                 See poster
                             </a>
                             <a class="project-link" href="https://open.spotify.com" target="_blank" rel="noopener">
@@ -271,6 +271,17 @@
 
     <script src="{{ url_for('static', filename='marquee-3d.js') }}"></script>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var posterLink = document.getElementById('poster-link');
+            if (posterLink) {
+                posterLink.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    alert('Poster coming soon!');
+                });
+            }
+        });
+    </script>
 
     <script>
         (function () {

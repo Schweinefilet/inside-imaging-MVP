@@ -13,7 +13,7 @@ from typing import Dict, Optional, Any, List
 from collections import Counter
 import re
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 DB_PATH = Path("data/patient_data.db")
@@ -377,7 +377,6 @@ def get_stats() -> Dict[str, Any]:
     
     # Fill in missing dates with zeros
     time_series = []
-    from datetime import datetime, timedelta
     for i in range(30):
         date = datetime.now() - timedelta(days=29 - i)
         date_str = date.strftime('%Y-%m-%d')

@@ -1,23 +1,24 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Result - Inside Imaging</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
 
   <!-- Pre-paint theme to avoid flash -->
   <script>
-  (function(){
-    try{
-      var t = localStorage.getItem('theme');
-      var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      var useLight = t ? (t === 'light') : preferLight;
-      if(useLight) document.documentElement.classList.add('light');
-    }catch(e){}
-  })();
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        var useLight = t ? (t === 'light') : preferLight;
+        if (useLight) document.documentElement.classList.add('light');
+      } catch (e) { }
+    })();
   </script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
@@ -26,44 +27,80 @@
 
   <style>
     /* Extra tokens specific to result page */
-    :root{
-      --link:#93c5fd;
-      --body-fill:#e8eef2;
-    }
-    .light{
-      --link:#1d4ed8;
-      --body-fill:#1a1a1a;
+    :root {
+      --link: #93c5fd;
+      --body-fill: #e8eef2;
     }
 
-  /* Body silhouette */
-  .body-svg{display:block;margin:1rem auto;width:100%;height:100%;max-width:200px}
-  .body-base use{fill:var(--body-fill);stroke:var(--border);stroke-width:0.5}
-  .body-outline use{fill:none;stroke:color-mix(in oklab, var(--border) 45%, #000);stroke-width:1.6}
-  .region-band{fill:transparent;opacity:0;transition:fill .2s ease, opacity .2s ease, stroke .2s ease}
-  /* Highlighted regions with fallback colors */
-  .region-band.highlight{
-    fill:#22c55e !important;/* fallback - force visibility */
-    fill:color-mix(in srgb, var(--mint) 80%, #ffffff 20%) !important;
-    opacity:.85 !important;
-    stroke:#0f766e !important;/* fallback */
-    stroke:color-mix(in oklab, var(--mint) 70%, #0f766e) !important;
-    stroke-width:2.5;
-  }
-  .light .region-band.highlight{
-    fill:#14b8a6 !important;/* fallback */
-    fill:color-mix(in srgb, var(--mint) 80%, #000000 20%) !important;
-    opacity:.8 !important;
-    stroke:#047857 !important;
-    stroke-width:2.8;
-  }
+    .light {
+      --link: #1d4ed8;
+      --body-fill: #1a1a1a;
+    }
+
+    /* Body silhouette */
+    .body-svg {
+      display: block;
+      margin: 1rem auto;
+      width: 100%;
+      height: 100%;
+      max-width: 200px
+    }
+
+    .body-base use {
+      fill: var(--body-fill);
+      stroke: var(--border);
+      stroke-width: 0.5
+    }
+
+    .body-outline use {
+      fill: none;
+      stroke: color-mix(in oklab, var(--border) 45%, #000);
+      stroke-width: 1.6
+    }
+
+    .region-band {
+      fill: transparent;
+      opacity: 0;
+      transition: fill .2s ease, opacity .2s ease, stroke .2s ease
+    }
+
+    /* Highlighted regions with fallback colors */
+    .region-band.highlight {
+      fill: #22c55e !important;
+      /* fallback - force visibility */
+      fill: color-mix(in srgb, var(--mint) 80%, #ffffff 20%) !important;
+      opacity: .85 !important;
+      stroke: #0f766e !important;
+      /* fallback */
+      stroke: color-mix(in oklab, var(--mint) 70%, #0f766e) !important;
+      stroke-width: 2.5;
+    }
+
+    .light .region-band.highlight {
+      fill: #14b8a6 !important;
+      /* fallback */
+      fill: color-mix(in srgb, var(--mint) 80%, #000000 20%) !important;
+      opacity: .8 !important;
+      stroke: #047857 !important;
+      stroke-width: 2.8;
+    }
 
 
     /* Base: keep your CSS backgrounds; only remove default margins to kill seam */
-    html, body { margin:0; color:var(--text); }
-    a{ color:var(--link); }
+    html,
+    body {
+      margin: 0;
+      color: var(--text);
+    }
+
+    a {
+      color: var(--link);
+    }
 
     /* Avoid top margin collapse that looks like a seam under the navbar */
-    .content > :first-child { margin-top: 0; }
+    .content> :first-child {
+      margin-top: 0;
+    }
 
     /* Light-mode readability without touching layout or backgrounds */
     .light .report,
@@ -73,128 +110,305 @@
     .light details,
     .light details *,
     .light pre,
-    .light code { color: var(--text) !important; }
+    .light code {
+      color: var(--text) !important;
+    }
 
-    .light .simple-output strong.negative { color:#b91c1c !important; }
-    .light .simple-output strong.positive { color:#166534 !important; }
-    
+    .light .simple-output strong.negative {
+      color: #b91c1c !important;
+    }
+
+    .light .simple-output strong.positive {
+      color: #166534 !important;
+    }
+
     /* Preserve highlight colors in light mode */
     .light .ii-neg,
-    .light .ii-neg * { color:#dc2626 !important; }
+    .light .ii-neg * {
+      color: #dc2626 !important;
+    }
+
     .light .ii-pos,
-    .light .ii-pos * { color:#16a34a !important; }
-    .light .ii-text { color: var(--text) !important; }
+    .light .ii-pos * {
+      color: #16a34a !important;
+    }
+
+    .light .ii-text {
+      color: var(--text) !important;
+    }
 
     /* Components */
-    .diagram-container{
-      position:relative; width:200px; height:500px; margin:1rem auto;
-      background-color:var(--panel-2); border-radius:10px; box-shadow:var(--shadow);
+    .diagram-container {
+      position: relative;
+      width: 200px;
+      height: 500px;
+      margin: 1rem auto;
+      background-color: var(--panel-2);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
     }
 
-    .patient-card{ margin-bottom:2rem; }
-    .stat-badges{ display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
-    .badge{ border:1px solid var(--border); background:var(--panel); border-radius:10px; padding:.35rem .6rem; font-size:.85rem; }
-    .stats-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.75rem; }
-    .stat-card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:.7rem .8rem; }
-    .stat-card .label{ color:var(--muted); font-size:.8rem; display:block; }
-    .stat-card .value{ font-weight:700; }
+    .patient-card {
+      margin-bottom: 2rem;
+    }
 
-    .simple-output ul{ margin:.25rem 0 0; padding-left:1.1rem; }
-    .simple-output li{ margin:.2rem 0; }
-    .simple-output strong.negative{ color:#ff6b6b; cursor:help; position:relative; }
-    .simple-output strong.positive{ color:#4cc96c; }
-    .simple-output [data-def]{ text-decoration:underline dotted; cursor:help; }
+    .stat-badges {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      margin: .5rem 0 1rem;
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 10px;
+      padding: .35rem .6rem;
+      font-size: .85rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: .75rem;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem .8rem;
+    }
+
+    .stat-card .label {
+      color: var(--muted);
+      font-size: .8rem;
+      display: block;
+    }
+
+    .stat-card .value {
+      font-weight: 700;
+    }
+
+    .simple-output ul {
+      margin: .25rem 0 0;
+      padding-left: 1.1rem;
+    }
+
+    .simple-output li {
+      margin: .2rem 0;
+    }
+
+    .simple-output strong.negative {
+      color: #ff6b6b;
+      cursor: help;
+      position: relative;
+    }
+
+    .simple-output strong.positive {
+      color: #4cc96c;
+    }
+
+    .simple-output [data-def] {
+      text-decoration: underline dotted;
+      cursor: help;
+    }
 
     /* Tooltip */
-    .def-tooltip{
-      position:fixed; z-index:9998; background:var(--panel); color:var(--text);
-      border:1px solid var(--border); border-radius:10px; padding:.5rem .6rem; box-shadow:var(--shadow);
-      max-width:260px; font-size:.9rem; line-height:1.2; transform:translate(-50%,-100%); pointer-events:none;
+    .def-tooltip {
+      position: fixed;
+      z-index: 9998;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .5rem .6rem;
+      box-shadow: var(--shadow);
+      max-width: 260px;
+      font-size: .9rem;
+      line-height: 1.2;
+      transform: translate(-50%, -100%);
+      pointer-events: none;
     }
-    .def-tooltip.hidden{ display:none; }
-    .def-tooltip::after{
-      content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
-      width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--panel);
+
+    .def-tooltip.hidden {
+      display: none;
+    }
+
+    .def-tooltip::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid var(--panel);
     }
 
     /* Brain summary diagrams */
-    .brain-visual-section{
-      margin:2rem 0;
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:1.5rem;
-      box-shadow:var(--shadow);
+    .brain-visual-section {
+      margin: 2rem 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
     }
-    .brain-visual-section h2{margin-top:0; color:var(--mint);}
-    .brain-summary{margin:0 0 1rem; color:var(--muted);}
-    .brain-diagrams{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
-      gap:1.5rem;
-      margin-bottom:1rem;
+
+    .brain-visual-section h2 {
+      margin-top: 0;
+      color: var(--mint);
     }
-    .brain-view{
-      background:var(--panel-2);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:1.2rem;
-      display:flex;
-      flex-direction:column;
-      gap:0.75rem;
-      align-items:center;
-      box-shadow:var(--shadow);
-      text-align:center;
-      margin:0;
+
+    .brain-summary {
+      margin: 0 0 1rem;
+      color: var(--muted);
     }
-    .brain-view figcaption{font-size:0.9rem; font-weight:600; color:var(--text); margin:0;}
-    .brain-svg{width:100%; height:auto; max-width:200px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));}
-    .brain-outline{stroke:rgb(70,110,125); stroke-width:2.5;}
-    .brain-highlight{stroke:rgb(180,50,40); stroke-width:1.5;}
-    .light .brain-outline{stroke:rgb(90,130,145);}
-    .light .brain-highlight{stroke:rgb(200,60,50);}
-    .brain-notes{margin:1rem 0 0; padding-left:1.3rem; color:var(--muted); list-style-type:disc;}
-    .brain-notes li{margin:0.4rem 0; line-height:1.5;}
+
+    .brain-diagrams {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .brain-view {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+      box-shadow: var(--shadow);
+      text-align: center;
+      margin: 0;
+    }
+
+    .brain-view figcaption {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .brain-svg {
+      width: 100%;
+      height: auto;
+      max-width: 200px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .brain-outline {
+      stroke: rgb(70, 110, 125);
+      stroke-width: 2.5;
+    }
+
+    .brain-highlight {
+      stroke: rgb(180, 50, 40);
+      stroke-width: 1.5;
+    }
+
+    .light .brain-outline {
+      stroke: rgb(90, 130, 145);
+    }
+
+    .light .brain-highlight {
+      stroke: rgb(200, 60, 50);
+    }
+
+    .brain-notes {
+      margin: 1rem 0 0;
+      padding-left: 1.3rem;
+      color: var(--muted);
+      list-style-type: disc;
+    }
+
+    .brain-notes li {
+      margin: 0.4rem 0;
+      line-height: 1.5;
+    }
 
     /* Modal */
-    .organ-modal{ position:fixed; inset:0; z-index:9997; display:none; align-items:center; justify-content:center;
-      background:rgba(0,0,0,.45); backdrop-filter:saturate(120%) blur(2px); }
-    .organ-modal.show{ display:flex; }
-    .organ-card{ background:var(--panel); color:var(--text); border:1px solid var(--border);
-      border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); width:min(92vw,680px); }
-    .organ-card header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
-    .organ-card button{ background:transparent; color:inherit; border:1px solid var(--border); border-radius:8px; padding:.35rem .6rem; cursor:pointer; }
-    .organ-link{ text-decoration:underline dotted; cursor:pointer; }
+    .organ-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .45);
+      backdrop-filter: saturate(120%) blur(2px);
+    }
 
+    .organ-modal.show {
+      display: flex;
+    }
+
+    .organ-card {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+      width: min(92vw, 680px);
+    }
+
+    .organ-card header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .5rem;
+    }
+
+    .organ-card button {
+      background: transparent;
+      color: inherit;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .35rem .6rem;
+      cursor: pointer;
+    }
+
+    .organ-link {
+      text-decoration: underline dotted;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
-<div class="page-wrapper">
-  <header class="navbar">
-    <div class="navbar-brand">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="Inside Imaging logo">
-      <span class="brand-name">Inside Imaging</span>
-    </div>
-    <nav class="nav-links">
-      <a href="{{ url_for('dashboard') }}">Dashboard</a>
-      <a href="{{ url_for('projects') }}">Projects</a>
-      <a href="{{ url_for('report_status') }}">Statistics</a>
-      <a href="{{ url_for('payment') }}">Payment</a>
-      <a href="{{ url_for('help_page') }}">Help</a>
-    </nav>
-    <div class="nav-auth">
-      <label class="theme-switch" aria-label="Toggle theme">
-        <span class="theme-row">
-          <span class="theme-icon" aria-hidden="true">🌙</span>
-          <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
-          <span class="theme-switch-track" aria-hidden="true"></span>
-          <span class="theme-icon" aria-hidden="true">☀️</span>
-        </span>
-        <span id="theme-label" class="theme-switch-text">Dark mode</span>
-      </label>
+  <div class="page-wrapper">
+    <header class="navbar">
+      <div class="navbar-brand">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo">
+        <span class="brand-name">Inside Imaging</span>
+      </div>
+      <nav class="nav-links">
+        <a href="{{ url_for('projects') }}">Projects</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('report_status') }}">Statistics</a>
+        <a href="{{ url_for('team') }}">Our Team</a>
+        <a href="{{ url_for('payment') }}">Payment</a>
+        <a href="{{ url_for('help_page') }}">Help</a>
+      </nav>
+      <div class="nav-auth">
+        <label class="theme-switch" aria-label="Toggle theme">
+          <span class="theme-row">
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+            <span class="theme-switch-track" aria-hidden="true"></span>
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+          </span>
+          <span id="theme-label" class="theme-switch-text">Dark mode</span>
+        </label>
 
-      {% if session.get('username') %}
+        {% if session.get('username') %}
         <div class="user-menu">
           <button class="user-menu-toggle" type="button" aria-expanded="false">
             <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
@@ -205,66 +419,72 @@
             <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
           </div>
         </div>
-      {% else %}
+        {% else %}
         <a href="{{ url_for('login') }}" class="login-button">Log In</a>
         <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-      {% endif %}
-    </div>
-  </header>
+        {% endif %}
+      </div>
+    </header>
 
-  <main class="content">
-    <h1>Report Summary</h1>
+    <main class="content">
+      <h1>Report Summary</h1>
 
-    <div class="patient-card">
-      <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
-      <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
-      <div><span class="lbl">Name</span><strong>{{ patient.name|default('', true) }}</strong></div>
-      <div><span class="lbl">Sex</span><strong>{{ patient.sex|default('', true) }}</strong></div>
-      <div><span class="lbl">Age</span><strong>{{ patient.age|default('', true) }}</strong></div>
-      <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>
-    </div>
+      <div class="patient-card">
+        <div><span class="lbl">Hospital</span><strong>{{ patient.hospital|default('', true) }}</strong></div>
+        <div><span class="lbl">Study</span><strong>{{ patient.study|default('Unknown', true) }}</strong></div>
+        <div><span class="lbl">Name</span><strong>{{ patient.name|default('', true) }}</strong></div>
+        <div><span class="lbl">Sex</span><strong>{{ patient.sex|default('', true) }}</strong></div>
+        <div><span class="lbl">Age</span><strong>{{ patient.age|default('', true) }}</strong></div>
+        <div><span class="lbl">Date</span><strong>{{ patient.date|default('', true) }}</strong></div>
+      </div>
 
-    <section>
-      <h2>Body Region Highlight</h2>
-      <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}"></div>
-    </section>
+      <section>
+        <h2>Body Region Highlight</h2>
+        <div id="diagram-container" class="diagram-container" data-organ="{{ patient.study|default('', true)|lower }}">
+        </div>
+      </section>
 
-    {% set study_lower = (patient.study|default('', true)|lower) %}
-    {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' and ('brain' in study_lower or 'head' in study_lower or 'skull' in study_lower or 'cerebral' in study_lower or 'cranial' in study_lower) %}
-    <section class="brain-visual-section">
-      <h2>Brain Visualization</h2>
-      <p class="brain-summary">A simplified diagram showing the approximate location of key findings mentioned in the report. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="brainGrad" cx="50%" cy="50%">
-                <stop offset="0%" style="stop-color:rgb(190,220,230);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(140,180,195);stop-opacity:1" />
-              </radialGradient>
-            </defs>
-            <!-- Brain outline (axial/top view) -->
-            <ellipse cx="120" cy="120" rx="85" ry="90" class="brain-outline" fill="url(#brainGrad)"/>
-            <!-- Longitudinal fissure -->
-            <path d="M120,30 Q120,60 120,120 Q120,180 120,210" stroke="rgb(100,140,155)" stroke-width="2.5" fill="none"/>
-            <!-- Left hemisphere sulci -->
-            <path d="M60,80 Q50,90 45,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M50,115 Q45,125 42,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M70,60 Q65,70 60,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Right hemisphere sulci -->
-            <path d="M180,80 Q190,90 195,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M190,115 Q195,125 198,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M170,60 Q175,70 180,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lesion in right frontoparietal region -->
-            <ellipse cx="145" cy="95" rx="18" ry="22" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal/side view - anatomically accurate -->
-            <!-- Main cerebrum outline -->
-            <path d="M70,120 
+      {% set study_lower = (patient.study|default('', true)|lower) %}
+      {% if diagnosis and diagnosis.has_abnormality and diagnosis.organ == 'brain' and ('brain' in study_lower or 'head'
+      in study_lower or 'skull' in study_lower or 'cerebral' in study_lower or 'cranial' in study_lower) %}
+      <section class="brain-visual-section">
+        <h2>Brain Visualization</h2>
+        <p class="brain-summary">A simplified diagram showing the approximate location of key findings mentioned in the
+          report. This is for illustrative purposes only.</p>
+        <div class="brain-diagrams">
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="brainGrad" cx="50%" cy="50%">
+                  <stop offset="0%" style="stop-color:rgb(190,220,230);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(140,180,195);stop-opacity:1" />
+                </radialGradient>
+              </defs>
+              <!-- Brain outline (axial/top view) -->
+              <ellipse cx="120" cy="120" rx="85" ry="90" class="brain-outline" fill="url(#brainGrad)" />
+              <!-- Longitudinal fissure -->
+              <path d="M120,30 Q120,60 120,120 Q120,180 120,210" stroke="rgb(100,140,155)" stroke-width="2.5"
+                fill="none" />
+              <!-- Left hemisphere sulci -->
+              <path d="M60,80 Q50,90 45,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6" />
+              <path d="M50,115 Q45,125 42,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6" />
+              <path d="M70,60 Q65,70 60,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6" />
+              <!-- Right hemisphere sulci -->
+              <path d="M180,80 Q190,90 195,105" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none"
+                opacity="0.6" />
+              <path d="M190,115 Q195,125 198,140" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none"
+                opacity="0.6" />
+              <path d="M170,60 Q175,70 180,85" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6" />
+              <!-- Lesion in right frontoparietal region -->
+              <ellipse cx="145" cy="95" rx="18" ry="22" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Top View (Axial)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sagittal/side view - anatomically accurate -->
+              <!-- Main cerebrum outline -->
+              <path d="M70,120 
                      Q70,80 85,60 
                      Q100,45 118,42 
                      Q135,42 148,55
@@ -275,369 +495,392 @@
                      L115,185
                      Q100,183 88,175
                      Q75,162 72,145
-                     Q70,132 70,120" 
-                  class="brain-outline" fill="url(#brainGrad)" stroke="rgb(100,130,145)" stroke-width="1"/>
-            
-            <!-- Corpus callosum (thick band connecting hemispheres) -->
-            <ellipse cx="115" cy="110" rx="35" ry="8" fill="rgb(200,215,225)" opacity="0.9"/>
-            
-            <!-- Cerebellum (detailed with folds) -->
-            <path d="M145,180 
+                     Q70,132 70,120" class="brain-outline" fill="url(#brainGrad)" stroke="rgb(100,130,145)"
+                stroke-width="1" />
+
+              <!-- Corpus callosum (thick band connecting hemispheres) -->
+              <ellipse cx="115" cy="110" rx="35" ry="8" fill="rgb(200,215,225)" opacity="0.9" />
+
+              <!-- Cerebellum (detailed with folds) -->
+              <path d="M145,180 
                      Q155,175 162,178
                      Q168,182 168,190
                      Q168,198 162,202
                      Q155,205 145,202
                      Q138,198 138,190
-                     Q138,182 145,180" 
-                  fill="rgb(175,200,215)" stroke="rgb(120,150,165)" stroke-width="0.8" opacity="0.9"/>
-            <!-- Cerebellum folds -->
-            <path d="M145,185 L145,197" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            <path d="M150,183 L150,199" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            <path d="M155,182 L155,200" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            <path d="M160,183 L160,198" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6"/>
-            
-            <!-- Brainstem (pons and medulla) -->
-            <rect x="140" y="200" width="14" height="22" fill="rgb(150,180,195)" rx="3" opacity="0.85"/>
-            
-            <!-- Ventricles (fluid spaces) -->
-            <ellipse cx="112" cy="95" rx="12" ry="18" fill="rgb(100,140,160)" opacity="0.4"/>
-            <ellipse cx="115" cy="125" rx="8" ry="14" fill="rgb(100,140,160)" opacity="0.4"/>
-            
-            <!-- Major sulci/gyri (brain folds) -->
-            <!-- Central sulcus -->
-            <path d="M110,55 Q105,70 102,85 Q100,100 100,115" stroke="rgb(100,130,150)" stroke-width="1.8" fill="none" opacity="0.7"/>
-            <!-- Cingulate sulcus (above corpus callosum) -->
-            <path d="M95,95 Q105,90 120,92 Q130,95 138,100" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Parieto-occipital sulcus -->
-            <path d="M135,95 Q132,110 130,125 Q128,140 127,155" stroke="rgb(100,130,150)" stroke-width="1.5" fill="none" opacity="0.7"/>
-            <!-- Calcarine sulcus -->
-            <path d="M130,130 Q138,135 145,138" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            
-            <!-- Lesion position (example) -->
-            <ellipse cx="100" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Brain outline (coronal/front view - looking at face) -->
-            <!-- Left and right hemispheres with longitudinal fissure in middle -->
-            <path d="M60,115 
+                     Q138,182 145,180" fill="rgb(175,200,215)" stroke="rgb(120,150,165)" stroke-width="0.8"
+                opacity="0.9" />
+              <!-- Cerebellum folds -->
+              <path d="M145,185 L145,197" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6" />
+              <path d="M150,183 L150,199" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6" />
+              <path d="M155,182 L155,200" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6" />
+              <path d="M160,183 L160,198" stroke="rgb(140,170,185)" stroke-width="0.6" opacity="0.6" />
+
+              <!-- Brainstem (pons and medulla) -->
+              <rect x="140" y="200" width="14" height="22" fill="rgb(150,180,195)" rx="3" opacity="0.85" />
+
+              <!-- Ventricles (fluid spaces) -->
+              <ellipse cx="112" cy="95" rx="12" ry="18" fill="rgb(100,140,160)" opacity="0.4" />
+              <ellipse cx="115" cy="125" rx="8" ry="14" fill="rgb(100,140,160)" opacity="0.4" />
+
+              <!-- Major sulci/gyri (brain folds) -->
+              <!-- Central sulcus -->
+              <path d="M110,55 Q105,70 102,85 Q100,100 100,115" stroke="rgb(100,130,150)" stroke-width="1.8" fill="none"
+                opacity="0.7" />
+              <!-- Cingulate sulcus (above corpus callosum) -->
+              <path d="M95,95 Q105,90 120,92 Q130,95 138,100" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none"
+                opacity="0.6" />
+              <!-- Parieto-occipital sulcus -->
+              <path d="M135,95 Q132,110 130,125 Q128,140 127,155" stroke="rgb(100,130,150)" stroke-width="1.5"
+                fill="none" opacity="0.7" />
+              <!-- Calcarine sulcus -->
+              <path d="M130,130 Q138,135 145,138" stroke="rgb(100,130,150)" stroke-width="1.2" fill="none"
+                opacity="0.6" />
+
+              <!-- Lesion position (example) -->
+              <ellipse cx="100" cy="90" rx="16" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Side View (Sagittal)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Brain outline (coronal/front view - looking at face) -->
+              <!-- Left and right hemispheres with longitudinal fissure in middle -->
+              <path d="M60,115 
                      Q60,65 85,50 
                      Q105,42 120,42 
                      L120,185
                      Q105,192 85,185
                      Q70,172 65,150
-                     Q60,130 60,115" 
-                  class="brain-outline" fill="url(#brainGrad)"/>
-            <path d="M180,115 
+                     Q60,130 60,115" class="brain-outline" fill="url(#brainGrad)" />
+              <path d="M180,115 
                      Q180,65 155,50 
                      Q135,42 120,42 
                      L120,185
                      Q135,192 155,185
                      Q170,172 175,150
-                     Q180,130 180,115" 
-                  class="brain-outline" fill="url(#brainGrad)"/>
-            <!-- Longitudinal fissure (separates left/right) -->
-            <line x1="120" y1="42" x2="120" y2="185" stroke="rgb(100,140,155)" stroke-width="2" opacity="0.8"/>
-            <!-- Corpus callosum hint (connects hemispheres) -->
-            <ellipse cx="120" cy="110" rx="35" ry="8" fill="rgb(180,200,210)" opacity="0.5"/>
-            <!-- Lateral sulcus lines (left) -->
-            <path d="M75,90 Q70,105 68,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M85,75 Q80,88 78,100" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lateral sulcus lines (right) -->
-            <path d="M165,90 Q170,105 172,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <path d="M155,75 Q160,88 162,100" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6"/>
-            <!-- Lesion in right hemisphere -->
-            <ellipse cx="155" cy="85" rx="17" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-      <ul class="brain-notes">
-        <li>The red area indicates a lesion consistent with the findings mentioned in the report.</li>
-        <li>Diagram shows approximate location for illustrative purposes only.</li>
-      </ul>
-    </section>
-    {% endif %}
-
-      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'lung' or 'lung' in (patient.study|default('', true)|lower) or 'chest' in (patient.study|default('', true)|lower)) %}
-      <section class="organ-visual-section" data-organ="lung">
-      <h2>Chest/Lung Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="lungGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(220,190,190);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(180,140,140);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <!-- Axial/Top View (cross-section) -->
-            <ellipse cx="70" cy="120" rx="45" ry="50" class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <ellipse cx="170" cy="120" rx="45" ry="50" class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <rect x="105" y="95" width="30" height="50" fill="rgb(200,180,180)" opacity="0.6" rx="5"/>
-            <text x="120" y="75" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
-            <circle cx="145" cy="100" r="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal/Side View -->
-            <path d="M60,70 Q80,60 120,60 Q160,65 180,80 L180,180 Q160,190 120,190 Q80,185 60,175 Z" 
-                  class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <path d="M90,90 Q120,85 150,95" stroke="rgb(100,100,100)" stroke-width="2" fill="none" opacity="0.4"/>
-            <path d="M90,130 Q120,125 150,135" stroke="rgb(100,100,100)" stroke-width="2" fill="none" opacity="0.4"/>
-            <text x="120" y="55" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
-            <ellipse cx="135" cy="110" rx="15" ry="18" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal/Front View -->
-            <path d="M50,80 Q55,65 75,60 Q95,58 120,58 Q145,58 165,60 Q185,65 190,80 L190,175 Q185,185 165,188 Q145,190 120,190 Q95,190 75,188 Q55,185 50,175 Z" 
-                  class="brain-outline" fill="url(#lungGrad)" opacity="0.7"/>
-            <ellipse cx="85" cy="120" rx="25" ry="45" fill="rgb(200,170,170)" opacity="0.5"/>
-            <ellipse cx="155" cy="120" rx="25" ry="45" fill="rgb(200,170,170)" opacity="0.5"/>
-            <text x="120" y="50" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
-            <ellipse cx="155" cy="105" rx="14" ry="16" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
-
-      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'liver' or 'liver' in (patient.study|default('', true)|lower) or 'abdomen' in (patient.study|default('', true)|lower)) %}
-      <section class="organ-visual-section" data-organ="liver">
-      <h2>Liver Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="liverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(180,120,100);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(140,90,70);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <!-- Axial View -->
-            <path d="M60,120 Q70,80 100,70 L140,70 Q170,75 180,95 Q185,115 175,140 Q160,155 120,155 Q80,150 65,135 Q55,125 60,120 Z" 
-                  class="brain-outline" fill="url(#liverGrad)" opacity="0.8"/>
-            <text x="120" y="60" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
-            <circle cx="145" cy="105" r="13" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal View -->
-            <path d="M70,90 Q90,75 120,75 Q150,80 165,95 L160,140 Q150,155 120,160 Q90,155 75,140 Z" 
-                  class="brain-outline" fill="url(#liverGrad)" opacity="0.8"/>
-            <text x="120" y="65" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
-            <ellipse cx="135" cy="110" rx="12" ry="15" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal View -->
-            <path d="M50,100 Q60,80 80,75 Q110,72 140,72 Q170,75 185,85 Q195,100 190,120 Q180,140 160,148 Q130,152 100,148 Q70,142 55,125 Q45,110 50,100 Z" 
-                  class="brain-outline" fill="url(#liverGrad)" opacity="0.8"/>
-            <text x="120" y="65" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
-            <circle cx="150" cy="110" r="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
-
-      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'kidney' or 'kidney' in (patient.study|default('', true)|lower) or 'renal' in (patient.study|default('', true)|lower)) %}
-      <section class="organ-visual-section" data-organ="kidney">
-      <h2>Kidney Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="kidneyGrad">
-                <stop offset="0%" style="stop-color:rgb(160,120,120);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(120,80,80);stop-opacity:1" />
-              </radialGradient>
-            </defs>
-            <!-- Axial View - both kidneys -->
-            <ellipse cx="80" cy="120" rx="22" ry="28" class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <ellipse cx="160" cy="120" rx="22" ry="28" class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <text x="120" y="70" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
-            <circle cx="165" cy="115" r="10" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal View -->
-            <path d="M90,90 Q100,85 115,88 Q125,92 130,105 Q130,125 125,140 Q115,152 100,152 Q85,148 82,135 Q80,115 85,100 Q88,90 90,90 Z" 
-                  class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <ellipse cx="105" cy="115" rx="8" ry="10" fill="rgb(140,100,100)" opacity="0.6"/>
-            <text x="120" y="75" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
-            <ellipse cx="108" cy="125" rx="8" ry="10" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal View -->
-            <path d="M70,85 Q75,80 85,82 Q92,85 95,95 L95,145 Q90,155 80,156 Q70,153 68,143 L68,95 Q70,85 70,85 Z" 
-                  class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <path d="M145,85 Q150,80 160,82 Q167,85 170,95 L170,145 Q165,155 155,156 Q145,153 143,143 L143,95 Q145,85 145,85 Z" 
-                  class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8"/>
-            <text x="120" y="70" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
-            <ellipse cx="160" cy="110" rx="7" ry="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
-
-      {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower) or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or 'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
-      <section class="organ-visual-section" data-organ="spine">
-      <h2>Spine Visualization</h2>
-      <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for illustrative purposes only.</p>
-      <div class="brain-diagrams">
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="spineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(220,220,230);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(180,180,200);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <!-- Axial View - cross section of vertebra -->
-            <ellipse cx="120" cy="120" rx="40" ry="35" class="brain-outline" fill="url(#spineGrad)" opacity="0.8"/>
-            <ellipse cx="120" cy="120" rx="18" ry="16" fill="rgb(150,150,170)" opacity="0.6"/>
-            <circle cx="135" cy="110" r="9" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Top View (Axial)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sagittal View - side view of spine column -->
-            <path d="M110,50 L110,190" stroke="rgb(180,180,200)" stroke-width="12" fill="none" opacity="0.8"/>
-            <circle cx="110" cy="70" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="95" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="120" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="145" r="8" fill="url(#spineGrad)"/>
-            <circle cx="110" cy="170" r="8" fill="url(#spineGrad)"/>
-            <ellipse cx="110" cy="120" rx="12" ry="14" class="brain-highlight" fill="#e74c3c" opacity="0.85"/>
-          </svg>
-          <figcaption>Side View (Sagittal)</figcaption>
-        </figure>
-        <figure class="brain-view">
-          <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            <!-- Coronal View - front view -->
-            <path d="M120,50 L120,190" stroke="rgb(180,180,200)" stroke-width="14" fill="none" opacity="0.8"/>
-            <rect x="108" y="65" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="90" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="115" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="140" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="165" width="24" height="12" fill="url(#spineGrad)" rx="2"/>
-            <rect x="108" y="115" width="24" height="12" class="brain-highlight" fill="#e74c3c" opacity="0.85" rx="2"/>
-          </svg>
-          <figcaption>Front View (Coronal)</figcaption>
-        </figure>
-      </div>
-    </section>
-    {% endif %}
-
-    {% if language and language != 'English' %}
-      <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
-    {% endif %}
-
-    <section class="report-section">
-      <h2>Report Statistics</h2>
-      <div class="stat-badges">
-        <span class="badge">Words: {{ structured.word_count|default(report_stats.words, true) }}</span>
-        <span class="badge">Sentences: {{ structured.sentence_count|default(report_stats.sentences, true) }}</span>
-        <span class="badge positive">Highlighted positive: {{ structured.highlights_positive|default(report_stats.highlights_positive, true) }}</span>
-        <span class="badge negative">Highlighted negative: {{ structured.highlights_negative|default(report_stats.highlights_negative, true) }}</span>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card"><span class="label">Comparison</span><span class="value">{{ structured.comparison or 'None' }}</span></div>
-        <div class="stat-card"><span class="label">Oral contrast</span><span class="value">{{ structured.oral_contrast or 'Not stated' }}</span></div>
-      </div>
-    </section>
-
-    <section class="report-actions" style="margin:1rem 0;">
-      <form method="post" action="{{ url_for('download_pdf') }}">
-        <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
-        <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
-        <button type="submit" class="btn">Download PDF</button>
-      </form>
-    </section>
-
-    <div class="report">
-      <section>
-        <h3>Reason for the Scan</h3>
-        <p class="simple-output">{{ structured.reason|default('', true)|safe }}</p>
-      </section>
-      <section>
-        <h3>Procedure Details</h3>
-        <p class="simple-output">{{ structured.technique|default('', true)|safe }}</p>
-      </section>
-      <section class="important-findings">
-        <h3>Important Findings</h3>
-        <div class="simple-output">{{ structured.findings|default('', true)|safe }}</div>
-      </section>
-      <section>
-        <h3>Conclusion</h3>
-        <div class="simple-output">{{ structured.conclusion|default('', true)|safe }}</div>
-      </section>
-      {% if structured.concern %}
-      <section class="warn">
-        <h3>Note of Concern</h3>
-        <p class="simple-output">{{ structured.concern|safe }}</p>
+                     Q180,130 180,115" class="brain-outline" fill="url(#brainGrad)" />
+              <!-- Longitudinal fissure (separates left/right) -->
+              <line x1="120" y1="42" x2="120" y2="185" stroke="rgb(100,140,155)" stroke-width="2" opacity="0.8" />
+              <!-- Corpus callosum hint (connects hemispheres) -->
+              <ellipse cx="120" cy="110" rx="35" ry="8" fill="rgb(180,200,210)" opacity="0.5" />
+              <!-- Lateral sulcus lines (left) -->
+              <path d="M75,90 Q70,105 68,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6" />
+              <path d="M85,75 Q80,88 78,100" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none" opacity="0.6" />
+              <!-- Lateral sulcus lines (right) -->
+              <path d="M165,90 Q170,105 172,120" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none"
+                opacity="0.6" />
+              <path d="M155,75 Q160,88 162,100" stroke="rgb(100,140,155)" stroke-width="1.2" fill="none"
+                opacity="0.6" />
+              <!-- Lesion in right hemisphere -->
+              <ellipse cx="155" cy="85" rx="17" ry="20" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Front View (Coronal)</figcaption>
+          </figure>
+        </div>
+        <ul class="brain-notes">
+          <li>The red area indicates a lesion consistent with the findings mentioned in the report.</li>
+          <li>Diagram shows approximate location for illustrative purposes only.</li>
+        </ul>
       </section>
       {% endif %}
-    </div>
 
-    <details>
-      <summary>Extracted text</summary>
-      <pre>{{ extracted }}</pre>
-    </details>
+      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'lung' or 'lung' in
+      (patient.study|default('', true)|lower) or 'chest' in (patient.study|default('', true)|lower)) %}
+      <section class="organ-visual-section" data-organ="lung">
+        <h2>Chest/Lung Visualization</h2>
+        <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for
+          illustrative purposes only.</p>
+        <div class="brain-diagrams">
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="lungGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgb(220,190,190);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(180,140,140);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <!-- Axial/Top View (cross-section) -->
+              <ellipse cx="70" cy="120" rx="45" ry="50" class="brain-outline" fill="url(#lungGrad)" opacity="0.7" />
+              <ellipse cx="170" cy="120" rx="45" ry="50" class="brain-outline" fill="url(#lungGrad)" opacity="0.7" />
+              <rect x="105" y="95" width="30" height="50" fill="rgb(200,180,180)" opacity="0.6" rx="5" />
+              <text x="120" y="75" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
+              <circle cx="145" cy="100" r="12" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Top View (Axial)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sagittal/Side View -->
+              <path d="M60,70 Q80,60 120,60 Q160,65 180,80 L180,180 Q160,190 120,190 Q80,185 60,175 Z"
+                class="brain-outline" fill="url(#lungGrad)" opacity="0.7" />
+              <path d="M90,90 Q120,85 150,95" stroke="rgb(100,100,100)" stroke-width="2" fill="none" opacity="0.4" />
+              <path d="M90,130 Q120,125 150,135" stroke="rgb(100,100,100)" stroke-width="2" fill="none" opacity="0.4" />
+              <text x="120" y="55" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
+              <ellipse cx="135" cy="110" rx="15" ry="18" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Side View (Sagittal)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Coronal/Front View -->
+              <path
+                d="M50,80 Q55,65 75,60 Q95,58 120,58 Q145,58 165,60 Q185,65 190,80 L190,175 Q185,185 165,188 Q145,190 120,190 Q95,190 75,188 Q55,185 50,175 Z"
+                class="brain-outline" fill="url(#lungGrad)" opacity="0.7" />
+              <ellipse cx="85" cy="120" rx="25" ry="45" fill="rgb(200,170,170)" opacity="0.5" />
+              <ellipse cx="155" cy="120" rx="25" ry="45" fill="rgb(200,170,170)" opacity="0.5" />
+              <text x="120" y="50" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
+              <ellipse cx="155" cy="105" rx="14" ry="16" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Front View (Coronal)</figcaption>
+          </figure>
+        </div>
+      </section>
+      {% endif %}
 
-    <p><a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a></p>
-  </main>
+      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'liver' or 'liver' in
+      (patient.study|default('', true)|lower) or 'abdomen' in (patient.study|default('', true)|lower)) %}
+      <section class="organ-visual-section" data-organ="liver">
+        <h2>Liver Visualization</h2>
+        <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for
+          illustrative purposes only.</p>
+        <div class="brain-diagrams">
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="liverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgb(180,120,100);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(140,90,70);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <!-- Axial View -->
+              <path
+                d="M60,120 Q70,80 100,70 L140,70 Q170,75 180,95 Q185,115 175,140 Q160,155 120,155 Q80,150 65,135 Q55,125 60,120 Z"
+                class="brain-outline" fill="url(#liverGrad)" opacity="0.8" />
+              <text x="120" y="60" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
+              <circle cx="145" cy="105" r="13" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Top View (Axial)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sagittal View -->
+              <path d="M70,90 Q90,75 120,75 Q150,80 165,95 L160,140 Q150,155 120,160 Q90,155 75,140 Z"
+                class="brain-outline" fill="url(#liverGrad)" opacity="0.8" />
+              <text x="120" y="65" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
+              <ellipse cx="135" cy="110" rx="12" ry="15" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Side View (Sagittal)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Coronal View -->
+              <path
+                d="M50,100 Q60,80 80,75 Q110,72 140,72 Q170,75 185,85 Q195,100 190,120 Q180,140 160,148 Q130,152 100,148 Q70,142 55,125 Q45,110 50,100 Z"
+                class="brain-outline" fill="url(#liverGrad)" opacity="0.8" />
+              <text x="120" y="65" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
+              <circle cx="150" cy="110" r="12" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Front View (Coronal)</figcaption>
+          </figure>
+        </div>
+      </section>
+      {% endif %}
 
-  {% include '_footer.html' %}
-</div>
+      {% if diagnosis and diagnosis.has_abnormality and (diagnosis.organ == 'kidney' or 'kidney' in
+      (patient.study|default('', true)|lower) or 'renal' in (patient.study|default('', true)|lower)) %}
+      <section class="organ-visual-section" data-organ="kidney">
+        <h2>Kidney Visualization</h2>
+        <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for
+          illustrative purposes only.</p>
+        <div class="brain-diagrams">
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="kidneyGrad">
+                  <stop offset="0%" style="stop-color:rgb(160,120,120);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(120,80,80);stop-opacity:1" />
+                </radialGradient>
+              </defs>
+              <!-- Axial View - both kidneys -->
+              <ellipse cx="80" cy="120" rx="22" ry="28" class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8" />
+              <ellipse cx="160" cy="120" rx="22" ry="28" class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8" />
+              <text x="120" y="70" text-anchor="middle" font-size="12" fill="var(--text)">Axial</text>
+              <circle cx="165" cy="115" r="10" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Top View (Axial)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sagittal View -->
+              <path
+                d="M90,90 Q100,85 115,88 Q125,92 130,105 Q130,125 125,140 Q115,152 100,152 Q85,148 82,135 Q80,115 85,100 Q88,90 90,90 Z"
+                class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8" />
+              <ellipse cx="105" cy="115" rx="8" ry="10" fill="rgb(140,100,100)" opacity="0.6" />
+              <text x="120" y="75" text-anchor="middle" font-size="12" fill="var(--text)">Sagittal</text>
+              <ellipse cx="108" cy="125" rx="8" ry="10" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Side View (Sagittal)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Coronal View -->
+              <path d="M70,85 Q75,80 85,82 Q92,85 95,95 L95,145 Q90,155 80,156 Q70,153 68,143 L68,95 Q70,85 70,85 Z"
+                class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8" />
+              <path
+                d="M145,85 Q150,80 160,82 Q167,85 170,95 L170,145 Q165,155 155,156 Q145,153 143,143 L143,95 Q145,85 145,85 Z"
+                class="brain-outline" fill="url(#kidneyGrad)" opacity="0.8" />
+              <text x="120" y="70" text-anchor="middle" font-size="12" fill="var(--text)">Coronal</text>
+              <ellipse cx="160" cy="110" rx="7" ry="12" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Front View (Coronal)</figcaption>
+          </figure>
+        </div>
+      </section>
+      {% endif %}
 
-<div id="def-tooltip" class="def-tooltip hidden" role="tooltip" aria-hidden="true"></div>
+      {% if 'spine' in (patient.study|default('', true)|lower) or 'vertebra' in (patient.study|default('', true)|lower)
+      or 'spinal' in (patient.study|default('', true)|lower) or 'cervical' in (patient.study|default('', true)|lower) or
+      'lumbar' in (patient.study|default('', true)|lower) or 'thoracic' in (patient.study|default('', true)|lower) %}
+      <section class="organ-visual-section" data-organ="spine">
+        <h2>Spine Visualization</h2>
+        <p class="organ-summary">A simplified diagram showing the approximate location of findings. This is for
+          illustrative purposes only.</p>
+        <div class="brain-diagrams">
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="spineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgb(220,220,230);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(180,180,200);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <!-- Axial View - cross section of vertebra -->
+              <ellipse cx="120" cy="120" rx="40" ry="35" class="brain-outline" fill="url(#spineGrad)" opacity="0.8" />
+              <ellipse cx="120" cy="120" rx="18" ry="16" fill="rgb(150,150,170)" opacity="0.6" />
+              <circle cx="135" cy="110" r="9" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Top View (Axial)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sagittal View - side view of spine column -->
+              <path d="M110,50 L110,190" stroke="rgb(180,180,200)" stroke-width="12" fill="none" opacity="0.8" />
+              <circle cx="110" cy="70" r="8" fill="url(#spineGrad)" />
+              <circle cx="110" cy="95" r="8" fill="url(#spineGrad)" />
+              <circle cx="110" cy="120" r="8" fill="url(#spineGrad)" />
+              <circle cx="110" cy="145" r="8" fill="url(#spineGrad)" />
+              <circle cx="110" cy="170" r="8" fill="url(#spineGrad)" />
+              <ellipse cx="110" cy="120" rx="12" ry="14" class="brain-highlight" fill="#e74c3c" opacity="0.85" />
+            </svg>
+            <figcaption>Side View (Sagittal)</figcaption>
+          </figure>
+          <figure class="brain-view">
+            <svg class="brain-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Coronal View - front view -->
+              <path d="M120,50 L120,190" stroke="rgb(180,180,200)" stroke-width="14" fill="none" opacity="0.8" />
+              <rect x="108" y="65" width="24" height="12" fill="url(#spineGrad)" rx="2" />
+              <rect x="108" y="90" width="24" height="12" fill="url(#spineGrad)" rx="2" />
+              <rect x="108" y="115" width="24" height="12" fill="url(#spineGrad)" rx="2" />
+              <rect x="108" y="140" width="24" height="12" fill="url(#spineGrad)" rx="2" />
+              <rect x="108" y="165" width="24" height="12" fill="url(#spineGrad)" rx="2" />
+              <rect x="108" y="115" width="24" height="12" class="brain-highlight" fill="#e74c3c" opacity="0.85"
+                rx="2" />
+            </svg>
+            <figcaption>Front View (Coronal)</figcaption>
+          </figure>
+        </div>
+      </section>
+      {% endif %}
 
-<div id="organ-modal" class="organ-modal" aria-hidden="true">
-  <div class="organ-card" role="dialog" aria-modal="true" aria-labelledby="organ-title">
-    <header>
-      <h3 id="organ-title">Organ</h3>
-      <button type="button" id="organ-close">Close</button>
-    </header>
-    <div id="organ-content">
-      <p>Viewer placeholder for <strong id="organ-name"></strong>.</p>
+      {% if language and language != 'English' %}
+      <p class="lang-warning">Translation into {{ language }} is not yet supported. Displaying English.</p>
+      {% endif %}
+
+      <section class="report-section">
+        <h2>Report Statistics</h2>
+        <div class="stat-badges">
+          <span class="badge">Words: {{ structured.word_count|default(report_stats.words, true) }}</span>
+          <span class="badge">Sentences: {{ structured.sentence_count|default(report_stats.sentences, true) }}</span>
+          <span class="badge positive">Highlighted positive: {{
+            structured.highlights_positive|default(report_stats.highlights_positive, true) }}</span>
+          <span class="badge negative">Highlighted negative: {{
+            structured.highlights_negative|default(report_stats.highlights_negative, true) }}</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="label">Comparison</span><span class="value">{{ structured.comparison or
+              'None' }}</span></div>
+          <div class="stat-card"><span class="label">Oral contrast</span><span class="value">{{ structured.oral_contrast
+              or 'Not stated' }}</span></div>
+        </div>
+      </section>
+
+      <section class="report-actions" style="margin:1rem 0;">
+        <form method="post" action="{{ url_for('download_pdf') }}">
+          <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
+          <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
+          <button type="submit" class="btn">Download PDF</button>
+        </form>
+      </section>
+
+      <div class="report">
+        <section>
+          <h3>Reason for the Scan</h3>
+          <p class="simple-output">{{ structured.reason|default('', true)|safe }}</p>
+        </section>
+        <section>
+          <h3>Procedure Details</h3>
+          <p class="simple-output">{{ structured.technique|default('', true)|safe }}</p>
+        </section>
+        <section class="important-findings">
+          <h3>Important Findings</h3>
+          <div class="simple-output">{{ structured.findings|default('', true)|safe }}</div>
+        </section>
+        <section>
+          <h3>Conclusion</h3>
+          <div class="simple-output">{{ structured.conclusion|default('', true)|safe }}</div>
+        </section>
+        {% if structured.concern %}
+        <section class="warn">
+          <h3>Note of Concern</h3>
+          <p class="simple-output">{{ structured.concern|safe }}</p>
+        </section>
+        {% endif %}
+      </div>
+
+      <details>
+        <summary>Extracted text</summary>
+        <pre>{{ extracted }}</pre>
+      </details>
+
+      <p><a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a></p>
+    </main>
+
+    {% include '_footer.html' %}
+  </div>
+
+  <div id="def-tooltip" class="def-tooltip hidden" role="tooltip" aria-hidden="true"></div>
+
+  <div id="organ-modal" class="organ-modal" aria-hidden="true">
+    <div class="organ-card" role="dialog" aria-modal="true" aria-labelledby="organ-title">
+      <header>
+        <h3 id="organ-title">Organ</h3>
+        <button type="button" id="organ-close">Close</button>
+      </header>
+      <div id="organ-content">
+        <p>Viewer placeholder for <strong id="organ-name"></strong>.</p>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-  var organFocus = JSON.parse('{{ (diagnosis.focus if diagnosis and diagnosis.focus else {})|tojson|safe }}');
+  <script>
+    var organFocus = JSON.parse('{{ (diagnosis.focus if diagnosis and diagnosis.focus else {})|tojson|safe }}');
 
-  document.addEventListener('DOMContentLoaded', function(){
-    /* Diagram highlight: SVG silhouette + clipped bands */
-    var container = document.getElementById('diagram-container');
-    function buildBodySVG(el){
-      el.innerHTML = `
+    document.addEventListener('DOMContentLoaded', function () {
+      /* Diagram highlight: SVG silhouette + clipped bands */
+      var container = document.getElementById('diagram-container');
+      function buildBodySVG(el) {
+        el.innerHTML = `
     <svg class="body-svg" viewBox="0 0 200 500" role="img" aria-labelledby="bodyTitle">
       <title id="bodyTitle">Body region diagram</title>
 
@@ -681,404 +924,405 @@
   <use href="#h"/><use href="#t"/><use href="#la"/><use href="#ra"/><use href="#ll"/><use href="#rl"/>
       </g>
     </svg>`;
-    }
+      }
 
-    if(container){
-      buildBodySVG(container);
-      // Robust region picker: supports "AP", "A/P", "CAP", full words, organs
-      var text = (container.dataset.organ || '').toLowerCase();
-      function hits(rx){ return (text.match(rx) || []).length; }
+      if (container) {
+        buildBodySVG(container);
+        // Robust region picker: supports "AP", "A/P", "CAP", full words, organs
+        var text = (container.dataset.organ || '').toLowerCase();
+        function hits(rx) { return (text.match(rx) || []).length; }
 
-      var scores = {
-        head:    hits(/\b(brain|head|skull)\b/g),
-        chest:   hits(/\b(chest|thorax|lung|heart)\b/g) + hits(/\bcap\b|chest\s*abd(?:omen)?\s*pelvis/g),
-        abdomen: hits(/\b(abdomen|abdominal|liver|kidney|renal|pancreas|stomach|spleen|gallbladder)\b/g)
-                + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g),
-        pelvis:  hits(/\b(pelvis|pelvic|bladder|prostate|ovary|uterus)\b/g)
-                + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g)
-      };
+        var scores = {
+          head: hits(/\b(brain|head|skull)\b/g),
+          chest: hits(/\b(chest|thorax|lung|heart)\b/g) + hits(/\bcap\b|chest\s*abd(?:omen)?\s*pelvis/g),
+          abdomen: hits(/\b(abdomen|abdominal|liver|kidney|renal|pancreas|stomach|spleen|gallbladder)\b/g)
+            + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g),
+          pelvis: hits(/\b(pelvis|pelvic|bladder|prostate|ovary|uterus)\b/g)
+            + hits(/\ba\/p\b|\babd(?:omen)?\s*pelvis\b/g)
+        };
 
-      var ap  = /\ba\/p\b|\babd(?:omen)?\s*pelvis\b/.test(text);
-      var cap = /\bcap\b|chest\s*abd(?:omen)?\s*pelvis/.test(text);
-      var max = Math.max(scores.head, scores.chest, scores.abdomen, scores.pelvis);
+        var ap = /\ba\/p\b|\babd(?:omen)?\s*pelvis\b/.test(text);
+        var cap = /\bcap\b|chest\s*abd(?:omen)?\s*pelvis/.test(text);
+        var max = Math.max(scores.head, scores.chest, scores.abdomen, scores.pelvis);
 
-      // If exactly one of chest/abdomen is referenced (not CAP/AP), fill full torso
-      var torsoSingle = !ap && !cap && (Boolean(scores.chest) !== Boolean(scores.abdomen));
-      if(torsoSingle){
-        container.querySelector('.region-band.torso')?.classList.add('highlight');
-      } else {
-        ['head','chest','abdomen','pelvis'].forEach(function(r){
-          var node = container.querySelector('.region-band.'+r);
-          if(!node) return;
-          var on = ap ? (r==='abdomen' || r==='pelvis')
-                : cap ? (r==='chest' || r==='abdomen' || r==='pelvis')
+        // If exactly one of chest/abdomen is referenced (not CAP/AP), fill full torso
+        var torsoSingle = !ap && !cap && (Boolean(scores.chest) !== Boolean(scores.abdomen));
+        if (torsoSingle) {
+          container.querySelector('.region-band.torso')?.classList.add('highlight');
+        } else {
+          ['head', 'chest', 'abdomen', 'pelvis'].forEach(function (r) {
+            var node = container.querySelector('.region-band.' + r);
+            if (!node) return;
+            var on = ap ? (r === 'abdomen' || r === 'pelvis')
+              : cap ? (r === 'chest' || r === 'abdomen' || r === 'pelvis')
                 : scores[r] === max && max > 0;
-          if(on) node.classList.add('highlight');
-        });
-        if(!container.querySelector('.region-band.highlight')){
-          container.querySelector('.region-band.chest')?.classList.add('highlight');
+            if (on) node.classList.add('highlight');
+          });
+          if (!container.querySelector('.region-band.highlight')) {
+            container.querySelector('.region-band.chest')?.classList.add('highlight');
+          }
         }
+      } else {
       }
-    } else {
-    }
 
-    /* Dynamic brain lesion positioning */
-    function parseBrainLesion() {
-      var conclusion = ({{ structured.conclusion|default("", true)|tojson }} || "").toLowerCase().replace(/<[^>]+>/g, ' ');
-      var findings = ({{ structured.findings|default("", true)|tojson }} || "").toLowerCase().replace(/<[^>]+>/g, ' ');
-      var combinedText = conclusion + ' ' + findings;
-      
-      // Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]
-      var locationMap = {
-        'right frontoparietal': [145, 95, 100, 90, 155, 85],  // sagittal adjusted for corrected view
-        'left frontoparietal': [95, 95, 100, 90, 85, 85],
-        'right frontal': [140, 85, 85, 75, 150, 75],  // frontal is on left in sagittal view
-        'left frontal': [100, 85, 85, 75, 90, 75],
-        'right parietal': [150, 100, 110, 95, 160, 90],
-        'left parietal': [90, 100, 110, 95, 80, 90],
-        'right temporal': [155, 115, 105, 110, 165, 105],
-        'left temporal': [85, 115, 105, 110, 75, 105],
-        'right occipital': [155, 125, 135, 130, 165, 120],  // occipital is on right in sagittal
-        'left occipital': [85, 125, 135, 130, 75, 120],
-        'sphenoid wing': [130, 105, 95, 100, 135, 100],
-        'greater sphenoid wing': [135, 105, 95, 100, 140, 100],
-        'cerebellum': [120, 145, 145, 165, 120, 165],  // cerebellum moved right in sagittal
-        'brainstem': [120, 155, 145, 175, 120, 175],
-        'thalamus': [120, 110, 95, 110, 120, 110],
-        'basal ganglia': [115, 110, 95, 105, 115, 105]
-      };
-      
-      // Parse size (e.g., "5.4 x 5.6 x 6.7 cm" or "measures 2.5 cm")
-      var sizeMatch = combinedText.match(/(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*cm|measures?\s+(\d+\.?\d*)\s*cm/i);
-      var avgSize = 18; // default radius
-      if (sizeMatch) {
-        if (sizeMatch[1]) {
-          var dims = [parseFloat(sizeMatch[1]), parseFloat(sizeMatch[2]), parseFloat(sizeMatch[3])];
-          avgSize = Math.min(30, Math.max(10, (dims[0] + dims[1] + dims[2]) / 3 * 3)); // scale to pixels
-        } else if (sizeMatch[4]) {
-          avgSize = Math.min(30, Math.max(10, parseFloat(sizeMatch[4]) * 3));
+      /* Dynamic brain lesion positioning */
+      function parseBrainLesion() {
+        var conclusion = (JSON.parse('{{ structured.conclusion|default("", true)|tojson|safe }}') || "").toLowerCase().replace(/<[^>]+>/g, ' ');
+        var findings = (JSON.parse('{{ structured.findings|default("", true)|tojson|safe }}') || "").toLowerCase().replace(/<[^>]+>/g, ' ');
+        var combinedText = conclusion + ' ' + findings;
+
+        // Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]
+        var locationMap = {
+          'right frontoparietal': [145, 95, 100, 90, 155, 85],  // sagittal adjusted for corrected view
+          'left frontoparietal': [95, 95, 100, 90, 85, 85],
+          'right frontal': [140, 85, 85, 75, 150, 75],  // frontal is on left in sagittal view
+          'left frontal': [100, 85, 85, 75, 90, 75],
+          'right parietal': [150, 100, 110, 95, 160, 90],
+          'left parietal': [90, 100, 110, 95, 80, 90],
+          'right temporal': [155, 115, 105, 110, 165, 105],
+          'left temporal': [85, 115, 105, 110, 75, 105],
+          'right occipital': [155, 125, 135, 130, 165, 120],  // occipital is on right in sagittal
+          'left occipital': [85, 125, 135, 130, 75, 120],
+          'sphenoid wing': [130, 105, 95, 100, 135, 100],
+          'greater sphenoid wing': [135, 105, 95, 100, 140, 100],
+          'cerebellum': [120, 145, 145, 165, 120, 165],  // cerebellum moved right in sagittal
+          'brainstem': [120, 155, 145, 175, 120, 175],
+          'thalamus': [120, 110, 95, 110, 120, 110],
+          'basal ganglia': [115, 110, 95, 105, 115, 105]
+        };
+
+        // Parse size (e.g., "5.4 x 5.6 x 6.7 cm" or "measures 2.5 cm")
+        var sizeMatch = combinedText.match(/(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*cm|measures?\s+(\d+\.?\d*)\s*cm/i);
+        var avgSize = 18; // default radius
+        if (sizeMatch) {
+          if (sizeMatch[1]) {
+            var dims = [parseFloat(sizeMatch[1]), parseFloat(sizeMatch[2]), parseFloat(sizeMatch[3])];
+            avgSize = Math.min(30, Math.max(10, (dims[0] + dims[1] + dims[2]) / 3 * 3)); // scale to pixels
+          } else if (sizeMatch[4]) {
+            avgSize = Math.min(30, Math.max(10, parseFloat(sizeMatch[4]) * 3));
+          }
         }
+
+        // Find best location match
+        var bestMatch = null;
+        var bestLength = 0;
+        for (var loc in locationMap) {
+          if (combinedText.indexOf(loc) !== -1 && loc.length > bestLength) {
+            bestMatch = loc;
+            bestLength = loc.length;
+          }
+        }
+
+        return {
+          location: bestMatch,
+          coords: bestMatch ? locationMap[bestMatch] : [145, 95, 135, 90, 155, 85],
+          size: avgSize,
+          found: !!bestMatch
+        };
       }
-      
-      // Find best location match
-      var bestMatch = null;
-      var bestLength = 0;
-      for (var loc in locationMap) {
-        if (combinedText.indexOf(loc) !== -1 && loc.length > bestLength) {
-          bestMatch = loc;
-          bestLength = loc.length;
-        }
-      }
-      
-      return {
-        location: bestMatch,
-        coords: bestMatch ? locationMap[bestMatch] : [145, 95, 135, 90, 155, 85],
-        size: avgSize,
-        found: !!bestMatch
-      };
-    }
-    
-    /* Update brain diagrams with parsed lesion data */
-    function updateBrainDiagrams() {
-      var lesionData = parseBrainLesion();
-      var diagrams = document.querySelectorAll('.brain-view svg');
-      
-      if (diagrams.length === 3) {
-        // Axial (top) view
-        var axialLesion = diagrams[0].querySelector('.brain-highlight');
-        if (axialLesion) {
-          axialLesion.setAttribute('cx', lesionData.coords[0]);
-          axialLesion.setAttribute('cy', lesionData.coords[1]);
-          axialLesion.setAttribute('rx', lesionData.size);
-          axialLesion.setAttribute('ry', lesionData.size * 1.2);
-        }
-        
-        // Sagittal (side) view
-        var sagittalLesion = diagrams[1].querySelector('.brain-highlight');
-        if (sagittalLesion) {
-          sagittalLesion.setAttribute('cx', lesionData.coords[2]);
-          sagittalLesion.setAttribute('cy', lesionData.coords[3]);
-          sagittalLesion.setAttribute('rx', lesionData.size * 0.9);
-          sagittalLesion.setAttribute('ry', lesionData.size * 1.1);
-        }
-        
-        // Coronal (front) view
-        var coronalLesion = diagrams[2].querySelector('.brain-highlight');
-        if (coronalLesion) {
-          coronalLesion.setAttribute('cx', lesionData.coords[4]);
-          coronalLesion.setAttribute('cy', lesionData.coords[5]);
-          coronalLesion.setAttribute('rx', lesionData.size * 0.95);
-          coronalLesion.setAttribute('ry', lesionData.size * 1.1);
-        }
-        
-        // Update notes if location was found
-        if (lesionData.found) {
-          var notesList = document.querySelector('.brain-notes');
-          if (notesList) {
-            var firstNote = notesList.querySelector('li');
-            if (firstNote) {
-              firstNote.textContent = 'The red area indicates a lesion in the ' + lesionData.location + ' region, as described in the conclusion.';
+
+      /* Update brain diagrams with parsed lesion data */
+      function updateBrainDiagrams() {
+        var lesionData = parseBrainLesion();
+        var diagrams = document.querySelectorAll('.brain-view svg');
+
+        if (diagrams.length === 3) {
+          // Axial (top) view
+          var axialLesion = diagrams[0].querySelector('.brain-highlight');
+          if (axialLesion) {
+            axialLesion.setAttribute('cx', lesionData.coords[0]);
+            axialLesion.setAttribute('cy', lesionData.coords[1]);
+            axialLesion.setAttribute('rx', lesionData.size);
+            axialLesion.setAttribute('ry', lesionData.size * 1.2);
+          }
+
+          // Sagittal (side) view
+          var sagittalLesion = diagrams[1].querySelector('.brain-highlight');
+          if (sagittalLesion) {
+            sagittalLesion.setAttribute('cx', lesionData.coords[2]);
+            sagittalLesion.setAttribute('cy', lesionData.coords[3]);
+            sagittalLesion.setAttribute('rx', lesionData.size * 0.9);
+            sagittalLesion.setAttribute('ry', lesionData.size * 1.1);
+          }
+
+          // Coronal (front) view
+          var coronalLesion = diagrams[2].querySelector('.brain-highlight');
+          if (coronalLesion) {
+            coronalLesion.setAttribute('cx', lesionData.coords[4]);
+            coronalLesion.setAttribute('cy', lesionData.coords[5]);
+            coronalLesion.setAttribute('rx', lesionData.size * 0.95);
+            coronalLesion.setAttribute('ry', lesionData.size * 1.1);
+          }
+
+          // Update notes if location was found
+          if (lesionData.found) {
+            var notesList = document.querySelector('.brain-notes');
+            if (notesList) {
+              var firstNote = notesList.querySelector('li');
+              if (firstNote) {
+                firstNote.textContent = 'The red area indicates a lesion in the ' + lesionData.location + ' region, as described in the conclusion.';
+              }
             }
           }
         }
       }
-    }
-    
-    // Run brain diagram updates after DOM is ready
-    if (document.querySelector('.brain-visual-section')) {
-      updateBrainDiagrams();
-    }
 
-    /* Term definitions */
-    var TERM_DEFS = {
-      "interhemispheric fissure":"deep groove between the two brain halves",
-      "cortical sulcation":"normal folds and grooves on the brain surface",
-      "grey-white matter differentiation":"normal contrast between outer (grey) and inner (white) layers",
-      "cerebral ventricles":"fluid spaces inside the brain",
-      "ventricles":"fluid spaces inside the brain",
-      "basal cisterns":"fluid spaces at the base of the brain",
-      "posterior fossa":"back lower part of the skull that holds cerebellum and brainstem",
-      "brain stem":"part that connects the brain to the spinal cord",
-      "brainstem":"part that connects the brain to the spinal cord",
-      "sella":"small bone pocket under the brain that holds the pituitary",
-      "pituitary":"small hormone gland under the brain",
-      "orbits":"eye sockets",
-      "paranasal sinuses":"air pockets in the face",
-      "sinuses":"air pockets in the face",
-      "dural venous sinuses":"large veins that drain blood from the brain",
-      "flow voids":"MRI signs of fast-moving blood",
-      "craniocervical junction":"where the skull meets the neck",
-      "intracranial space-occupying lesion":"a mass inside the skull",
-      "space-occupying lesion":"a mass inside the skull"
-    };
-    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
-    function annotateSimpleOutputTerms(){
-      var roots = document.querySelectorAll('.simple-output');
-      if(!roots.length) return;
-      var terms = Object.keys(TERM_DEFS);
-      if(!terms.length) return;
-      var pattern = '\\b(' + terms.map(escapeRegExp).join('|') + ')\\b';
-      var rxCheck = new RegExp(pattern,'i');
-      var rxAll = new RegExp(pattern,'gi');
-      roots.forEach(function(root){
-        var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-          acceptNode:function(node){
-            if(!node.nodeValue) return NodeFilter.FILTER_REJECT;
-            rxCheck.lastIndex = 0;
-            if(!rxCheck.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
-            if(node.parentElement && node.parentElement.closest('[data-def]')) return NodeFilter.FILTER_REJECT;
-            return NodeFilter.FILTER_ACCEPT;
-          }
-        });
-        var toWrap = [];
-        while(walker.nextNode()) toWrap.push(walker.currentNode);
-        toWrap.forEach(function(textNode){
-          var text = textNode.nodeValue;
-          var frag = document.createDocumentFragment();
-          var last = 0;
-          text.replace(rxAll, function(match, _g1, offset){
-            if(offset > last) frag.appendChild(document.createTextNode(text.slice(last, offset)));
-            var span = document.createElement('span');
-            span.textContent = match;
-            span.setAttribute('data-def', TERM_DEFS[match.toLowerCase()] || 'Definition not available.');
-            frag.appendChild(span);
-            last = offset + match.length;
-            return match;
+      // Run brain diagram updates after DOM is ready
+      if (document.querySelector('.brain-visual-section')) {
+        updateBrainDiagrams();
+      }
+
+      /* Term definitions */
+      var TERM_DEFS = {
+        "interhemispheric fissure": "deep groove between the two brain halves",
+        "cortical sulcation": "normal folds and grooves on the brain surface",
+        "grey-white matter differentiation": "normal contrast between outer (grey) and inner (white) layers",
+        "cerebral ventricles": "fluid spaces inside the brain",
+        "ventricles": "fluid spaces inside the brain",
+        "basal cisterns": "fluid spaces at the base of the brain",
+        "posterior fossa": "back lower part of the skull that holds cerebellum and brainstem",
+        "brain stem": "part that connects the brain to the spinal cord",
+        "brainstem": "part that connects the brain to the spinal cord",
+        "sella": "small bone pocket under the brain that holds the pituitary",
+        "pituitary": "small hormone gland under the brain",
+        "orbits": "eye sockets",
+        "paranasal sinuses": "air pockets in the face",
+        "sinuses": "air pockets in the face",
+        "dural venous sinuses": "large veins that drain blood from the brain",
+        "flow voids": "MRI signs of fast-moving blood",
+        "craniocervical junction": "where the skull meets the neck",
+        "intracranial space-occupying lesion": "a mass inside the skull",
+        "space-occupying lesion": "a mass inside the skull"
+      };
+      function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+      function annotateSimpleOutputTerms() {
+        var roots = document.querySelectorAll('.simple-output');
+        if (!roots.length) return;
+        var terms = Object.keys(TERM_DEFS);
+        if (!terms.length) return;
+        var pattern = '\\b(' + terms.map(escapeRegExp).join('|') + ')\\b';
+        var rxCheck = new RegExp(pattern, 'i');
+        var rxAll = new RegExp(pattern, 'gi');
+        roots.forEach(function (root) {
+          var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode: function (node) {
+              if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
+              rxCheck.lastIndex = 0;
+              if (!rxCheck.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+              if (node.parentElement && node.parentElement.closest('[data-def]')) return NodeFilter.FILTER_REJECT;
+              return NodeFilter.FILTER_ACCEPT;
+            }
           });
-          if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
-          if(textNode.parentNode) textNode.parentNode.replaceChild(frag, textNode);
+          var toWrap = [];
+          while (walker.nextNode()) toWrap.push(walker.currentNode);
+          toWrap.forEach(function (textNode) {
+            var text = textNode.nodeValue;
+            var frag = document.createDocumentFragment();
+            var last = 0;
+            text.replace(rxAll, function (match, _g1, offset) {
+              if (offset > last) frag.appendChild(document.createTextNode(text.slice(last, offset)));
+              var span = document.createElement('span');
+              span.textContent = match;
+              span.setAttribute('data-def', TERM_DEFS[match.toLowerCase()] || 'Definition not available.');
+              frag.appendChild(span);
+              last = offset + match.length;
+              return match;
+            });
+            if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+            if (textNode.parentNode) textNode.parentNode.replaceChild(frag, textNode);
+          });
         });
+      }
+
+      /* Tooltip */
+      var tooltip = document.getElementById('def-tooltip');
+      function showTip(text, x, y) {
+        tooltip.textContent = text;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+        tooltip.classList.remove('hidden');
+        tooltip.setAttribute('aria-hidden', 'false');
+      }
+      function hideTip() {
+        tooltip.classList.add('hidden');
+        tooltip.setAttribute('aria-hidden', 'true');
+      }
+      document.body.addEventListener('mousemove', function (e) {
+        if (!tooltip.classList.contains('hidden')) {
+          tooltip.style.left = e.clientX + 'px';
+          tooltip.style.top = (e.clientY - 14) + 'px';
+        }
+      }, { passive: true });
+      document.addEventListener('mouseover', function (e) {
+        var target = e.target.closest('.simple-output [data-def]');
+        if (target) {
+          var def = target.getAttribute('data-def') || 'Definition not available.';
+          var rect = target.getBoundingClientRect();
+          showTip(def, rect.left + (rect.width / 2), rect.top - 6);
+        }
+      }, { passive: true });
+      document.addEventListener('mouseout', function (e) {
+        var target = e.target.closest('.simple-output [data-def]');
+        if (target) hideTip();
+      }, { passive: true });
+
+      annotateSimpleOutputTerms();
+      applyOrganFocus(organFocus);
+
+      /* Modal controls */
+      var organModal = document.getElementById('organ-modal');
+      var organClose = document.getElementById('organ-close');
+      var organName = document.getElementById('organ-name');
+      function openOrgan(org) {
+        organName.textContent = org;
+        organModal.classList.add('show');
+        organModal.setAttribute('aria-hidden', 'false');
+        window.dispatchEvent(new CustomEvent('organ:open', { detail: { organ: org } }));
+      }
+      function closeOrgan() {
+        organModal.classList.remove('show');
+        organModal.setAttribute('aria-hidden', 'true');
+      }
+      if (organClose) organClose.addEventListener('click', closeOrgan);
+      organModal.addEventListener('click', function (e) { if (e.target === organModal) closeOrgan(); });
+      document.addEventListener('click', function (e) {
+        var o = e.target.closest('.organ-link');
+        if (o) {
+          var key = o.getAttribute('data-organ') || o.textContent.trim().toLowerCase();
+          openOrgan(key);
+        }
       });
-    }
-
-    /* Tooltip */
-    var tooltip = document.getElementById('def-tooltip');
-    function showTip(text, x, y){
-      tooltip.textContent = text;
-      tooltip.style.left = x + 'px';
-      tooltip.style.top = y + 'px';
-      tooltip.classList.remove('hidden');
-      tooltip.setAttribute('aria-hidden','false');
-    }
-    function hideTip(){
-      tooltip.classList.add('hidden');
-      tooltip.setAttribute('aria-hidden','true');
-    }
-    document.body.addEventListener('mousemove', function(e){
-      if(!tooltip.classList.contains('hidden')){
-        tooltip.style.left = e.clientX + 'px';
-        tooltip.style.top = (e.clientY - 14) + 'px';
-      }
-    }, {passive:true});
-    document.addEventListener('mouseover', function(e){
-      var target = e.target.closest('.simple-output [data-def]');
-      if(target){
-        var def = target.getAttribute('data-def') || 'Definition not available.';
-        var rect = target.getBoundingClientRect();
-        showTip(def, rect.left + (rect.width/2), rect.top - 6);
-      }
-    }, {passive:true});
-    document.addEventListener('mouseout', function(e){
-      var target = e.target.closest('.simple-output [data-def]');
-      if(target) hideTip();
-    }, {passive:true});
-
-  annotateSimpleOutputTerms();
-  applyOrganFocus(organFocus);
-
-    /* Modal controls */
-    var organModal = document.getElementById('organ-modal');
-    var organClose = document.getElementById('organ-close');
-    var organName = document.getElementById('organ-name');
-    function openOrgan(org){
-      organName.textContent = org;
-      organModal.classList.add('show');
-      organModal.setAttribute('aria-hidden','false');
-      window.dispatchEvent(new CustomEvent('organ:open', { detail:{ organ:org } }));
-    }
-    function closeOrgan(){
-      organModal.classList.remove('show');
-      organModal.setAttribute('aria-hidden','true');
-    }
-    if(organClose) organClose.addEventListener('click', closeOrgan);
-    organModal.addEventListener('click', function(e){ if(e.target === organModal) closeOrgan(); });
-    document.addEventListener('click', function(e){
-      var o = e.target.closest('.organ-link');
-      if(o){
-        var key = o.getAttribute('data-organ') || o.textContent.trim().toLowerCase();
-        openOrgan(key);
-      }
     });
-  });
 
-  function applyOrganFocus(focus){
-    if(!focus || !focus.organ) return;
-    if(focus.organ === 'lung') updateLungDiagrams(focus);
-    if(focus.organ === 'liver') updateLiverDiagrams(focus);
-    if(focus.organ === 'kidney') updateKidneyDiagrams(focus);
-    if(focus.organ === 'spine') updateSpineDiagrams(focus);
-  }
+    function applyOrganFocus(focus) {
+      if (!focus || !focus.organ) return;
+      if (focus.organ === 'lung') updateLungDiagrams(focus);
+      if (focus.organ === 'liver') updateLiverDiagrams(focus);
+      if (focus.organ === 'kidney') updateKidneyDiagrams(focus);
+      if (focus.organ === 'spine') updateSpineDiagrams(focus);
+    }
 
-  function updateLungDiagrams(focus){
-    var section = document.querySelector('.organ-visual-section[data-organ="lung"]');
-    if(!section) return;
-    var laterality = focus.laterality || 'right';
-    var zone = focus.zone || '';
-    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
-    if(axial){
-      var cx = laterality === 'left' ? 95 : laterality === 'bilateral' ? 120 : 145;
-      var cy = zone === 'upper' ? 100 : zone === 'lower' ? 140 : 115;
-      var radius = laterality === 'bilateral' ? 28 : 14;
-      axial.setAttribute('cx', cx);
-      axial.setAttribute('cy', cy);
-      axial.setAttribute('r', radius);
-    }
-    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
-    if(sagittal){
-      var sagCy = zone === 'upper' ? 105 : zone === 'lower' ? 145 : 125;
-      sagittal.setAttribute('cy', sagCy);
-      sagittal.setAttribute('rx', laterality === 'bilateral' ? 18 : 15);
-    }
-    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
-    if(coronal){
-      var corCx = laterality === 'left' ? 85 : laterality === 'bilateral' ? 120 : 155;
-      var corCy = zone === 'upper' ? 95 : zone === 'lower' ? 130 : 110;
-      coronal.setAttribute('cx', corCx);
-      coronal.setAttribute('cy', corCy);
-      coronal.setAttribute('rx', laterality === 'bilateral' ? 24 : 14);
-    }
-  }
-
-  function updateKidneyDiagrams(focus){
-    var section = document.querySelector('.organ-visual-section[data-organ="kidney"]');
-    if(!section) return;
-    var laterality = focus.laterality || 'right';
-    var zone = focus.zone || '';
-    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
-    if(axial){
-      var axialCxMap = {left: 80, right: 160, bilateral: 120};
-      var cx = axialCxMap[laterality] || 160;
-      var cy = zone === 'upper' ? 108 : zone === 'lower' ? 135 : 120;
-      var r = laterality === 'bilateral' ? 24 : 10;
-      axial.setAttribute('cx', cx);
-      axial.setAttribute('cy', cy);
-      axial.setAttribute('r', r);
-    }
-    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
-    if(sagittal){
-      var sagCy = zone === 'upper' ? 110 : zone === 'lower' ? 138 : 125;
-      sagittal.setAttribute('cy', sagCy);
-      sagittal.setAttribute('rx', laterality === 'bilateral' ? 14 : 8);
-      sagittal.setAttribute('cx', laterality === 'left' ? 102 : 108);
-    }
-    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
-    if(coronal){
-      var corCxMap = {left: 80, right: 160, bilateral: 120};
-      var corCx = corCxMap[laterality] || 160;
-      var corCy = zone === 'upper' ? 100 : zone === 'lower' ? 132 : 110;
-      coronal.setAttribute('cx', corCx);
-      coronal.setAttribute('cy', corCy);
-      coronal.setAttribute('rx', laterality === 'bilateral' ? 22 : 7);
-    }
-  }
-
-  function updateLiverDiagrams(focus){
-    var section = document.querySelector('.organ-visual-section[data-organ="liver"]');
-    if(!section) return;
-    var laterality = focus.laterality || focus.segment_group || 'right';
-    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
-    if(axial){
-      var cx = laterality === 'left' ? 105 : laterality === 'bilateral' ? 125 : laterality === 'caudate' ? 120 : 145;
-      axial.setAttribute('cx', cx);
-      axial.setAttribute('r', laterality === 'bilateral' ? 22 : 13);
-    }
-    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
-    if(sagittal){
-      sagittal.setAttribute('cx', laterality === 'left' ? 110 : laterality === 'caudate' ? 122 : 135);
-      sagittal.setAttribute('cy', laterality === 'caudate' ? 120 : 110);
-      sagittal.setAttribute('rx', laterality === 'bilateral' ? 18 : 12);
-    }
-    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
-    if(coronal){
-      var corCx = laterality === 'left' ? 105 : laterality === 'bilateral' ? 125 : laterality === 'caudate' ? 120 : 150;
-      coronal.setAttribute('cx', corCx);
-      coronal.setAttribute('rx', laterality === 'bilateral' ? 20 : 12);
-    }
-  }
-
-  function updateSpineDiagrams(focus){
-    var section = document.querySelector('.organ-visual-section[data-organ="spine"]');
-    if(!section) return;
-    var region = (focus.region || '').toLowerCase();
-    var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
-    var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
-    var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
-    var axialCyMap = {cervical: 90, thoracic: 120, lumbar: 150, sacral: 170};
-    var sagittalCyMap = {cervical: 85, thoracic: 120, lumbar: 155, sacral: 175};
-    var coronalYMap = {cervical: 70, thoracic: 110, lumbar: 145, sacral: 165};
-    if(!region && Array.isArray(focus.levels) && focus.levels.length){
-      var firstLevel = String(focus.levels[0] || '').trim();
-      if(firstLevel){
-        var code = firstLevel[0].toLowerCase();
-        region = {c: 'cervical', t: 'thoracic', l: 'lumbar', s: 'sacral'}[code] || '';
+    function updateLungDiagrams(focus) {
+      var section = document.querySelector('.organ-visual-section[data-organ="lung"]');
+      if (!section) return;
+      var laterality = focus.laterality || 'right';
+      var zone = focus.zone || '';
+      var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+      if (axial) {
+        var cx = laterality === 'left' ? 95 : laterality === 'bilateral' ? 120 : 145;
+        var cy = zone === 'upper' ? 100 : zone === 'lower' ? 140 : 115;
+        var radius = laterality === 'bilateral' ? 28 : 14;
+        axial.setAttribute('cx', cx);
+        axial.setAttribute('cy', cy);
+        axial.setAttribute('r', radius);
+      }
+      var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+      if (sagittal) {
+        var sagCy = zone === 'upper' ? 105 : zone === 'lower' ? 145 : 125;
+        sagittal.setAttribute('cy', sagCy);
+        sagittal.setAttribute('rx', laterality === 'bilateral' ? 18 : 15);
+      }
+      var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+      if (coronal) {
+        var corCx = laterality === 'left' ? 85 : laterality === 'bilateral' ? 120 : 155;
+        var corCy = zone === 'upper' ? 95 : zone === 'lower' ? 130 : 110;
+        coronal.setAttribute('cx', corCx);
+        coronal.setAttribute('cy', corCy);
+        coronal.setAttribute('rx', laterality === 'bilateral' ? 24 : 14);
       }
     }
-    var regionKey = region || 'thoracic';
-    if(axial){
-      axial.setAttribute('cy', axialCyMap[regionKey] || 120);
-    }
-    if(sagittal){
-      var sagCy = sagittalCyMap[regionKey] || 120;
-      sagittal.setAttribute('cy', sagCy);
-    }
-    if(coronal){
-      var corY = coronalYMap[regionKey] || 110;
-      coronal.setAttribute('y', corY);
-    }
-  }
-</script>
 
-<script src="{{ url_for('static', filename='theme.js') }}"></script>
-<script src="{{ url_for('static', filename='loader.js') }}"></script>
+    function updateKidneyDiagrams(focus) {
+      var section = document.querySelector('.organ-visual-section[data-organ="kidney"]');
+      if (!section) return;
+      var laterality = focus.laterality || 'right';
+      var zone = focus.zone || '';
+      var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+      if (axial) {
+        var axialCxMap = { left: 80, right: 160, bilateral: 120 };
+        var cx = axialCxMap[laterality] || 160;
+        var cy = zone === 'upper' ? 108 : zone === 'lower' ? 135 : 120;
+        var r = laterality === 'bilateral' ? 24 : 10;
+        axial.setAttribute('cx', cx);
+        axial.setAttribute('cy', cy);
+        axial.setAttribute('r', r);
+      }
+      var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+      if (sagittal) {
+        var sagCy = zone === 'upper' ? 110 : zone === 'lower' ? 138 : 125;
+        sagittal.setAttribute('cy', sagCy);
+        sagittal.setAttribute('rx', laterality === 'bilateral' ? 14 : 8);
+        sagittal.setAttribute('cx', laterality === 'left' ? 102 : 108);
+      }
+      var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+      if (coronal) {
+        var corCxMap = { left: 80, right: 160, bilateral: 120 };
+        var corCx = corCxMap[laterality] || 160;
+        var corCy = zone === 'upper' ? 100 : zone === 'lower' ? 132 : 110;
+        coronal.setAttribute('cx', corCx);
+        coronal.setAttribute('cy', corCy);
+        coronal.setAttribute('rx', laterality === 'bilateral' ? 22 : 7);
+      }
+    }
+
+    function updateLiverDiagrams(focus) {
+      var section = document.querySelector('.organ-visual-section[data-organ="liver"]');
+      if (!section) return;
+      var laterality = focus.laterality || focus.segment_group || 'right';
+      var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+      if (axial) {
+        var cx = laterality === 'left' ? 105 : laterality === 'bilateral' ? 125 : laterality === 'caudate' ? 120 : 145;
+        axial.setAttribute('cx', cx);
+        axial.setAttribute('r', laterality === 'bilateral' ? 22 : 13);
+      }
+      var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+      if (sagittal) {
+        sagittal.setAttribute('cx', laterality === 'left' ? 110 : laterality === 'caudate' ? 122 : 135);
+        sagittal.setAttribute('cy', laterality === 'caudate' ? 120 : 110);
+        sagittal.setAttribute('rx', laterality === 'bilateral' ? 18 : 12);
+      }
+      var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+      if (coronal) {
+        var corCx = laterality === 'left' ? 105 : laterality === 'bilateral' ? 125 : laterality === 'caudate' ? 120 : 150;
+        coronal.setAttribute('cx', corCx);
+        coronal.setAttribute('rx', laterality === 'bilateral' ? 20 : 12);
+      }
+    }
+
+    function updateSpineDiagrams(focus) {
+      var section = document.querySelector('.organ-visual-section[data-organ="spine"]');
+      if (!section) return;
+      var region = (focus.region || '').toLowerCase();
+      var axial = section.querySelector('.brain-view:nth-child(1) .brain-highlight');
+      var sagittal = section.querySelector('.brain-view:nth-child(2) .brain-highlight');
+      var coronal = section.querySelector('.brain-view:nth-child(3) .brain-highlight');
+      var axialCyMap = { cervical: 90, thoracic: 120, lumbar: 150, sacral: 170 };
+      var sagittalCyMap = { cervical: 85, thoracic: 120, lumbar: 155, sacral: 175 };
+      var coronalYMap = { cervical: 70, thoracic: 110, lumbar: 145, sacral: 165 };
+      if (!region && Array.isArray(focus.levels) && focus.levels.length) {
+        var firstLevel = String(focus.levels[0] || '').trim();
+        if (firstLevel) {
+          var code = firstLevel[0].toLowerCase();
+          region = { c: 'cervical', t: 'thoracic', l: 'lumbar', s: 'sacral' }[code] || '';
+        }
+      }
+      var regionKey = region || 'thoracic';
+      if (axial) {
+        axial.setAttribute('cy', axialCyMap[regionKey] || 120);
+      }
+      if (sagittal) {
+        var sagCy = sagittalCyMap[regionKey] || 120;
+        sagittal.setAttribute('cy', sagCy);
+      }
+      if (coronal) {
+        var corY = coronalYMap[regionKey] || 110;
+        coronal.setAttribute('y', corY);
+      }
+    }
+  </script>
+
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='loader.js') }}"></script>
 </body>
+
 </html>

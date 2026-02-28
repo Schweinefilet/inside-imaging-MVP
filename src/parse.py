@@ -67,12 +67,19 @@ def _simplify_study_name(study: str) -> str:
             if region_name not in regions_found:
                 regions_found.append(region_name)
     
+    # Contrast detection
+    contrast = ""
+    if re.search(r"\b(without contrast|non-contrast|without dye|no contrast)\b", study, re.IGNORECASE):
+        contrast = " (non-contrast)"
+    elif re.search(r"\b(with contrast|with iv contrast|with dye)\b", study, re.IGNORECASE):
+        contrast = " (with contrast)"
+
     if regions_found:
         region_str = " and ".join(regions_found)
-        return f"{modality} of {region_str}"
+        return f"{modality} of {region_str}{contrast}"
     else:
         # Fallback: just return the modality if we can't identify body region
-        return modality
+        return f"{modality}{contrast}"
 
 def _norm(s: str) -> str:
     """Normalize whitespace and common dash characters in a string.

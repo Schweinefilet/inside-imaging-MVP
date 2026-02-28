@@ -203,6 +203,79 @@ _DISEASE_KEYWORDS = {
     "normal": ["normal", "unremarkable", "no acute", "negative", "clear", "intact"],
 }
 
+def normalize_study_name(study: str) -> str:
+    """Normalize raw study names into professional medical language for statistics."""
+    if not study or study.lower() == "unknown":
+        return "Unknown"
+    
+    low = study.lower()
+    
+    # Modality detection
+    modality = ""
+    if "mri" in low:
+        modality = "MRI"
+    elif "ct" in low or "computed tomography" in low:
+        modality = "CT"
+    elif "x-ray" in low or "plain film" in low or "radiograph" in low:
+        modality = "X-ray"
+    elif "ultrasound" in low or "usg" in low:
+        modality = "Ultrasound"
+    elif "mammogram" in low:
+        modality = "Mammogram"
+    elif "pet" in low:
+        modality = "PET/CT"
+    
+    if not modality:
+        return study.title() # Fallback for unique entries
+        
+    # Contrast detection
+    contrast = ""
+    if "without contrast" in low or "non-contrast" in low or "without dye" in low:
+        contrast = " (non-contrast)"
+    elif "with contrast" in low or "with iv contrast" in low or "with dye" in low:
+        contrast = " (with contrast)"
+        
+    # Region detection
+    region = ""
+    has_abdomen = "abdomen" in low or "abdominal" in low or "tummy" in low or "belly" in low
+    has_pelvis = "pelvis" in low or "pelvic" in low
+    
+    if "head" in low or "brain" in low:
+        region = "Head"
+    elif "chest" in low and (has_abdomen or has_pelvis):
+        region = "Chest/Abdomen/Pelvis"
+    elif "chest" in low:
+        region = "Chest"
+    elif has_abdomen and has_pelvis:
+        region = "Abdomen/Pelvis"
+    elif has_abdomen:
+        region = "Abdomen"
+    elif has_pelvis:
+        region = "Pelvis"
+    elif "kub" in low:
+        region = "KUB"
+    elif "urogram" in low:
+        region = "Urogram"
+    elif "spine" in low:
+        if "cervical" in low:
+            region = "Cervical Spine"
+        elif "thoracic" in low:
+            region = "Thoracic Spine"
+        elif "lumbar" in low or "lumbosacral" in low:
+            region = "Lumbar Spine"
+        else:
+            region = "Spine"
+    elif "foot" in low:
+        region = "Foot"
+    elif "knee" in low:
+        region = "Knee"
+    elif "shoulder" in low:
+        region = "Shoulder"
+    
+    if region:
+        return f"{modality} {region}{contrast}"
+    return f"{modality}{contrast}"
+
 
 def detect_disease_tags(text: str) -> List[str]:
     low = (text or "").lower()
@@ -244,7 +317,7 @@ def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any], repo
         "sex": patient.get("sex", ""),
         "date": patient.get("date", ""),
         "hospital": patient.get("hospital", ""),
-        "study": patient.get("study", ""),
+        "study": normalize_study_name(patient.get("study", "")),
         "reason": structured.get("reason", ""),
         "technique": structured.get("technique", ""),
         "findings": structured.get("findings", ""),
@@ -330,7 +403,15 @@ def get_stats() -> Dict[str, Any]:
         ORDER BY c DESC
         """
     )
-    study_mix = [{"label": row[0], "count": row[1]} for row in cur.fetchall()]
+    study_counts: Counter[str] = Counter()
+    for study_raw, count in cur.fetchall():
+        normalized = normalize_study_name(study_raw)
+        study_counts[normalized] += count
+    
+    study_mix = [
+        {"label": label, "count": count}
+        for label, count in study_counts.most_common()
+    ]
 
     cur.execute("SELECT disease_tags FROM patients WHERE ifnull(disease_tags, '') != ''")
     disease_counter: Counter[str] = Counter()

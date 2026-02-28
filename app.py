@@ -987,62 +987,6 @@ def _pdf_response_from_html(html_str: str, *, filename="inside-imaging-report.pd
     return resp
 
 
-def _parse_brain_lesion(structured: dict) -> dict:
-    """Parse brain lesion location and size from conclusion/findings text."""
-    import re
-    
-    conclusion = (structured.get("conclusion") or "").lower()
-    findings = (structured.get("findings") or "").lower()
-    # Strip HTML tags
-    conclusion = re.sub(r'<[^>]+>', ' ', conclusion)
-    findings = re.sub(r'<[^>]+>', ' ', findings)
-    combined_text = conclusion + ' ' + findings
-    
-    # Location mapping: [axial_x, axial_y, sagittal_x, sagittal_y, coronal_x, coronal_y]
-    location_map = {
-        'right frontoparietal': [145, 95, 135, 90, 155, 85],
-        'left frontoparietal': [95, 95, 135, 90, 85, 85],
-        'right frontal': [140, 85, 125, 75, 150, 75],
-        'left frontal': [100, 85, 125, 75, 90, 75],
-        'right parietal': [150, 100, 140, 95, 160, 90],
-        'left parietal': [90, 100, 140, 95, 80, 90],
-        'right temporal': [155, 115, 145, 110, 165, 105],
-        'left temporal': [85, 115, 145, 110, 75, 105],
-        'right occipital': [155, 125, 155, 130, 165, 120],
-        'left occipital': [85, 125, 155, 130, 75, 120],
-        'sphenoid wing': [130, 105, 120, 100, 135, 100],
-        'greater sphenoid wing': [135, 105, 120, 100, 140, 100],
-        'cerebellum': [120, 145, 80, 165, 120, 165],
-        'brainstem': [120, 155, 90, 175, 120, 175],
-        'thalamus': [120, 110, 115, 110, 120, 110],
-        'basal ganglia': [115, 110, 115, 105, 115, 105]
-    }
-    
-    # Parse size (e.g., "5.4 x 5.6 x 6.7 cm" or "measures 2.5 cm")
-    size_match = re.search(r'(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*cm|measures?\s+(\d+\.?\d*)\s*cm', combined_text, re.IGNORECASE)
-    avg_size = 18  # default radius
-    if size_match:
-        if size_match.group(1):
-            dims = [float(size_match.group(1)), float(size_match.group(2)), float(size_match.group(3))]
-            avg_size = min(30, max(10, sum(dims) / 3 * 3))  # scale to pixels
-        elif size_match.group(4):
-            avg_size = min(30, max(10, float(size_match.group(4)) * 3))
-    
-    # Find best location match
-    best_match = None
-    best_length = 0
-    for loc in location_map:
-        if loc in combined_text and len(loc) > best_length:
-            best_match = loc
-            best_length = len(loc)
-    
-    default_coords = [145, 95, 135, 90, 155, 85]
-    return {
-        'location': best_match or 'right frontoparietal',
-        'coords': location_map.get(best_match) if best_match else default_coords,
-        'size': int(avg_size),
-        'found': best_match is not None
-    }
 
 
 _TRIAGE_SECTION_RX = re.compile(
@@ -1335,7 +1279,6 @@ def upload():
         study=study,
         language=lang,
         report_stats=report_stats,
-        report_stats=report_stats,
         disease_tags=disease_tags,
     )
 
@@ -1384,7 +1327,6 @@ def report_detail(report_id: int):
         study=study,
         language=language,
         report_stats=report_stats,
-        report_stats=report_stats,
         disease_tags=disease_tags,
     )
 
@@ -1404,15 +1346,7 @@ def download_pdf():
         logging.exception("Failed to parse form JSON")
         return jsonify({"error": "bad form JSON", "detail": str(e)}), 400
 
-    # Detect abnormality and organ for conditional visualization
-    diagnosis = _detect_abnormality_and_organ(structured, patient)
-    
-    # Parse brain lesion data for dynamic positioning (only if brain abnormality)
-    lesion_data = None
-    if diagnosis['has_abnormality'] and diagnosis['organ'] == 'brain':
-        lesion_data = _parse_brain_lesion(structured)
-    
-    html_str = render_template("pdf_report.html", structured=structured, patient=patient, lesion_data=lesion_data, diagnosis=diagnosis)
+    html_str = render_template("pdf_report.html", structured=structured, patient=patient)
 
     # hard fail if PDF fails. no HTML fallback.
     try:

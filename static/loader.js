@@ -19,13 +19,7 @@
     el.setAttribute('role', 'status');
     el.innerHTML = [
       '<div class="loader-card">',
-      '  <div class="loader-five-container" aria-hidden="true">',
-      '    <!-- Multiple spinning rings for depth effect -->',
-      '    <div class="loader-ring loader-ring-1"></div>',
-      '    <div class="loader-ring loader-ring-2"></div>',
-      '    <div class="loader-ring loader-ring-3"></div>',
-      '    <div class="loader-core"></div>',
-      '  </div>',
+      '  <div class="loader-spinner" aria-hidden="true"></div>',
       '  <div class="loader-text" data-loader-text>' + DEFAULT_PRIMARY + '</div>',
       '  <div class="loader-sub" data-loader-sub>' + DEFAULT_SECONDARY + '</div>',
       '</div>'
@@ -81,7 +75,7 @@
   window.LoaderFive = {
     show: show,
     hide: hide,
-    text: function(primaryText, secondaryText) {
+    text: function (primaryText, secondaryText) {
       show(primaryText, secondaryText);
     }
   };

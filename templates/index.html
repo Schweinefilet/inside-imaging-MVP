@@ -158,10 +158,24 @@
         <!-- Slider toggle (replaces the old button) -->
         <label class="theme-switch" aria-label="Toggle theme">
           <span class="theme-row">
-            <span class="theme-icon" aria-hidden="true">🌙</span>
+            <span class="theme-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg></span>
             <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
             <span class="theme-switch-track" aria-hidden="true"></span>
-            <span class="theme-icon" aria-hidden="true">☀️</span>
+            <span class="theme-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg></span>
           </span>
           <span id="theme-label" class="theme-switch-text">Dark mode</span>
         </label>
@@ -191,7 +205,7 @@
       {% for category, message in messages %}
       <div class="flash-message flash-{{ category }}" role="status" aria-live="assertive">
         <div class="flash-body">
-          <strong>{% if category == 'error' %}❌ Upload Rejected{% else %}✓ Success{% endif %}</strong>
+          <strong>{% if category == 'error' %}Upload Rejected{% else %}Success{% endif %}</strong>
           <span>{{ message }}</span>
         </div>
         <button type="button" class="flash-close" data-dismiss-flash aria-label="Dismiss notification">×</button>
@@ -225,7 +239,7 @@
 
       <div class="dashboard-grid">
         <div class="dashboard-left">
-          <section class="upload-section">
+          <section class="upload-section" id="upload-section">
             <h2>Upload New Report</h2>
             <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
               <div class="file-upload-container">
@@ -254,27 +268,6 @@
               </select>
               <button type="submit">Upload &amp; Convert</button>
             </form>
-          </section>
-
-          <section class="transformation-section">
-            <h2>See the Transformation</h2>
-            <p class="transformation-subtitle">Compare raw medical phrasing with patient-friendly wording.</p>
-            <div class="compare-container-compact" data-mode="drag">
-              <div class="compare-wrapper-compact">
-                <img src="{{ url_for('static', filename='after-report.png') }}"
-                  alt="Simplified patient-friendly report after translation" class="compare-image first" />
-                <img src="{{ url_for('static', filename='before-report.png') }}"
-                  alt="Complex medical report before translation" class="compare-image second" />
-                <div class="compare-slider">
-                  <div class="compare-handle"></div>
-                </div>
-                <span class="compare-label before">Before</span>
-                <span class="compare-label after">After</span>
-              </div>
-              <p class="compare-description-compact">
-                Drag to compare medical jargon vs plain language.
-              </p>
-            </div>
           </section>
         </div>
 
@@ -335,99 +328,166 @@
             </li>
             {% endfor %}
             {% else %}
-            <li class="history-item empty">
-              <p>No reports yet. Upload a file to see your history here.</p>
+            <li class="history-item empty-state">
+              <div class="empty-state-icon" aria-hidden="true">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <p class="empty-state-heading">No reports yet</p>
+              <p class="empty-state-desc">Upload your first radiology report to see a simplified, patient-friendly
+                version here.</p>
+              <a href="#upload-section" class="empty-state-cta" id="scroll-to-upload">Try a sample report</a>
             </li>
             {% endif %}
           </ul>
 
-          {% set total_reports = stats.summary.total_reports or 0 %}
-          <section class="reports-insights" aria-label="Platform insights">
-            <h3>Platform Insights</h3>
-            <div class="insight-cards">
-              <article class="insight-card">
-                <span class="insight-icon" aria-hidden="true">📄</span>
-                <span class="insight-label">Reports Parsed</span>
-                <span class="insight-value">{{ stats.summary.total_reports }}</span>
-              </article>
-              <article class="insight-card">
-                <span class="insight-icon" aria-hidden="true">🗓️</span>
-                <span class="insight-label">Reports (30 Days)</span>
-                <span class="insight-value">{{ stats.summary.last_30_days }}</span>
-              </article>
-              <article class="insight-card">
-                <span class="insight-icon" aria-hidden="true">📝</span>
-                <span class="insight-label">Avg. Word Count</span>
-                <span class="insight-value">{{ stats.summary.average_word_count }}</span>
-              </article>
-              <article class="insight-card">
-                <span class="insight-icon" aria-hidden="true">🌍</span>
-                <span class="insight-label">Languages Logged</span>
-                <span class="insight-value">{{ stats.summary.languages_tracked }}</span>
-              </article>
-            </div>
-
-            <div class="insight-columns">
-              <div class="insight-column">
-                <h4>Age Distribution</h4>
-                <ul class="insight-list">
-                  {% for label, count in stats.age_ranges.items() %}
-                  {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
-                  <li>
-                    <div class="insight-row">
-                      <span class="insight-name">{{ label }}</span>
-                      <span class="insight-count">{{ count }}</span>
-                    </div>
-                    <div class="insight-bar" data-progress="{{ percent }}">
-                      <span class="insight-progress"></span>
-                    </div>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              <div class="insight-column">
-                <h4>Gender Mix</h4>
-                <ul class="insight-list">
-                  {% for label, count in {'Female': stats.gender.female, 'Male': stats.gender.male, 'Other':
-                  stats.gender.other}.items() %}
-                  {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
-                  <li>
-                    <div class="insight-row">
-                      <span class="insight-name">{{ label }}</span>
-                      <span class="insight-count">{{ count }}</span>
-                    </div>
-                    <div class="insight-bar" data-progress="{{ percent }}">
-                      <span class="insight-progress"></span>
-                    </div>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              <div class="insight-column">
-                <h4>Top Findings</h4>
-                <ul class="insight-list">
-                  {% for item in stats.diseases[:4] %}
-                  {% set percent = ((item.count / total_reports) * 100)|round(1) if total_reports else 0 %}
-                  <li>
-                    <div class="insight-row">
-                      <span class="insight-name">{{ item.label }}</span>
-                      <span class="insight-count">{{ item.count }}</span>
-                    </div>
-                    <div class="insight-bar" data-progress="{{ percent }}">
-                      <span class="insight-progress"></span>
-                    </div>
-                  </li>
-                  {% else %}
-                  <li class="insight-empty">No findings yet.</li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </div>
-          </section>
         </section>
       </div>
 
-      <!-- Testimonials Section -->
+      <!-- Full-width Before/After Transformation Slider -->
+      <section class="transformation-section transformation-fullwidth">
+        <h2>See the Transformation</h2>
+        <p class="transformation-subtitle">Compare raw medical phrasing with patient-friendly wording.</p>
+        <div class="compare-container-compact" data-mode="drag">
+          <div class="compare-wrapper-fullwidth">
+            <img src="{{ url_for('static', filename='after-report.png') }}"
+              alt="Simplified patient-friendly report after translation" class="compare-image first" />
+            <img src="{{ url_for('static', filename='before-report.png') }}"
+              alt="Complex medical report before translation" class="compare-image second" />
+            <div class="compare-slider">
+              <div class="compare-handle"></div>
+            </div>
+            <span class="compare-label before">Before</span>
+            <span class="compare-label after">After</span>
+          </div>
+          <p class="compare-description-compact">
+            Drag to compare medical jargon vs plain language.
+          </p>
+        </div>
+      </section>
+
+      <!-- Full-width Platform Insights -->
+      {% set total_reports = stats.summary.total_reports or 0 %}
+      <section class="reports-insights platform-insights-fullwidth" aria-label="Platform insights">
+        <h3>Platform Insights</h3>
+        <div class="insight-cards">
+          <article class="insight-card">
+            <span class="insight-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </span>
+            <span class="insight-label">Reports Parsed</span>
+            <span class="insight-value">{{ stats.summary.total_reports }}</span>
+          </article>
+          <article class="insight-card">
+            <span class="insight-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </span>
+            <span class="insight-label">Reports (30 Days)</span>
+            <span class="insight-value">{{ stats.summary.last_30_days }}</span>
+          </article>
+          <article class="insight-card">
+            <span class="insight-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </span>
+            <span class="insight-label">Avg. Word Count</span>
+            <span class="insight-value">{{ stats.summary.average_word_count }}</span>
+          </article>
+          <article class="insight-card">
+            <span class="insight-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                </path>
+              </svg>
+            </span>
+            <span class="insight-label">Languages Logged</span>
+            <span class="insight-value">{{ stats.summary.languages_tracked }}</span>
+          </article>
+        </div>
+
+        <div class="insight-columns">
+          <div class="insight-column">
+            <h4>Age Distribution</h4>
+            <ul class="insight-list">
+              {% for label, count in stats.age_ranges.items() %}
+              {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
+              <li>
+                <div class="insight-row">
+                  <span class="insight-name">{{ label }}</span>
+                  <span class="insight-count">{{ count }}</span>
+                </div>
+                <div class="insight-bar" data-progress="{{ percent }}">
+                  <span class="insight-progress"></span>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="insight-column">
+            <h4>Gender Mix</h4>
+            <ul class="insight-list">
+              {% for label, count in {'Female': stats.gender.female, 'Male': stats.gender.male, 'Other':
+              stats.gender.other}.items() %}
+              {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
+              <li>
+                <div class="insight-row">
+                  <span class="insight-name">{{ label }}</span>
+                  <span class="insight-count">{{ count }}</span>
+                </div>
+                <div class="insight-bar" data-progress="{{ percent }}">
+                  <span class="insight-progress"></span>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="insight-column">
+            <h4>Top Findings</h4>
+            <ul class="insight-list">
+              {% for item in stats.diseases[:4] %}
+              {% set percent = ((item.count / total_reports) * 100)|round(1) if total_reports else 0 %}
+              <li>
+                <div class="insight-row">
+                  <span class="insight-name">{{ item.label }}</span>
+                  <span class="insight-count">{{ item.count }}</span>
+                </div>
+                <div class="insight-bar" data-progress="{{ percent }}">
+                  <span class="insight-progress"></span>
+                </div>
+              </li>
+              {% else %}
+              <li class="insight-empty">No findings yet.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+
       <section class="testimonials-section" aria-label="Testimonials">
         <div class="testimonials-header">
           <h2>Trusted by Healthcare Professionals</h2>
@@ -483,6 +543,20 @@
         var clamped = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 100) : 0;
         span.style.width = clamped + '%';
       });
+      // Scroll-to-upload CTA from empty state
+      var scrollToUploadBtn = document.getElementById('scroll-to-upload');
+      if (scrollToUploadBtn) {
+        scrollToUploadBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var uploadSection = document.getElementById('upload-section');
+          if (uploadSection) {
+            uploadSection.classList.add('pulse-highlight');
+            uploadSection.addEventListener('animationend', function () {
+              uploadSection.classList.remove('pulse-highlight');
+            }, { once: true });
+          }
+        });
+      }
     });
   </script>
 

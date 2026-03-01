@@ -43,6 +43,27 @@
   background: var(--panel-2);
 }
 
+/* Full-width version (used in the transformation-fullwidth section) */
+.compare-wrapper-fullwidth {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 480px;
+  overflow: hidden;
+  border-radius: 12px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: col-resize;
+  background: var(--panel-2);
+}
+
+/* Show full PDF content rather than cropping in the fullwidth slider */
+.compare-wrapper-fullwidth .compare-image {
+  object-fit: contain;
+  object-position: top center;
+  background: var(--panel-2);
+}
+
 .compare-image {
   position: absolute;
   top: 0;
@@ -186,12 +207,12 @@ html.light .compare-handle::after {
   .compare-wrapper {
     max-width: 100%;
   }
-  
+
   .compare-handle {
     width: 40px;
     height: 40px;
   }
-  
+
   .compare-label {
     font-size: 0.75rem;
     padding: 0.4rem 0.6rem;

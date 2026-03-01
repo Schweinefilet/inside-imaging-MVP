@@ -269,8 +269,8 @@ html.light .marquee-3d-overlay .marquee-description {
 
 .marquee-3d-item:hover {
     transform: translateZ(40px) scale(1.05);
-    border-color: rgba(34, 197, 94, 0.6);
-    box-shadow: 0 16px 64px rgba(34, 197, 94, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
     z-index: 10;
 }
 
@@ -302,7 +302,7 @@ html.light .marquee-3d-overlay .marquee-description {
 }
 
 .marquee-3d-item:hover::before {
-    opacity: 1;
+    opacity: 0;
 }
 
 /* Gradient overlays for edge fade */
@@ -400,12 +400,13 @@ html.light .marquee-3d-overlay .marquee-description {
     box-shadow: 0 16px 64px rgba(5, 150, 105, 0.25);
 }
 
+/* Glow removed as per user request */
 :root.light .marquee-3d-wrapper::before {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, transparent 100%);
+    background: transparent;
 }
 
 :root.light .marquee-3d-wrapper::after {
-    background: linear-gradient(0deg, rgba(255, 255, 255, 0.95) 0%, transparent 100%);
+    background: transparent;
 }
 
 /* Edge Fades for Dark Mode */

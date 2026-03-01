@@ -62,8 +62,6 @@
 
 .team-member:hover {
     transform: translateY(-4px);
-    border-color: var(--mint);
-    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.12);
 }
 
 .member-photo {
@@ -71,7 +69,7 @@
     aspect-ratio: 885/1252;
     border-radius: 12px;
     overflow: hidden;
-    background: linear-gradient(135deg, var(--mint-soft) 0%, var(--mint) 100%);
+    background: var(--panel-2, #1a1a1a);
 }
 
 .member-photo img {
@@ -197,7 +195,7 @@
 }
 
 :root.light .team-member:hover {
-    box-shadow: 0 8px 24px rgba(5, 150, 105, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 :root.light .team-cta {

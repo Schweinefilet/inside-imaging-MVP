@@ -1,13 +1,13 @@
 // Before/After Image Comparison Component
-(function() {
+(function () {
   'use strict';
 
   function initCompare(container) {
-    const wrapper = container.querySelector('.compare-wrapper, .compare-wrapper-compact');
+    const wrapper = container.querySelector('.compare-wrapper, .compare-wrapper-compact, .compare-wrapper-fullwidth');
     const secondImage = container.querySelector('.compare-image.second');
     const slider = container.querySelector('.compare-slider');
     const handle = container.querySelector('.compare-handle');
-    
+
     if (!wrapper || !secondImage || !slider || !handle) return;
 
     let isDragging = false;
@@ -17,7 +17,7 @@
       const rect = wrapper.getBoundingClientRect();
       const x = clientX - rect.left;
       const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-      
+
       currentPosition = percentage;
       secondImage.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
       slider.style.left = `${percentage}%`;
@@ -59,7 +59,7 @@
     document.addEventListener('mouseup', handleEnd);
 
     // Touch events
-    wrapper.addEventListener('touchstart', function(e) {
+    wrapper.addEventListener('touchstart', function (e) {
       handleStart(e);
     }, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -67,20 +67,20 @@
 
     // Mode detection
     const mode = container.dataset.mode || 'drag';
-    
+
     // For hover mode only
     if (mode === 'hover') {
-      wrapper.addEventListener('mousemove', function(e) {
+      wrapper.addEventListener('mousemove', function (e) {
         if (isDragging) return; // Don't interfere with drag
         const rect = wrapper.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-        
+
         secondImage.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
         slider.style.left = `${percentage}%`;
       });
 
-      wrapper.addEventListener('mouseleave', function() {
+      wrapper.addEventListener('mouseleave', function () {
         if (!isDragging) {
           // Reset to center on leave
           secondImage.style.clipPath = `inset(0 50% 0 0)`;
@@ -89,7 +89,7 @@
       });
     }
 
-    requestAnimationFrame(function() {
+    requestAnimationFrame(function () {
       const rect = wrapper.getBoundingClientRect();
       if (rect.width > 0) {
         updatePosition(rect.left + rect.width / 2);
@@ -98,9 +98,9 @@
   }
 
   // Initialize all comparison containers
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const containers = document.querySelectorAll('.compare-container, .compare-container-compact');
-    containers.forEach(function(container) {
+    containers.forEach(function (container) {
       initCompare(container);
     });
   });

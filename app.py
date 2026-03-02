@@ -87,6 +87,15 @@ _cors_origins_raw = os.getenv("CORS_ORIGINS", "")
 _cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()] or ["https://schweinefilet.github.io"]
 CORS(app, resources={r"/*": {"origins": _cors_origins}})
 
+
+# Prevent browsers caching HTML responses (avoids stale theme scripts)
+@app.after_request
+def _no_cache_html(response):
+    if response.content_type and "text/html" in response.content_type:
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 # available languages
 LANGUAGES = ["English", "Kiswahili"]
 

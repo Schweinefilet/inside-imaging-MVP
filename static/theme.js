@@ -1,18 +1,32 @@
 (function () {
+  var transitionTimer = null;
+  var initialized = false;
+
+  /* ── Full variable palette for each mode ── */
+  var DARK = {
+    bg:'#09090b', panel:'#18191f', 'panel-2':'#22242d',
+    text:'#f2f6f4', muted:'#8a8f95', border:'#32353f',
+    mint:'#3ee6b0', shadow:'0 18px 45px rgba(0,0,0,0.55)',
+    'card-bg':'rgba(255,255,255,0.02)',
+    'border-color':'rgba(255,255,255,0.1)',
+    'text-primary':'#f2f6f4', 'text-muted':'#8a8f95'
+  };
+  var LIGHT = {
+    bg:'#f8f9fa', panel:'#ffffff', 'panel-2':'#eef2f7',
+    text:'#1f2937', muted:'#4b5563', border:'#d7dde5',
+    mint:'#0fb989', shadow:'0 4px 10px rgba(0,0,0,.08)',
+    'card-bg':'#ffffff', 'border-color':'#d7dde5',
+    'text-primary':'#1f2937', 'text-muted':'#4b5563'
+  };
+
   function computeInitialLight() {
     var saved = localStorage.getItem('theme');
-    if (saved === 'light') return true;
-    if (saved === 'dark') return false;
-    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+    return saved === 'light';
   }
 
-  function applyTheme(isLight) {
-    var html  = document.documentElement;
+  function syncThemeUi(isLight) {
     var toggle = document.getElementById('theme-toggle');
-    var label  = document.getElementById('theme-label');
-
-    html.classList.toggle('light', !!isLight);
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    var label = document.getElementById('theme-label');
 
     if (toggle) {
       toggle.checked = !!isLight;
@@ -23,29 +37,69 @@
     }
   }
 
+  function applyRootPaintHints(html, isLight) {
+    var vars = isLight ? LIGHT : DARK;
+    html.style.colorScheme = isLight ? 'light' : 'dark';
+    html.style.backgroundColor = vars.bg;
+    for (var k in vars) {
+      if (vars.hasOwnProperty(k)) html.style.setProperty('--' + k, vars[k]);
+    }
+  }
+
+  function clearThemeTransitionClasses(html) {
+    html.classList.remove('theme-transitioning', 'to-light', 'to-dark');
+  }
+
+  function applyTheme(isLight, skipTransition) {
+    var html = document.documentElement;
+    var nextIsLight = !!isLight;
+    var currentIsLight = html.classList.contains('light');
+
+    if (transitionTimer) {
+      clearTimeout(transitionTimer);
+      transitionTimer = null;
+    }
+
+    if (skipTransition || currentIsLight === nextIsLight) {
+      clearThemeTransitionClasses(html);
+      html.classList.toggle('light', nextIsLight);
+      applyRootPaintHints(html, nextIsLight);
+      localStorage.setItem('theme', nextIsLight ? 'light' : 'dark');
+      syncThemeUi(nextIsLight);
+      return;
+    }
+
+    clearThemeTransitionClasses(html);
+    html.classList.add('theme-transitioning', nextIsLight ? 'to-light' : 'to-dark');
+    html.classList.toggle('light', nextIsLight);
+    applyRootPaintHints(html, nextIsLight);
+    localStorage.setItem('theme', nextIsLight ? 'light' : 'dark');
+    syncThemeUi(nextIsLight);
+
+    transitionTimer = setTimeout(function () {
+      clearThemeTransitionClasses(html);
+      transitionTimer = null;
+    }, 500);
+  }
+
   var initialLight = computeInitialLight();
-
-  // Apply theme immediately to prevent flicker
   document.documentElement.classList.toggle('light', initialLight);
+  applyRootPaintHints(document.documentElement, initialLight);
 
-  document.addEventListener('DOMContentLoaded', function () {
-    applyTheme(initialLight);
+  function initThemeUi() {
+    if (initialized) return;
+    initialized = true;
+
+    var p = document.getElementById('prepaint-bg');
+    if (p) p.remove();
+
+    applyTheme(computeInitialLight(), true);
 
     var toggle = document.getElementById('theme-toggle');
     if (toggle) {
       toggle.addEventListener('change', function () {
-        applyTheme(toggle.checked);
-      }, { passive: true });
-    }
-
-    // Follow OS changes only if user hasn't chosen a theme yet
-    if (!localStorage.getItem('theme') && window.matchMedia) {
-      try {
-        var mq = window.matchMedia('(prefers-color-scheme: light)');
-        var onChange = function (e) { applyTheme(e.matches); };
-        if (mq.addEventListener) mq.addEventListener('change', onChange);
-        else if (mq.addListener) mq.addListener(onChange); // Safari <14
-      } catch (_) {}
+        applyTheme(toggle.checked, false);
+      });
     }
 
     document.querySelectorAll('.user-menu').forEach(function (menu) {
@@ -103,5 +157,15 @@
         }
       });
     });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initThemeUi);
+  } else {
+    initThemeUi();
+  }
+
+  window.addEventListener('pageshow', function () {
+    applyTheme(computeInitialLight(), true);
   });
 })();

@@ -1,7 +1,9 @@
 <!-- templates/base.html -->
 <!doctype html>
 <html lang="en">
-
+<script>
+(function(){var d=document.documentElement;var t=localStorage.getItem('theme');var l=t==='light';var D={bg:'#09090b',panel:'#18191f','panel-2':'#22242d',text:'#f2f6f4',muted:'#8a8f95',border:'#32353f',mint:'#3ee6b0',shadow:'0 18px 45px rgba(0,0,0,0.55)','card-bg':'rgba(255,255,255,0.02)','border-color':'rgba(255,255,255,0.1)','text-primary':'#f2f6f4','text-muted':'#8a8f95'};var L={bg:'#f8f9fa',panel:'#ffffff','panel-2':'#eef2f7',text:'#1f2937',muted:'#4b5563',border:'#d7dde5',mint:'#0fb989',shadow:'0 4px 10px rgba(0,0,0,.08)','card-bg':'#ffffff','border-color':'#d7dde5','text-primary':'#1f2937','text-muted':'#4b5563'};var v=l?L:D;d.classList.toggle('light',l);d.style.colorScheme=l?'light':'dark';d.style.backgroundColor=v.bg;for(var k in v)d.style.setProperty('--'+k,v[k]);var s=document.createElement('style');s.id='prepaint-bg';s.textContent='html,body,body::before{background:'+v.bg+' !important}';d.appendChild(s);})();
+</script>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -9,19 +11,7 @@
   <title>{% block title %}Inside Imaging{% endblock %}</title>
 
   <!-- Early theme init to avoid FOUC -->
-  <script>
-    (function () {
-      var html = document.documentElement;
-      var saved = localStorage.getItem('theme');
-      if (!saved) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-          html.classList.add('light');
-        }
-      } else if (saved === 'light') {
-        html.classList.add('light');
-      }
-    })();
-  </script>
+  
 
   <style>
     :root {
@@ -265,23 +255,6 @@
   <main id="app">{% block content %}{% endblock %}</main>
 
   <script>
-    // Theme toggle behavior
-    (function () {
-      var html = document.documentElement;
-      var btn = document.getElementById('theme-toggle');
-      var isLight = html.classList.contains('light');
-      if (btn) {
-        btn.textContent = isLight ? 'Dark Mode' : 'Light Mode';
-        btn.setAttribute('aria-pressed', String(isLight));
-        btn.addEventListener('click', function () {
-          var nowLight = html.classList.toggle('light');
-          localStorage.setItem('theme', nowLight ? 'light' : 'dark');
-          btn.textContent = nowLight ? 'Dark Mode' : 'Light Mode';
-          btn.setAttribute('aria-pressed', String(nowLight));
-        });
-      }
-    })();
-
     // Loading overlay controls
     function showLoading(text) {
       const el = document.getElementById('loading-screen');

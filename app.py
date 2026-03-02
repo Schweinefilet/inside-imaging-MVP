@@ -1337,8 +1337,8 @@ def download_pdf():
         if request.method == "POST":
             if request.is_json:
                 body = request.get_json(silent=True) or {}
-                structured = body.get("structured") or session.get("structured", {}) or {}
-                patient = body.get("patient") or session.get("patient", {}) or {}
+                structured = body["structured"] if "structured" in body else session.get("structured", {}) or {}
+                patient = body["patient"] if "patient" in body else session.get("patient", {}) or {}
             else:
                 structured_raw = request.form.get("structured")
                 patient_raw = request.form.get("patient")

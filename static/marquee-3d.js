@@ -67,10 +67,10 @@
 
             this.container.innerHTML = `
                 <div class="marquee-3d-overlay">
-                    <span class="marquee-kicker">Live Now</span>
-                    <h1>AI-Powered Translation Platform</h1>
-                    <p class="marquee-description">Transform complex radiology reports into clear, patient-friendly summaries with interactive 3D anatomy visualization and multilingual support.</p>
-                    <div class="marquee-actions">
+                    <span class="marquee-kicker" data-marquee-item="1">Live Now</span>
+                    <h1 data-marquee-item="2">AI-Powered Translation Platform</h1>
+                    <p class="marquee-description" data-marquee-item="3">Transform complex radiology reports into clear, patient-friendly summaries with interactive 3D anatomy visualization and multilingual support.</p>
+                    <div class="marquee-actions" data-marquee-item="4">
                         <a class="btn-primary" href="/dashboard">Try our platform →</a>
                         <a class="btn-secondary" href="#portfolio">
                             <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">

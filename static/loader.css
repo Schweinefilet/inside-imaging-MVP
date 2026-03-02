@@ -42,7 +42,6 @@
 	border-top-color: var(--mint);
 	border-radius: 50%;
 	animation: loader-spin-modern 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-	filter: drop-shadow(0 0 8px rgba(62, 230, 176, 0.4));
 }
 
 .loader-text {

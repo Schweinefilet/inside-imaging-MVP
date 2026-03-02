@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
-
+<script>
+(function(){var d=document.documentElement;var t=localStorage.getItem('theme');var l=t==='light';var D={bg:'#09090b',panel:'#18191f','panel-2':'#22242d',text:'#f2f6f4',muted:'#8a8f95',border:'#32353f',mint:'#3ee6b0',shadow:'0 18px 45px rgba(0,0,0,0.55)','card-bg':'rgba(255,255,255,0.02)','border-color':'rgba(255,255,255,0.1)','text-primary':'#f2f6f4','text-muted':'#8a8f95'};var L={bg:'#f8f9fa',panel:'#ffffff','panel-2':'#eef2f7',text:'#1f2937',muted:'#4b5563',border:'#d7dde5',mint:'#0fb989',shadow:'0 4px 10px rgba(0,0,0,.08)','card-bg':'#ffffff','border-color':'#d7dde5','text-primary':'#1f2937','text-muted':'#4b5563'};var v=l?L:D;d.classList.toggle('light',l);d.style.colorScheme=l?'light':'dark';d.style.backgroundColor=v.bg;for(var k in v)d.style.setProperty('--'+k,v[k]);var s=document.createElement('style');s.id='prepaint-bg';s.textContent='html,body,body::before{background:'+v.bg+' !important}';d.appendChild(s);})();
+</script>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,30 +11,19 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
 
-    <!-- Pre-paint: prevent flash on load -->
-    <script>
-        (function () {
-            try {
-                var t = localStorage.getItem('theme');
-                var preferLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-                var useLight = t ? (t === 'light') : preferLight;
-                if (useLight) document.documentElement.classList.add('light');
-            } catch (e) { }
-        })();
-    </script>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=7">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
     <link rel="stylesheet" href="{{ url_for('static', filename='team.css') }}">
 </head>
 
 <body>
     <div class="page-wrapper">
-        <header class="navbar">
+        <div class="header-shell">
             <div class="navbar-brand">
-                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo logo-dark">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo logo-light">
             </div>
-            <nav class="nav-links">
+            <nav class="navbar">
                 <a href="{{ url_for('projects') }}">Projects</a>
                 <a href="{{ url_for('dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('report_status') }}">Statistics</a>
@@ -85,7 +76,7 @@
                 <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
                 {% endif %}
             </div>
-        </header>
+        </div>
 
         <main class="content team-page">
             <section class="team-hero">
@@ -196,7 +187,7 @@
         {% include '_footer.html' %}
     </div>
 
-    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='theme.js') }}?v=7"></script>
 </body>
 
 </html>

@@ -349,11 +349,46 @@
       </section>
 
       <section class="report-actions" style="margin:1rem 0;">
-        <form method="post" action="{{ url_for('download_pdf') }}">
-          <textarea name="structured" hidden>{{ structured|tojson }}</textarea>
-          <textarea name="patient" hidden>{{ patient|tojson }}</textarea>
-          <button type="submit" class="btn">Download PDF</button>
-        </form>
+        <button id="download-pdf-btn" class="btn" type="button">Download PDF</button>
+        <script>
+          (function () {
+            var structured = {{ structured|tojson }};
+            var patient = {{ patient|tojson }};
+            document.getElementById('download-pdf-btn').addEventListener('click', function () {
+              var btn = this;
+              btn.disabled = true;
+              btn.textContent = 'Generating PDF\u2026';
+              fetch('{{ url_for("download_pdf") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ structured: structured, patient: patient })
+              })
+                .then(function (resp) {
+                  if (!resp.ok) {
+                    return resp.json().then(function (e) { throw new Error(e.detail || 'PDF generation failed'); });
+                  }
+                  return resp.blob();
+                })
+                .then(function (blob) {
+                  var url = URL.createObjectURL(blob);
+                  var a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'inside-imaging-report.pdf';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                })
+                .catch(function (err) {
+                  alert('Could not generate PDF: ' + err.message);
+                })
+                .finally(function () {
+                  btn.disabled = false;
+                  btn.textContent = 'Download PDF';
+                });
+            });
+          })();
+        </script>
       </section>
 
       <div class="report">

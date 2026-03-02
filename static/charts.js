@@ -371,10 +371,6 @@
   window.addEventListener('storage', function(e) {
     if (e.key === 'theme') {
       setTimeout(function() {
-        document.querySelectorAll('canvas').forEach(canvas => {
-          const event = new Event('DOMContentLoaded');
-          document.dispatchEvent(event);
-        });
         hideTooltip();
       }, 50);
     }

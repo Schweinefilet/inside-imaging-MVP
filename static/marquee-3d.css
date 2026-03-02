@@ -1,5 +1,19 @@
 /* 3D Marquee - Aceternity-inspired with perspective rows */
 
+/* Smooth theme transitions for all marquee elements */
+html.theme-transitioning .marquee-3d-container,
+html.theme-transitioning .marquee-3d-overlay,
+html.theme-transitioning .marquee-3d-overlay *,
+html.theme-transitioning .marquee-row,
+html.theme-transitioning .marquee-card {
+  transition: background 0.5s ease,
+              background-color 0.5s ease,
+              color 0.5s ease,
+              border-color 0.5s ease,
+              box-shadow 0.5s ease,
+              backdrop-filter 0.5s ease !important;
+}
+
 .marquee-3d-container {
     width: 100%;
     max-width: 1400px;
@@ -32,6 +46,33 @@
             rgba(0, 0, 0, 0.6) 0%,
             rgba(0, 0, 0, 0.4) 40%,
             transparent 70%);
+}
+
+/* Initially hide all overlay items */
+.marquee-3d-overlay [data-marquee-item] {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* When visible, trigger sequential animations */
+.marquee-3d-overlay.marquee-overlay-visible [data-marquee-item] {
+    animation: marqueeItemFadeIn 0.8s ease forwards;
+}
+
+.marquee-3d-overlay.marquee-overlay-visible [data-marquee-item="1"] { animation-delay: 0s; }
+.marquee-3d-overlay.marquee-overlay-visible [data-marquee-item="2"] { animation-delay: 0.15s; }
+.marquee-3d-overlay.marquee-overlay-visible [data-marquee-item="3"] { animation-delay: 0.3s; }
+.marquee-3d-overlay.marquee-overlay-visible [data-marquee-item="4"] { animation-delay: 0.45s; }
+
+@keyframes marqueeItemFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .marquee-3d-overlay .marquee-kicker {
@@ -397,7 +438,7 @@ html.light .marquee-3d-overlay .marquee-description {
 }
 
 :root.light .marquee-3d-item:hover {
-    box-shadow: 0 16px 64px rgba(5, 150, 105, 0.25);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
 }
 
 /* Glow removed as per user request */

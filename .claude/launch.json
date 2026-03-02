@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "inside-imaging",
+      "runtimeExecutable": "/Users/keith/inside-imaging-MVP/.venv/bin/python",
+      "runtimeArgs": ["-m", "flask", "--app", "app", "run", "--port", "5001"],
+      "port": 5001
+    }
+  ]
+}

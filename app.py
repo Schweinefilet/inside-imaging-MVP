@@ -1335,10 +1335,15 @@ def report_detail(report_id: int):
 def download_pdf():
     try:
         if request.method == "POST":
-            structured_raw = request.form.get("structured")
-            patient_raw = request.form.get("patient")
-            structured = json.loads(structured_raw) if structured_raw else session.get("structured", {}) or {}
-            patient = json.loads(patient_raw) if patient_raw else session.get("patient", {}) or {}
+            if request.is_json:
+                body = request.get_json(silent=True) or {}
+                structured = body.get("structured") or session.get("structured", {}) or {}
+                patient = body.get("patient") or session.get("patient", {}) or {}
+            else:
+                structured_raw = request.form.get("structured")
+                patient_raw = request.form.get("patient")
+                structured = json.loads(structured_raw) if structured_raw else session.get("structured", {}) or {}
+                patient = json.loads(patient_raw) if patient_raw else session.get("patient", {}) or {}
         else:
             structured = session.get("structured", {}) or {}
             patient = session.get("patient", {}) or {}

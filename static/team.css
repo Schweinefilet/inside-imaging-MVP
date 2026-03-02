@@ -3,13 +3,13 @@
 .team-page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    padding: 0.5rem 1.5rem;
 }
 
 .team-hero {
     text-align: center;
-    padding: 4rem 2rem 3rem;
-    margin-bottom: 3rem;
+    padding: 2rem 2rem 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .team-hero h1 {
@@ -34,7 +34,7 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 1200px) {
@@ -131,11 +131,11 @@
 
 .team-cta {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 2rem 2rem;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    margin-top: 3rem;
+    margin-top: 1rem;
 }
 
 .team-cta h2 {

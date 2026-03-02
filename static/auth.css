@@ -162,6 +162,8 @@
 
 .social-btn {
     flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,6 +177,8 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    text-decoration: none;
+    line-height: 1;
 }
 
 .social-btn:hover {

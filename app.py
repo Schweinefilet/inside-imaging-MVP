@@ -835,9 +835,11 @@ except Exception:
 # --- translate wiring ---
 try:
     from src.translate import Glossary, build_structured  # type: ignore
+    from src.parse import parse_metadata  # type: ignore
 except Exception:
     logging.exception("translate import failed")
     Glossary = None  # type: ignore
+    parse_metadata = None  # type: ignore
 
     def build_structured(report_text: str, glossary=None, language: str = "English"):
         return {
@@ -1191,6 +1193,16 @@ def upload():
         logging.warning("Upload triage rejected: %s", triage_diag)
         return redirect(url_for("dashboard"))
 
+    # HIPAA-compliant name handling: Parse metadata BEFORE build_structured strips it
+    full_patient_name = ""
+    if parse_metadata:
+        try:
+            raw_meta = parse_metadata(extracted)
+            full_patient_name = raw_meta.get("name", "")
+            logging.info("Extracted patient name (length=%d) for session-only storage", len(full_patient_name))
+        except Exception:
+            logging.exception("Failed to parse metadata for name extraction")
+
     # Build structured summary
     try:
         logging.info("calling build_structured language=%s", lang)
@@ -1209,7 +1221,7 @@ def upload():
         patient = {
             "hospital": patient_struct.get("hospital", ""),
             "study": patient_struct.get("study", "Unknown"),
-            "name": patient_struct.get("name", ""),
+            "name": full_patient_name,  # Restore full name for display (never sent to OpenAI)
             "sex": patient_struct.get("sex", ""),
             "age": patient_struct.get("age", ""),
             "date": patient_struct.get("date", ""),
@@ -1219,7 +1231,7 @@ def upload():
         patient = {
             "hospital": S.get("hospital", ""),
             "study": S.get("study", "Unknown"),
-            "name": S.get("name", ""),
+            "name": full_patient_name,  # Restore full name for display (never sent to OpenAI)
             "sex": S.get("sex", ""),
             "age": S.get("age", ""),
             "date": S.get("date", ""),

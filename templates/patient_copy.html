@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Patient's Copy - {{ patient.study or 'Imaging Report' }}</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    html, body { margin: 0; padding: 0; font-family: 'Helvetica', 'Arial', sans-serif; color: #1a1a1a; font-size: 10.5pt; line-height: 1.5; }
+    .ribbon { background: #0fb989; color: #fff; padding: 6px 14px; font-weight: 700; font-size: 9pt; letter-spacing: 1px; text-transform: uppercase; }
+    header { padding: 14px 0 10px; border-bottom: 1.5px solid #0fb989; margin-bottom: 16px; }
+    .brand-row { display: flex; justify-content: space-between; align-items: center; }
+    .brand-title { font-size: 16pt; font-weight: 700; color: #0fb989; margin: 0; }
+    .brand-sub { font-size: 9pt; color: #555; margin-top: 2px; }
+    .hospital-name { font-size: 11pt; color: #333; font-weight: 600; text-align: right; }
+    .hospital-tag { font-size: 8.5pt; color: #777; text-align: right; margin-top: 2px; }
+
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin-bottom: 18px; padding: 10px 14px; background: #f4faf8; border-left: 3px solid #0fb989; }
+    .meta-grid .row { font-size: 9.5pt; }
+    .meta-grid .label { color: #666; font-weight: 600; display: inline-block; min-width: 80px; }
+    .meta-grid .value { color: #111; }
+
+    section { margin-bottom: 14px; page-break-inside: avoid; }
+    h2 { font-size: 11pt; color: #0fb989; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1px solid #e0eee9; }
+    .body-text { white-space: pre-wrap; }
+    .body-text :where(strong, b) { color: #064d3c; }
+    .body-text .ii-pos { background: #d6f5e8; padding: 0 2px; border-radius: 2px; }
+    .body-text .ii-neg { background: #fde2e2; padding: 0 2px; border-radius: 2px; }
+
+    .concern-box { border: 1.5px solid #d97706; background: #fff7ed; padding: 10px 14px; border-radius: 4px; }
+    .concern-box h2 { color: #b45309; border-color: #fcd9a4; }
+
+    footer { margin-top: 22px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #6b7280; }
+    .disclaimer { background: #f9fafb; padding: 8px 12px; border-radius: 3px; margin-top: 8px; font-size: 8.5pt; line-height: 1.4; color: #4b5563; }
+    .footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="ribbon">PATIENT'S COPY — Plain-Language Summary</div>
+
+  <header>
+    <div class="brand-row">
+      <div>
+        <h1 class="brand-title">Inside Imaging</h1>
+        <div class="brand-sub">Your radiology report, explained in plain language.</div>
+      </div>
+      <div>
+        <div class="hospital-name">{{ hospital_name or patient.hospital or 'Your Hospital' }}</div>
+        <div class="hospital-tag">Radiology Department</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="meta-grid">
+    {% if patient.name %}<div class="row"><span class="label">Patient:</span> <span class="value">{{ patient.name }}</span></div>{% endif %}
+    {% if patient.study %}<div class="row"><span class="label">Study:</span> <span class="value">{{ patient.study }}</span></div>{% endif %}
+    {% if patient.date %}<div class="row"><span class="label">Date:</span> <span class="value">{{ patient.date }}</span></div>{% endif %}
+    {% if accession_number %}<div class="row"><span class="label">Accession:</span> <span class="value">{{ accession_number }}</span></div>{% endif %}
+    {% if patient.age %}<div class="row"><span class="label">Age:</span> <span class="value">{{ patient.age }}</span></div>{% endif %}
+    {% if patient.sex %}<div class="row"><span class="label">Sex:</span> <span class="value">{{ patient.sex }}</span></div>{% endif %}
+  </div>
+
+  {% if structured.reason %}
+  <section>
+    <h2>Why this scan was done</h2>
+    <div class="body-text">{{ structured.reason|safe }}</div>
+  </section>
+  {% endif %}
+
+  {% if structured.technique %}
+  <section>
+    <h2>How the scan was performed</h2>
+    <div class="body-text">{{ structured.technique|safe }}</div>
+  </section>
+  {% endif %}
+
+  {% if structured.findings %}
+  <section>
+    <h2>What the radiologist saw</h2>
+    <div class="body-text">{{ structured.findings|safe }}</div>
+  </section>
+  {% endif %}
+
+  {% if structured.conclusion %}
+  <section>
+    <h2>What it means</h2>
+    <div class="body-text">{{ structured.conclusion|safe }}</div>
+  </section>
+  {% endif %}
+
+  {% if structured.concern %}
+  <section class="concern-box">
+    <h2>Things to discuss with your doctor</h2>
+    <div class="body-text">{{ structured.concern|safe }}</div>
+  </section>
+  {% endif %}
+
+  <footer>
+    <div class="disclaimer">
+      <strong>Important:</strong> This Patient's Copy is a plain-language summary of the official radiology report.
+      It is for your understanding and is <em>not</em> a substitute for your doctor's interpretation.
+      Always discuss your results with your referring physician.
+    </div>
+    <div class="footer-row">
+      <span>Generated by Inside Imaging · insideimaging.example</span>
+      <span>{{ generated_at }}</span>
+    </div>
+  </footer>
+</body>
+</html>

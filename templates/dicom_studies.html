@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}DICOM Studies - Inside Imaging{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}">
+
+<style>
+  .dicom-page { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
+  .dicom-page h1 { color: var(--text); margin-bottom: 8px; }
+  .dicom-page .subtitle { color: var(--muted); margin-bottom: 32px; }
+
+  .dicom-upload-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  .dicom-upload-card h2 { color: var(--text); margin: 0 0 12px; font-size: 1.15rem; }
+  .dicom-upload-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .dicom-upload-row input[type="file"] {
+    flex: 1; min-width: 280px;
+    padding: 10px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text);
+  }
+  .dicom-upload-row button {
+    padding: 10px 20px; background: var(--mint); color: var(--bg);
+    border: 0; border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .dicom-upload-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .dicom-status { margin-top: 12px; font-size: 0.9rem; color: var(--muted); min-height: 1.2em; }
+
+  .dicom-table-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .dicom-table { width: 100%; border-collapse: collapse; }
+  .dicom-table th, .dicom-table td {
+    padding: 14px 16px; text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text);
+  }
+  .dicom-table th {
+    background: var(--panel-2); color: var(--muted);
+    font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .dicom-table tr:last-child td { border-bottom: 0; }
+  .dicom-table .view-btn {
+    padding: 6px 14px; background: var(--mint); color: var(--bg);
+    border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;
+  }
+  .dicom-empty { padding: 40px; text-align: center; color: var(--muted); }
+
+  .dicom-back { color: var(--mint); text-decoration: none; font-size: 0.9rem; }
+  .dicom-back:hover { text-decoration: underline; }
+</style>
+
+<div class="dicom-page">
+  <a class="dicom-back" href="{{ url_for('dashboard') }}">← Back to dashboard</a>
+  <h1>DICOM Studies</h1>
+  <p class="subtitle">Upload and review medical imaging studies in the PACS archive.</p>
+
+  <div class="dicom-upload-card">
+    <h2>Upload DICOM files</h2>
+    <form id="dicom-upload-form">
+      <div class="dicom-upload-row">
+        <input type="file" id="dicom-files" name="files" accept=".dcm,application/dicom" multiple required>
+        <button type="submit" id="dicom-submit">Upload</button>
+      </div>
+      <div class="dicom-status" id="dicom-status"></div>
+    </form>
+  </div>
+
+  <div class="dicom-table-wrap">
+    {% if studies %}
+    <table class="dicom-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Modality</th>
+          <th>Description</th>
+          <th>Accession #</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for study in studies %}
+        <tr>
+          <td>{{ study.study_date or study.created_at }}</td>
+          <td>{{ study.modality or '—' }}</td>
+          <td>{{ study.study_description or '—' }}</td>
+          <td>{{ study.accession_number or '—' }}</td>
+          <td>
+            <a class="view-btn" href="{{ url_for('dicom_study_detail', study_uid=study.study_instance_uid) }}">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="dicom-empty">No DICOM studies yet. Upload one above to get started.</div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function() {
+  const form = document.getElementById('dicom-upload-form');
+  const fileInput = document.getElementById('dicom-files');
+  const submitBtn = document.getElementById('dicom-submit');
+  const status = document.getElementById('dicom-status');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!fileInput.files || fileInput.files.length === 0) return;
+
+    const data = new FormData();
+    for (const f of fileInput.files) data.append('files', f);
+
+    submitBtn.disabled = true;
+    status.textContent = `Uploading ${fileInput.files.length} file(s)…`;
+
+    try {
+      const res = await fetch('/dicom/upload', { method: 'POST', body: data });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      status.textContent = `Uploaded ${json.uploaded} instance(s) across ${json.study_uids.length} study/studies.`;
+      setTimeout(() => window.location.reload(), 800);
+    } catch (err) {
+      status.textContent = `Upload failed: ${err.message}`;
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
+{% endblock %}

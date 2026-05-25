@@ -23,6 +23,7 @@ from flask import (
     make_response,
     jsonify,
     abort,
+    Response,
 )
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -31,6 +32,9 @@ from authlib.integrations.flask_client import OAuth
 
 # local db
 from src import db
+from src.dicom_handler import parse_dicom_metadata, extract_frame_as_png, store_dicom
+from src.storage import get_storage
+from src.integration.api import integration_bp
 
 _AWS_REGION = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1"
 
@@ -57,6 +61,21 @@ def _textract():
             config=Config(retries={"max_attempts": 3, "mode": "standard"})
         )
     return _textract_client
+
+# Helpers for tenant-scoped DICOM routes
+def _current_tenant():
+    return db.get_user_tenant(session.get("username", ""))
+
+
+def _audit(action, **kwargs):
+    db.log_audit_event(
+        tenant_id=_current_tenant(),
+        username=session.get("username", ""),
+        action=action,
+        ip_address=request.remote_addr or "",
+        user_agent=request.headers.get("User-Agent", ""),
+        **kwargs,
+    )
 
 # --- app ---
 app = Flask(__name__)
@@ -86,6 +105,8 @@ google = oauth.register(
 _cors_origins_raw = os.getenv("CORS_ORIGINS", "")
 _cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()] or ["https://schweinefilet.github.io"]
 CORS(app, resources={r"/*": {"origins": _cors_origins}})
+
+app.register_blueprint(integration_bp)
 
 
 # Prevent browsers caching HTML responses (avoids stale theme scripts)
@@ -1737,6 +1758,153 @@ def logout():
     session.clear()  # Clear entire session instead of just username
     flash("Logged out successfully.", "success")
     return redirect(url_for("login"))
+
+
+@app.route("/dicom/upload", methods=["POST"])
+def dicom_upload():
+    if "username" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        storage = get_storage()
+    except Exception as exc:
+        logging.exception("Storage backend init failed")
+        return jsonify({"error": str(exc)}), 500
+
+    username = session["username"]
+    tenant_id = db.get_user_tenant(username)
+    files = request.files.getlist("files")
+    uploaded = 0
+    skipped = 0
+    study_uids = []
+
+    for upload in files:
+        if not upload or not upload.filename:
+            continue
+        try:
+            dcm_bytes = upload.read()
+            meta = parse_dicom_metadata(dcm_bytes)
+        except Exception:
+            logging.warning("Skipping invalid DICOM file: %s", getattr(upload, "filename", "?"))
+            skipped += 1
+            continue
+
+        if not meta.get("study_uid") or not meta.get("series_uid") or not meta.get("sop_uid"):
+            logging.warning("Skipping DICOM with missing UIDs: %s", upload.filename)
+            skipped += 1
+            continue
+
+        try:
+            storage_key = store_dicom(
+                storage, dcm_bytes, tenant_id,
+                meta["study_uid"], meta["series_uid"], meta["sop_uid"],
+            )
+        except Exception:
+            logging.exception("Storage put failed for %s", upload.filename)
+            skipped += 1
+            continue
+
+        meta["username"] = username
+        meta["tenant_id"] = tenant_id
+        meta["s3_key"] = storage_key
+        meta["storage_backend"] = storage.backend_name
+
+        try:
+            db.upsert_dicom_study(meta)
+            db.upsert_dicom_series(meta)
+            db.insert_dicom_instance(meta)
+        except Exception:
+            logging.exception("DB persistence failed for %s", upload.filename)
+            skipped += 1
+            continue
+
+        _audit(
+            "dicom.store",
+            resource_type="instance",
+            resource_uid=meta["sop_uid"],
+            details=f"study={meta['study_uid']} backend={storage.backend_name}",
+        )
+        uploaded += 1
+        if meta["study_uid"] not in study_uids:
+            study_uids.append(meta["study_uid"])
+
+    return jsonify({"uploaded": uploaded, "skipped": skipped, "study_uids": study_uids})
+
+
+@app.route("/dicom/studies", methods=["GET"])
+def dicom_studies():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    tenant_id = db.get_user_tenant(session["username"])
+    studies = db.get_dicom_studies(tenant_id, username=session["username"])
+    _audit("dicom.studies.list", resource_type="study", details=f"count={len(studies)}")
+    return render_template("dicom_studies.html", studies=studies)
+
+
+@app.route("/dicom/studies/<study_uid>", methods=["GET"])
+def dicom_study_detail(study_uid):
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    tenant_id = db.get_user_tenant(session["username"])
+    series_list = db.get_dicom_series(tenant_id, study_uid)
+    for series in series_list:
+        series["instances"] = db.get_dicom_instances(tenant_id, series["series_instance_uid"])
+    _audit("dicom.study.view", resource_type="study", resource_uid=study_uid)
+    return render_template("dicom_viewer.html", study_uid=study_uid, series_list=series_list)
+
+
+@app.route("/dicom/frame/<sop_uid>", methods=["GET"])
+def dicom_frame(sop_uid):
+    if not session.get("username"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    tenant_id = db.get_user_tenant(session["username"])
+    record = db.get_dicom_instance_by_uid(tenant_id, sop_uid)
+    if not record:
+        _audit("dicom.frame.view", resource_type="instance", resource_uid=sop_uid, outcome="not_found")
+        abort(404)
+
+    try:
+        storage = get_storage()
+        dcm_bytes = storage.get(record["s3_key"])
+        png_bytes = extract_frame_as_png(dcm_bytes)
+    except ValueError:
+        _audit("dicom.frame.view", resource_type="instance", resource_uid=sop_uid, outcome="no_pixel_data")
+        abort(404)
+    except Exception:
+        logging.exception("Frame extraction failed for %s", sop_uid)
+        _audit("dicom.frame.view", resource_type="instance", resource_uid=sop_uid, outcome="error")
+        abort(500)
+
+    _audit("dicom.frame.view", resource_type="instance", resource_uid=sop_uid)
+    resp = Response(png_bytes, mimetype="image/png")
+    resp.headers["Cache-Control"] = "max-age=3600"
+    return resp
+
+
+@app.route("/dicom/instances/<sop_uid>/raw", methods=["GET"])
+def dicom_instance_raw(sop_uid):
+    if not session.get("username"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    tenant_id = db.get_user_tenant(session["username"])
+    record = db.get_dicom_instance_by_uid(tenant_id, sop_uid)
+    if not record:
+        _audit("dicom.raw.download", resource_type="instance", resource_uid=sop_uid, outcome="not_found")
+        abort(404)
+
+    try:
+        storage = get_storage()
+        dcm_bytes = storage.get(record["s3_key"])
+    except Exception:
+        logging.exception("Raw DICOM fetch failed for %s", sop_uid)
+        _audit("dicom.raw.download", resource_type="instance", resource_uid=sop_uid, outcome="error")
+        abort(500)
+
+    _audit("dicom.raw.download", resource_type="instance", resource_uid=sop_uid)
+    resp = Response(dcm_bytes, mimetype="application/dicom")
+    resp.headers["Content-Disposition"] = f'attachment; filename="{sop_uid}.dcm"'
+    return resp
 
 
 if __name__ == "__main__":

@@ -15,6 +15,8 @@ import re
 import hashlib
 from datetime import datetime, timedelta
 
+from src import config
+
 
 DB_PATH = Path("data/patient_data.db")
 
@@ -95,6 +97,173 @@ def init_db() -> None:
     # password_hash should be nullable for OAuth users
     # SQLite doesn't support ALTER COLUMN, so we rely on the initial CREATE TABLE 
     # and the fact that we won't enforce NOT NULL in code for OAuth users.
+
+    # Tenants — every DICOM record and audit event is scoped to one
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tenants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id TEXT UNIQUE NOT NULL,
+            display_name TEXT,
+            region TEXT,
+            phi_mode TEXT DEFAULT 'passthrough',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    cur.execute(
+        "INSERT OR IGNORE INTO tenants (tenant_id, display_name) VALUES (?, ?)",
+        (config.DEFAULT_TENANT_ID, config.DEFAULT_TENANT_NAME),
+    )
+
+    # Per-tenant hospital integration config (added idempotently below)
+    cur.execute("PRAGMA table_info(tenants)")
+    tenant_cols = [row[1] for row in cur.fetchall()]
+    _tenant_migrations = [
+        ("integration_webhook_url", "TEXT DEFAULT ''"),
+        ("pacs_ae_title", "TEXT DEFAULT ''"),
+        ("pacs_host", "TEXT DEFAULT ''"),
+        ("pacs_port", "INTEGER DEFAULT 0"),
+        ("our_ae_title", "TEXT DEFAULT 'INSIDEIMG'"),
+        ("return_path", "TEXT DEFAULT 'webhook'"),
+        ("hospital_branding", "TEXT DEFAULT ''"),
+    ]
+    for col, ddl in _tenant_migrations:
+        if col not in tenant_cols:
+            cur.execute(f"ALTER TABLE tenants ADD COLUMN {col} {ddl}")
+
+    # API keys for hospital systems calling our integration endpoints
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS integration_api_keys (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id TEXT NOT NULL,
+            key_hash TEXT UNIQUE NOT NULL,
+            label TEXT,
+            revoked INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_used_at TIMESTAMP
+        )
+        """
+    )
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_apikey_hash ON integration_api_keys(key_hash)")
+
+    # Reports received via integration endpoints (HTTP or HL7)
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS integration_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id TEXT NOT NULL,
+            source TEXT NOT NULL,
+            source_ref TEXT,
+            accession_number TEXT,
+            patient_id_truncated TEXT,
+            study_uid TEXT,
+            status TEXT DEFAULT 'received',
+            inbound_storage_key TEXT,
+            outbound_pdf_key TEXT,
+            language TEXT DEFAULT 'English',
+            error TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            processed_at TIMESTAMP
+        )
+        """
+    )
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_ireports_tenant_time ON integration_reports(tenant_id, created_at)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_ireports_accession ON integration_reports(accession_number)")
+
+    # Audit log — every PHI read/write hooks into this
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dicom_audit (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id TEXT NOT NULL,
+            username TEXT,
+            action TEXT NOT NULL,
+            resource_type TEXT,
+            resource_uid TEXT,
+            ip_address TEXT,
+            user_agent TEXT,
+            outcome TEXT DEFAULT 'success',
+            details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_tenant_time ON dicom_audit(tenant_id, created_at)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_resource ON dicom_audit(resource_uid)")
+
+    # DICOM study/series/instance hierarchy for PACS layer
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dicom_studies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            study_instance_uid TEXT UNIQUE NOT NULL,
+            patient_name_truncated TEXT,
+            patient_id TEXT,
+            study_date TEXT,
+            modality TEXT,
+            study_description TEXT,
+            accession_number TEXT,
+            username TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dicom_series (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            series_instance_uid TEXT UNIQUE NOT NULL,
+            study_instance_uid TEXT NOT NULL,
+            series_number INTEGER,
+            series_description TEXT,
+            modality TEXT,
+            num_instances INTEGER DEFAULT 0,
+            FOREIGN KEY (study_instance_uid) REFERENCES dicom_studies(study_instance_uid)
+        )
+        """
+    )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dicom_instances (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sop_instance_uid TEXT UNIQUE NOT NULL,
+            series_instance_uid TEXT NOT NULL,
+            instance_number INTEGER,
+            rows INTEGER,
+            columns INTEGER,
+            s3_key TEXT NOT NULL,
+            FOREIGN KEY (series_instance_uid) REFERENCES dicom_series(series_instance_uid)
+        )
+        """
+    )
+
+    # Idempotent migrations: add tenant_id and storage_key to existing DICOM rows
+    for table in ("dicom_studies", "dicom_series", "dicom_instances"):
+        cur.execute(f"PRAGMA table_info({table})")
+        existing = [row[1] for row in cur.fetchall()]
+        if "tenant_id" not in existing:
+            cur.execute(
+                f"ALTER TABLE {table} ADD COLUMN tenant_id TEXT NOT NULL DEFAULT '{config.DEFAULT_TENANT_ID}'"
+            )
+
+    cur.execute("PRAGMA table_info(dicom_instances)")
+    inst_cols = [row[1] for row in cur.fetchall()]
+    if "storage_backend" not in inst_cols:
+        cur.execute("ALTER TABLE dicom_instances ADD COLUMN storage_backend TEXT DEFAULT 's3'")
+
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_studies_tenant ON dicom_studies(tenant_id, username)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_series_tenant ON dicom_series(tenant_id)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_instances_tenant ON dicom_instances(tenant_id)")
+
+    # Add tenant_id to users (default tenant for existing rows)
+    cur.execute("PRAGMA table_info(users)")
+    user_cols_v2 = [row[1] for row in cur.fetchall()]
+    if "tenant_id" not in user_cols_v2:
+        cur.execute(
+            f"ALTER TABLE users ADD COLUMN tenant_id TEXT NOT NULL DEFAULT '{config.DEFAULT_TENANT_ID}'"
+        )
 
     # Table for feedback/corrections from radiologists
     cur.execute(
@@ -749,3 +918,518 @@ def get_user_reports(username: str, limit: int = 10) -> List[Dict[str, Any]]:
             "patient_name": row[5] or "Patient",
         })
     return reports
+
+
+def get_user_tenant(username: str) -> str:
+    if not username:
+        return config.DEFAULT_TENANT_ID
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT tenant_id FROM users WHERE username = ?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    if not row or not row[0]:
+        return config.DEFAULT_TENANT_ID
+    return str(row[0])
+
+
+def get_tenant(tenant_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT tenant_id, display_name, region, phi_mode, created_at FROM tenants WHERE tenant_id = ?",
+        (tenant_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "tenant_id": row[0],
+        "display_name": row[1] or "",
+        "region": row[2] or "",
+        "phi_mode": row[3] or "passthrough",
+        "created_at": _format_timestamp(row[4]),
+    }
+
+
+def create_tenant(tenant_id: str, display_name: str = "", region: str = "", phi_mode: str = "passthrough") -> None:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT OR IGNORE INTO tenants (tenant_id, display_name, region, phi_mode) VALUES (?, ?, ?, ?)",
+        (tenant_id, display_name, region, phi_mode),
+    )
+    conn.commit()
+    conn.close()
+
+
+def log_audit_event(
+    tenant_id: str,
+    username: str,
+    action: str,
+    resource_type: str = "",
+    resource_uid: str = "",
+    ip_address: str = "",
+    user_agent: str = "",
+    outcome: str = "success",
+    details: str = "",
+) -> int:
+    if not config.AUDIT_LOG_ENABLED:
+        return 0
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO dicom_audit (
+            tenant_id, username, action, resource_type, resource_uid,
+            ip_address, user_agent, outcome, details
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            tenant_id or config.DEFAULT_TENANT_ID,
+            username or "",
+            action,
+            resource_type,
+            resource_uid,
+            ip_address,
+            user_agent,
+            outcome,
+            details,
+        ),
+    )
+    conn.commit()
+    audit_id = cur.lastrowid
+    conn.close()
+    return int(audit_id)
+
+
+def get_audit_log(tenant_id: str, limit: int = 100) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, tenant_id, username, action, resource_type, resource_uid,
+               ip_address, user_agent, outcome, details, created_at
+        FROM dicom_audit
+        WHERE tenant_id = ?
+        ORDER BY datetime(created_at) DESC
+        LIMIT ?
+        """,
+        (tenant_id, limit),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "id": r[0], "tenant_id": r[1], "username": r[2] or "",
+            "action": r[3], "resource_type": r[4] or "", "resource_uid": r[5] or "",
+            "ip_address": r[6] or "", "user_agent": r[7] or "",
+            "outcome": r[8] or "", "details": r[9] or "",
+            "created_at": _format_timestamp(r[10]),
+        }
+        for r in rows
+    ]
+
+
+def upsert_dicom_study(data: Dict[str, Any]) -> str:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT OR IGNORE INTO dicom_studies (
+            study_instance_uid, patient_name_truncated, patient_id, study_date,
+            modality, study_description, accession_number, username, tenant_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.get("study_uid", ""),
+            data.get("patient_name_truncated", ""),
+            data.get("patient_id", ""),
+            data.get("study_date", ""),
+            data.get("modality", ""),
+            data.get("study_description", ""),
+            data.get("accession_number", ""),
+            data.get("username", ""),
+            data.get("tenant_id", config.DEFAULT_TENANT_ID),
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return str(data.get("study_uid", ""))
+
+
+def upsert_dicom_series(data: Dict[str, Any]) -> str:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT OR IGNORE INTO dicom_series (
+            series_instance_uid, study_instance_uid, series_number,
+            series_description, modality, num_instances, tenant_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.get("series_uid", ""),
+            data.get("study_uid", ""),
+            data.get("series_number", 0) or 0,
+            data.get("series_description", ""),
+            data.get("modality", ""),
+            0,
+            data.get("tenant_id", config.DEFAULT_TENANT_ID),
+        ),
+    )
+    cur.execute(
+        "UPDATE dicom_series SET num_instances = num_instances + 1 WHERE series_instance_uid = ?",
+        (data.get("series_uid", ""),),
+    )
+    conn.commit()
+    conn.close()
+    return str(data.get("series_uid", ""))
+
+
+def insert_dicom_instance(data: Dict[str, Any]) -> int:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO dicom_instances (
+            sop_instance_uid, series_instance_uid, instance_number,
+            rows, columns, s3_key, tenant_id, storage_backend
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.get("sop_uid", ""),
+            data.get("series_uid", ""),
+            data.get("instance_number", 0) or 0,
+            data.get("rows", 0) or 0,
+            data.get("columns", 0) or 0,
+            data.get("s3_key", ""),
+            data.get("tenant_id", config.DEFAULT_TENANT_ID),
+            data.get("storage_backend", config.STORAGE_BACKEND),
+        ),
+    )
+    conn.commit()
+    instance_id = cur.lastrowid
+    conn.close()
+    return int(instance_id)
+
+
+def get_dicom_studies(tenant_id: str, username: Optional[str] = None) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    if username:
+        cur.execute(
+            """
+            SELECT study_instance_uid, patient_name_truncated, patient_id, study_date,
+                   modality, study_description, accession_number, username, created_at, tenant_id
+            FROM dicom_studies
+            WHERE tenant_id = ? AND username = ?
+            ORDER BY datetime(created_at) DESC
+            """,
+            (tenant_id, username),
+        )
+    else:
+        cur.execute(
+            """
+            SELECT study_instance_uid, patient_name_truncated, patient_id, study_date,
+                   modality, study_description, accession_number, username, created_at, tenant_id
+            FROM dicom_studies
+            WHERE tenant_id = ?
+            ORDER BY datetime(created_at) DESC
+            """,
+            (tenant_id,),
+        )
+    rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "study_instance_uid": row[0],
+            "patient_name_truncated": row[1] or "",
+            "patient_id": row[2] or "",
+            "study_date": row[3] or "",
+            "modality": row[4] or "",
+            "study_description": row[5] or "",
+            "accession_number": row[6] or "",
+            "username": row[7] or "",
+            "created_at": _format_timestamp(row[8]),
+            "tenant_id": row[9],
+        }
+        for row in rows
+    ]
+
+
+def get_dicom_series(tenant_id: str, study_uid: str) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT series_instance_uid, study_instance_uid, series_number,
+               series_description, modality, num_instances, tenant_id
+        FROM dicom_series
+        WHERE tenant_id = ? AND study_instance_uid = ?
+        ORDER BY series_number ASC
+        """,
+        (tenant_id, study_uid),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "series_instance_uid": row[0],
+            "study_instance_uid": row[1],
+            "series_number": row[2] or 0,
+            "series_description": row[3] or "",
+            "modality": row[4] or "",
+            "num_instances": row[5] or 0,
+            "tenant_id": row[6],
+        }
+        for row in rows
+    ]
+
+
+def get_dicom_instances(tenant_id: str, series_uid: str) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT sop_instance_uid, series_instance_uid, instance_number,
+               rows, columns, s3_key, tenant_id, storage_backend
+        FROM dicom_instances
+        WHERE tenant_id = ? AND series_instance_uid = ?
+        ORDER BY instance_number ASC
+        """,
+        (tenant_id, series_uid),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "sop_instance_uid": row[0],
+            "series_instance_uid": row[1],
+            "instance_number": row[2] or 0,
+            "rows": row[3] or 0,
+            "columns": row[4] or 0,
+            "s3_key": row[5] or "",
+            "tenant_id": row[6],
+            "storage_backend": row[7] or "s3",
+        }
+        for row in rows
+    ]
+
+
+def get_dicom_instance_by_uid(tenant_id: str, sop_uid: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT sop_instance_uid, series_instance_uid, instance_number,
+               rows, columns, s3_key, tenant_id, storage_backend
+        FROM dicom_instances
+        WHERE tenant_id = ? AND sop_instance_uid = ?
+        """,
+        (tenant_id, sop_uid),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "sop_instance_uid": row[0],
+        "series_instance_uid": row[1],
+        "instance_number": row[2] or 0,
+        "rows": row[3] or 0,
+        "columns": row[4] or 0,
+        "s3_key": row[5] or "",
+        "tenant_id": row[6],
+        "storage_backend": row[7] or "s3",
+    }
+
+
+def update_tenant_integration(
+    tenant_id: str,
+    webhook_url: Optional[str] = None,
+    pacs_ae_title: Optional[str] = None,
+    pacs_host: Optional[str] = None,
+    pacs_port: Optional[int] = None,
+    our_ae_title: Optional[str] = None,
+    return_path: Optional[str] = None,
+    hospital_branding: Optional[str] = None,
+) -> None:
+    fields = []
+    values: List[Any] = []
+    for col, val in [
+        ("integration_webhook_url", webhook_url),
+        ("pacs_ae_title", pacs_ae_title),
+        ("pacs_host", pacs_host),
+        ("pacs_port", pacs_port),
+        ("our_ae_title", our_ae_title),
+        ("return_path", return_path),
+        ("hospital_branding", hospital_branding),
+    ]:
+        if val is not None:
+            fields.append(f"{col} = ?")
+            values.append(val)
+    if not fields:
+        return
+    values.append(tenant_id)
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(f"UPDATE tenants SET {', '.join(fields)} WHERE tenant_id = ?", values)
+    conn.commit()
+    conn.close()
+
+
+def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT tenant_id, display_name, integration_webhook_url, pacs_ae_title,
+               pacs_host, pacs_port, our_ae_title, return_path, hospital_branding, phi_mode
+        FROM tenants WHERE tenant_id = ?
+        """,
+        (tenant_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "tenant_id": row[0],
+        "display_name": row[1] or "",
+        "webhook_url": row[2] or "",
+        "pacs_ae_title": row[3] or "",
+        "pacs_host": row[4] or "",
+        "pacs_port": int(row[5] or 0),
+        "our_ae_title": row[6] or "INSIDEIMG",
+        "return_path": row[7] or "webhook",
+        "hospital_branding": row[8] or "",
+        "phi_mode": row[9] or "passthrough",
+    }
+
+
+def create_api_key(tenant_id: str, key_hash: str, label: str = "") -> int:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO integration_api_keys (tenant_id, key_hash, label) VALUES (?, ?, ?)",
+        (tenant_id, key_hash, label),
+    )
+    conn.commit()
+    key_id = cur.lastrowid
+    conn.close()
+    return int(key_id)
+
+
+def lookup_api_key(key_hash: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, tenant_id, label, revoked
+        FROM integration_api_keys
+        WHERE key_hash = ?
+        """,
+        (key_hash,),
+    )
+    row = cur.fetchone()
+    if not row or row[3]:
+        conn.close()
+        return None
+    cur.execute(
+        "UPDATE integration_api_keys SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?",
+        (row[0],),
+    )
+    conn.commit()
+    conn.close()
+    return {"id": row[0], "tenant_id": row[1], "label": row[2] or ""}
+
+
+def revoke_api_key(key_id: int) -> None:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE integration_api_keys SET revoked = 1 WHERE id = ?", (key_id,))
+    conn.commit()
+    conn.close()
+
+
+def insert_integration_report(data: Dict[str, Any]) -> int:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO integration_reports (
+            tenant_id, source, source_ref, accession_number,
+            patient_id_truncated, study_uid, status, inbound_storage_key, language
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.get("tenant_id", config.DEFAULT_TENANT_ID),
+            data.get("source", "http"),
+            data.get("source_ref", ""),
+            data.get("accession_number", ""),
+            data.get("patient_id_truncated", ""),
+            data.get("study_uid", ""),
+            data.get("status", "received"),
+            data.get("inbound_storage_key", ""),
+            data.get("language", "English"),
+        ),
+    )
+    conn.commit()
+    report_id = cur.lastrowid
+    conn.close()
+    return int(report_id)
+
+
+def update_integration_report(
+    report_id: int,
+    status: Optional[str] = None,
+    outbound_pdf_key: Optional[str] = None,
+    error: Optional[str] = None,
+    mark_processed: bool = False,
+) -> None:
+    fields = []
+    values: List[Any] = []
+    if status is not None:
+        fields.append("status = ?"); values.append(status)
+    if outbound_pdf_key is not None:
+        fields.append("outbound_pdf_key = ?"); values.append(outbound_pdf_key)
+    if error is not None:
+        fields.append("error = ?"); values.append(error)
+    if mark_processed:
+        fields.append("processed_at = CURRENT_TIMESTAMP")
+    if not fields:
+        return
+    values.append(report_id)
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(f"UPDATE integration_reports SET {', '.join(fields)} WHERE id = ?", values)
+    conn.commit()
+    conn.close()
+
+
+def get_integration_report(report_id: int) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, tenant_id, source, source_ref, accession_number,
+               patient_id_truncated, study_uid, status, inbound_storage_key,
+               outbound_pdf_key, language, error, created_at, processed_at
+        FROM integration_reports WHERE id = ?
+        """,
+        (report_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "id": row[0], "tenant_id": row[1], "source": row[2], "source_ref": row[3] or "",
+        "accession_number": row[4] or "", "patient_id_truncated": row[5] or "",
+        "study_uid": row[6] or "", "status": row[7], "inbound_storage_key": row[8] or "",
+        "outbound_pdf_key": row[9] or "", "language": row[10] or "English",
+        "error": row[11] or "", "created_at": _format_timestamp(row[12]),
+        "processed_at": _format_timestamp(row[13]),
+    }

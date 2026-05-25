@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}DICOM Viewer - Inside Imaging{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+
+<style>
+  .viewer-shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    min-height: calc(100vh - 64px);
+  }
+  .viewer-sidebar {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    height: fit-content;
+    position: sticky;
+    top: 24px;
+  }
+  .viewer-sidebar h2 { color: var(--text); font-size: 1rem; margin: 0 0 12px; }
+  .viewer-back { color: var(--mint); text-decoration: none; font-size: 0.85rem; display: block; margin-bottom: 14px; }
+  .viewer-back:hover { text-decoration: underline; }
+
+  .series-list { list-style: none; padding: 0; margin: 0; }
+  .series-item {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .series-item:hover { background: var(--panel-2); }
+  .series-item.active {
+    background: color-mix(in oklab, var(--mint) 18%, var(--panel));
+    border-color: var(--mint);
+  }
+  .series-item .num { font-weight: 600; color: var(--mint); margin-right: 6px; }
+  .series-item .desc { display: block; font-size: 0.85rem; color: var(--text); margin-top: 2px; }
+  .series-item .count { font-size: 0.75rem; color: var(--muted); }
+
+  .viewer-main {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    min-height: 600px;
+  }
+  .viewer-main h2 { color: var(--text); margin: 0 0 16px; font-size: 1.1rem; }
+  .thumb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .thumb {
+    background: #000;
+    border-radius: 6px;
+    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid var(--border-color);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+    position: relative;
+  }
+  .thumb:hover { border-color: var(--mint); transform: scale(1.02); }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .thumb .label {
+    position: absolute; bottom: 4px; left: 6px;
+    color: #fff; font-size: 0.7rem;
+    text-shadow: 0 0 4px rgba(0,0,0,0.9);
+  }
+  .viewer-empty { color: var(--muted); padding: 40px; text-align: center; }
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 9000;
+    padding: 40px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-overlay img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--panel); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; cursor: pointer; font-weight: 600;
+  }
+  .modal-download {
+    position: absolute; top: 16px; right: 100px;
+    background: var(--mint); color: var(--bg);
+    border-radius: 8px; padding: 8px 14px; text-decoration: none; font-weight: 600;
+  }
+</style>
+
+<div class="viewer-shell">
+  <aside class="viewer-sidebar">
+    <a class="viewer-back" href="{{ url_for('dicom_studies') }}">← All studies</a>
+    <h2>Series ({{ series_list|length }})</h2>
+    {% if series_list %}
+    <ul class="series-list">
+      {% for series in series_list %}
+      <li class="series-item{% if loop.first %} active{% endif %}"
+          data-series-uid="{{ series.series_instance_uid }}">
+        <span class="num">#{{ series.series_number or loop.index }}</span>
+        <span class="modality">{{ series.modality or '—' }}</span>
+        <span class="desc">{{ series.series_description or 'Untitled series' }}</span>
+        <span class="count">{{ series.instances|length }} instance(s)</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="viewer-empty">No series in this study.</p>
+    {% endif %}
+  </aside>
+
+  <section class="viewer-main">
+    {% if series_list %}
+      {% for series in series_list %}
+      <div class="series-panel" data-series-uid="{{ series.series_instance_uid }}"
+           style="{% if not loop.first %}display:none{% endif %}">
+        <h2>{{ series.series_description or 'Series ' ~ (series.series_number or loop.index) }}</h2>
+        {% if series.instances %}
+        <div class="thumb-grid">
+          {% for inst in series.instances %}
+          <div class="thumb" data-sop-uid="{{ inst.sop_instance_uid }}">
+            <img src="{{ url_for('dicom_frame', sop_uid=inst.sop_instance_uid) }}"
+                 alt="Instance {{ inst.instance_number }}" loading="lazy">
+            <span class="label">#{{ inst.instance_number or loop.index }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="viewer-empty">No instances in this series.</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="viewer-empty">This study has no series. Re-upload the DICOM files.</div>
+    {% endif %}
+  </section>
+</div>
+
+<div class="modal-overlay" id="dicom-modal" role="dialog" aria-modal="true">
+  <a class="modal-download" id="modal-download" href="#" download>Download .dcm</a>
+  <button class="modal-close" id="modal-close" type="button">Close</button>
+  <img id="modal-img" alt="DICOM frame">
+</div>
+
+<script>
+(function() {
+  const sidebarItems = document.querySelectorAll('.series-item');
+  const panels = document.querySelectorAll('.series-panel');
+  const modal = document.getElementById('dicom-modal');
+  const modalImg = document.getElementById('modal-img');
+  const modalDownload = document.getElementById('modal-download');
+  const modalClose = document.getElementById('modal-close');
+
+  sidebarItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const uid = item.dataset.seriesUid;
+      sidebarItems.forEach(s => s.classList.toggle('active', s === item));
+      panels.forEach(p => {
+        p.style.display = p.dataset.seriesUid === uid ? '' : 'none';
+      });
+    });
+  });
+
+  document.querySelectorAll('.thumb').forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      const sop = thumb.dataset.sopUid;
+      modalImg.src = `/dicom/frame/${sop}`;
+      modalDownload.href = `/dicom/instances/${sop}/raw`;
+      modal.classList.add('open');
+    });
+  });
+
+  function close() { modal.classList.remove('open'); modalImg.src = ''; }
+  modalClose.addEventListener('click', close);
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+})();
+</script>
+{% endblock %}

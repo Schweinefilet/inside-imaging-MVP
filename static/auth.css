@@ -98,33 +98,33 @@
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-/* Submit Button with Gradient Effect */
+/* Submit Button — solid clinical primary */
 .auth-submit {
     position: relative;
     width: 100%;
     padding: 0.875rem 1rem;
-    background: linear-gradient(135deg, var(--mint) 0%, #059669 100%);
-    color: #051e14;
+    background: var(--primary);
+    color: var(--surface);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     cursor: pointer;
-    transition: all 0.3s ease;
-    overflow: hidden;
+    transition: background var(--duration-fast) var(--ease);
     margin-bottom: 1.5rem;
 }
 
 .auth-submit:hover {
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
-    background: linear-gradient(135deg, color-mix(in oklab, var(--mint) 90%, #ffffff) 0%, #059669 100%);
+    background: var(--primary-hover);
 }
 
 .auth-submit:active {
     opacity: 0.9;
 }
 
-/* btn-gradient spans are intentionally empty */
+/* btn-gradient and btn-gradient-blur spans removed; rule kept as no-op for safety */
+.btn-gradient,
+.btn-gradient-blur { display: none; }
 
 /* Divider */
 .auth-divider {
@@ -282,12 +282,12 @@ html.light .auth-input:focus {
 }
 
 html.light .auth-submit {
-    background: linear-gradient(135deg, var(--mint) 0%, #059669 100%);
-    color: #051e14;
+    background: var(--primary);
+    color: var(--surface);
 }
 
 html.light .auth-submit:hover {
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+    background: var(--primary-hover);
 }
 
 html.light .auth-divider::before {

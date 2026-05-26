@@ -1,106 +1,36 @@
-<!doctype html>
-<html lang="en">
-<script>
-(function(){var d=document.documentElement;var t=localStorage.getItem('theme');var l=t==='light';var D={bg:'#09090b',panel:'#18191f','panel-2':'#22242d',text:'#f2f6f4',muted:'#8a8f95',border:'#32353f',mint:'#3ee6b0',shadow:'0 18px 45px rgba(0,0,0,0.55)','card-bg':'rgba(255,255,255,0.02)','border-color':'rgba(255,255,255,0.1)','text-primary':'#f2f6f4','text-muted':'#8a8f95'};var L={bg:'#f8f9fa',panel:'#ffffff','panel-2':'#eef2f7',text:'#1f2937',muted:'#4b5563',border:'#d7dde5',mint:'#0fb989',shadow:'0 4px 10px rgba(0,0,0,.08)','card-bg':'#ffffff','border-color':'#d7dde5','text-primary':'#1f2937','text-muted':'#4b5563'};var v=l?L:D;d.classList.toggle('light',l);d.style.colorScheme=l?'light':'dark';d.style.backgroundColor=v.bg;for(var k in v)d.style.setProperty('--'+k,v[k]);var s=document.createElement('style');s.id='prepaint-bg';s.textContent='html,body,body::before{background:'+v.bg+' !important}';d.appendChild(s);})();
-</script>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
-    <title>Projects - Inside Imaging</title>
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.svg') }}">
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='blogs.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='marquee-3d.css') }}">
-</head>
+{% block title %}Projects · Inside Imaging{% endblock %}
 
-<body>
-    {% set landing_text = "INSIDE IMAGING" %}
-    <div id="landing-overlay" class="landing-overlay landing-hidden" role="dialog" aria-modal="true"
-        aria-label="Inside Imaging introduction" aria-hidden="true" tabindex="-1">
-        <div class="landing-inner">
-            <div class="landing-heading" aria-hidden="true">
-                {% for char in landing_text %}
-                {% if char == ' ' %}
-                <span class="spacer" data-char=" "></span>
-                {% else %}
-                <span data-char="{{ char }}">{{ char }}</span>
-                {% endif %}
-                {% endfor %}
-            </div>
-            <p class="landing-tagline">Plain-language radiology reports with immersive visuals and guidance tailored for
-                patients.</p>
-            <button type="button" class="landing-continue" id="landing-continue">Continue</button>
-        </div>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=8">
+<link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}?v=8">
+<link rel="stylesheet" href="{{ url_for('static', filename='blogs.css') }}?v=8">
+<link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}?v=8">
+<link rel="stylesheet" href="{{ url_for('static', filename='marquee-3d.css') }}?v=8">
+{% endblock %}
+
+{% block content %}
+
+{% set landing_text = "INSIDE IMAGING" %}
+<div id="landing-overlay" class="landing-overlay landing-hidden" role="dialog" aria-modal="true"
+  aria-label="Inside Imaging introduction" aria-hidden="true" tabindex="-1">
+  <div class="landing-inner">
+    <div class="landing-heading" aria-hidden="true">
+      {% for char in landing_text %}
+        {% if char == ' ' %}
+          <span class="spacer" data-char=" "></span>
+        {% else %}
+          <span data-char="{{ char }}">{{ char }}</span>
+        {% endif %}
+      {% endfor %}
     </div>
-    <div class="page-wrapper">
-        <div class="header-shell">
-            <div class="navbar-brand">
-                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo logo-dark">
-                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Inside Imaging logo" class="logo logo-light">
-            </div>
-            <nav class="navbar">
-                <a href="{{ url_for('projects') }}" class="active">Projects</a>
-                <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('report_status') }}">Statistics</a>
-                <a href="{{ url_for('team') }}">Our Team</a>
-                <!-- <a href="{{ url_for('payment') }}">Payment</a> -->
-                <a href="{{ url_for('dicom_studies') }}">DICOM</a>
-                <a href="{{ url_for('help_page') }}">Help</a>
-            </nav>
-            <div class="nav-auth">
-                <!-- Slider toggle -->
-                <label class="theme-switch" aria-label="Toggle theme">
-                    <span class="theme-row">
-                        <span class="theme-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg></span>
-                        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch"
-                            aria-checked="false">
-                        <span class="theme-switch-track" aria-hidden="true"></span>
-                        <span class="theme-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="5"></circle>
-                                <line x1="12" y1="1" x2="12" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="23"></line>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                <line x1="1" y1="12" x2="3" y2="12"></line>
-                                <line x1="21" y1="12" x2="23" y2="12"></line>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg></span>
-                    </span>
-                    <span id="theme-label" class="theme-switch-text">Dark mode</span>
-                </label>
+    <p class="landing-tagline">Plain-language radiology reports with immersive visuals and guidance tailored for patients.</p>
+    <button type="button" class="landing-continue" id="landing-continue">Continue</button>
+  </div>
+</div>
 
-                {% if session.get('username') %}
-                <div class="user-menu">
-                    <button class="user-menu-toggle" type="button" aria-expanded="false">
-                        <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
-                        <span class="user-caret" aria-hidden="true">▾</span>
-                    </button>
-                    <div class="user-menu-dropdown" role="menu" hidden>
-                        <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
-                        <a href="{{ url_for('logout') }}" role="menuitem">Log Out</a>
-                    </div>
-                </div>
-                {% else %}
-                <a href="{{ url_for('login') }}" class="login-button">Log In</a>
-                <a href="{{ url_for('signup') }}" class="signup-button">Sign Up</a>
-                {% endif %}
-            </div>
-        </div>
-
-        <main class="content projects-page">
+<div class="content projects-page">
             <!-- 3D Marquee Showcase Section -->
             <section class="marquee-3d-container" data-marquee-3d data-images='{{ marquee_images | tojson }}'
                 data-radius="600" data-autoplay="true" data-speed="30">
@@ -296,13 +226,11 @@
                     {% endif %}
                 </div> -->
             </section>
-        </main>
+</div> {# .content.projects-page #}
+{% endblock %}
 
-        {% include '_footer.html' %}
-    </div>
-
-    <script src="{{ url_for('static', filename='marquee-3d.js') }}"></script>
-    <script src="{{ url_for('static', filename='theme.js') }}?v=7"></script>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='marquee-3d.js') }}?v=8"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var posterLink = document.getElementById('poster-link');
@@ -387,6 +315,4 @@
             });
         })();
     </script>
-</body>
-
-</html>
+{% endblock %}

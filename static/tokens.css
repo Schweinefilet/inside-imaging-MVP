@@ -1,0 +1,167 @@
+/* ============================================================
+   Inside Imaging — Design Tokens
+   Single source of truth. Load this FIRST on every page.
+   ============================================================ */
+
+:root {
+  /* --- Color palette: LIGHT (default) ---------------------- */
+  --bg:           #fafbfc;
+  --surface:      #ffffff;
+  --surface-2:    #f1f5f9;
+  --ink:          #0f172a;
+  --ink-soft:     #334155;
+  --muted:        #64748b;
+  --border:       #e2e8f0;
+  --border-soft:  #eef2f7;
+
+  /* Brand accents — used by surface weight (see below) */
+  --primary:        #1e3a5f;   /* navy — patient surfaces, trust */
+  --primary-soft:   #e0e7f1;
+  --primary-hover:  #152a45;
+
+  --accent:         #4f46e5;   /* indigo — clinician CTAs */
+  --accent-soft:    #eef2ff;
+  --accent-hover:   #4338ca;
+
+  /* Semantic states */
+  --success:        #0f766e;
+  --success-soft:   #d1fae5;
+  --warning:        #b45309;
+  --warning-soft:   #fef3c7;
+  --danger:         #b91c1c;
+  --danger-soft:    #fee2e2;
+
+  /* --- Typography ----------------------------------------- */
+  --font-serif:  "Source Serif Pro", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans:   "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:   "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale — 6 sizes (+ 1 hero) */
+  --fs-xs:  12px;
+  --fs-sm:  14px;
+  --fs-md:  16px;
+  --fs-lg:  18px;
+  --fs-xl:  24px;
+  --fs-2xl: 32px;
+  --fs-3xl: 48px;
+
+  --lh-tight:   1.2;
+  --lh-snug:    1.4;
+  --lh-normal:  1.55;
+  --lh-relaxed: 1.7;
+
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* --- Spacing scale — 4px grid -------------------------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+
+  /* --- Radii — only 3 -------------------------------------- */
+  --radius-sm:  6px;     /* inputs, buttons, table cells */
+  --radius-md:  12px;    /* cards, panels */
+  --radius-pill: 999px;  /* badges, pill nav */
+
+  /* --- Elevation — only 2 --------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+
+  /* --- Layout ---------------------------------------------- */
+  --content-narrow:  640px;   /* patient pages: max reading width */
+  --content-wide:    1200px;  /* clinician dashboards */
+  --reading-measure: 65ch;    /* body copy ideal width */
+
+  /* --- Motion (use sparingly) ------------------------------ */
+  --duration-fast:   120ms;
+  --duration-base:   200ms;
+  --ease:            cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Z-index scale --------------------------------------- */
+  --z-sticky:  100;
+  --z-overlay: 1000;
+  --z-modal:   2000;
+  --z-toast:   3000;
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   DARK MODE — equal-weight variant, not a retrofit
+   ============================================================ */
+html.dark,
+html[data-theme="dark"] {
+  --bg:           #09090b;
+  --surface:      #18191f;
+  --surface-2:    #22242d;
+  --ink:          #f2f6f4;
+  --ink-soft:     #cbd5e1;
+  --muted:        #94a3b8;
+  --border:       #2a2d36;
+  --border-soft:  #1f2128;
+
+  --primary:        #93c5fd;
+  --primary-soft:   #1e3a5f;
+  --primary-hover:  #bfdbfe;
+
+  --accent:         #818cf8;
+  --accent-soft:    #312e81;
+  --accent-hover:   #a5b4fc;
+
+  --success:        #34d399;
+  --success-soft:   #064e3b;
+  --warning:        #fbbf24;
+  --warning-soft:   #78350f;
+  --danger:         #f87171;
+  --danger-soft:    #7f1d1d;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   Surface weight — patient vs clinician
+   Apply on <body> or top-level container.
+   ============================================================ */
+
+body.surface-patient,
+.surface-patient {
+  --surface-font-h1:    var(--font-serif);
+  --surface-font-h2:    var(--font-serif);
+  --surface-font-body:  var(--font-sans);
+  --surface-radius:     var(--radius-md);
+  --surface-spacing:    var(--space-6);
+  --surface-accent:     var(--primary);
+  --surface-accent-soft: var(--primary-soft);
+}
+
+body.surface-clinician,
+.surface-clinician {
+  --surface-font-h1:    var(--font-sans);
+  --surface-font-h2:    var(--font-sans);
+  --surface-font-body:  var(--font-sans);
+  --surface-radius:     var(--radius-sm);
+  --surface-spacing:    var(--space-4);
+  --surface-accent:     var(--accent);
+  --surface-accent-soft: var(--accent-soft);
+}
+
+/* Default (neutral pages: auth, help, error) inherit patient weight */
+body {
+  --surface-font-h1:    var(--font-serif);
+  --surface-font-h2:    var(--font-serif);
+  --surface-font-body:  var(--font-sans);
+  --surface-radius:     var(--radius-md);
+  --surface-spacing:    var(--space-5);
+  --surface-accent:     var(--primary);
+  --surface-accent-soft: var(--primary-soft);
+}

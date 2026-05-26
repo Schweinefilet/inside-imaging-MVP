@@ -1,171 +1,110 @@
+/* Inside Imaging — theme toggle.
+ * Light is the default. Adds .dark class on <html> when user opts in.
+ * Tokens (static/tokens.css) handle all the color swapping.
+ */
 (function () {
-  var transitionTimer = null;
-  var initialized = false;
+  'use strict';
 
-  /* ── Full variable palette for each mode ── */
-  var DARK = {
-    bg:'#09090b', panel:'#18191f', 'panel-2':'#22242d',
-    text:'#f2f6f4', muted:'#8a8f95', border:'#32353f',
-    mint:'#3ee6b0', shadow:'0 18px 45px rgba(0,0,0,0.55)',
-    'card-bg':'rgba(255,255,255,0.02)',
-    'border-color':'rgba(255,255,255,0.1)',
-    'text-primary':'#f2f6f4', 'text-muted':'#8a8f95'
-  };
-  var LIGHT = {
-    bg:'#f8f9fa', panel:'#ffffff', 'panel-2':'#eef2f7',
-    text:'#1f2937', muted:'#4b5563', border:'#d7dde5',
-    mint:'#0fb989', shadow:'0 4px 10px rgba(0,0,0,.08)',
-    'card-bg':'#ffffff', 'border-color':'#d7dde5',
-    'text-primary':'#1f2937', 'text-muted':'#4b5563'
-  };
+  var STORAGE_KEY = 'theme';
 
-  function computeInitialLight() {
-    var saved = localStorage.getItem('theme');
-    return saved === 'light';
+  function isDark() {
+    try { return localStorage.getItem(STORAGE_KEY) === 'dark'; }
+    catch (e) { return false; }
   }
 
-  function syncThemeUi(isLight) {
-    var toggle = document.getElementById('theme-toggle');
-    var label = document.getElementById('theme-label');
-
-    if (toggle) {
-      toggle.checked = !!isLight;
-      toggle.setAttribute('aria-checked', isLight ? 'true' : 'false');
-    }
-    if (label) {
-      label.textContent = isLight ? 'Light mode' : 'Dark mode';
-    }
+  function persist(theme) {
+    try { localStorage.setItem(STORAGE_KEY, theme); }
+    catch (e) { /* private mode: skip */ }
   }
 
-  function applyRootPaintHints(html, isLight) {
-    var vars = isLight ? LIGHT : DARK;
-    html.style.colorScheme = isLight ? 'light' : 'dark';
-    html.style.backgroundColor = vars.bg;
-    for (var k in vars) {
-      if (vars.hasOwnProperty(k)) html.style.setProperty('--' + k, vars[k]);
-    }
-  }
-
-  function clearThemeTransitionClasses(html) {
-    html.classList.remove('theme-transitioning', 'to-light', 'to-dark');
-  }
-
-  function applyTheme(isLight, skipTransition) {
+  function applyTheme(dark) {
     var html = document.documentElement;
-    var nextIsLight = !!isLight;
-    var currentIsLight = html.classList.contains('light');
-
-    if (transitionTimer) {
-      clearTimeout(transitionTimer);
-      transitionTimer = null;
-    }
-
-    if (skipTransition || currentIsLight === nextIsLight) {
-      clearThemeTransitionClasses(html);
-      html.classList.toggle('light', nextIsLight);
-      applyRootPaintHints(html, nextIsLight);
-      localStorage.setItem('theme', nextIsLight ? 'light' : 'dark');
-      syncThemeUi(nextIsLight);
-      return;
-    }
-
-    clearThemeTransitionClasses(html);
-    html.classList.add('theme-transitioning', nextIsLight ? 'to-light' : 'to-dark');
-    html.classList.toggle('light', nextIsLight);
-    applyRootPaintHints(html, nextIsLight);
-    localStorage.setItem('theme', nextIsLight ? 'light' : 'dark');
-    syncThemeUi(nextIsLight);
-
-    transitionTimer = setTimeout(function () {
-      clearThemeTransitionClasses(html);
-      transitionTimer = null;
-    }, 500);
+    html.classList.toggle('dark', !!dark);
+    html.style.colorScheme = dark ? 'dark' : 'light';
+    persist(dark ? 'dark' : 'light');
+    syncUi(dark);
   }
 
-  var initialLight = computeInitialLight();
-  document.documentElement.classList.toggle('light', initialLight);
-  applyRootPaintHints(document.documentElement, initialLight);
-
-  function initThemeUi() {
-    if (initialized) return;
-    initialized = true;
-
-    var p = document.getElementById('prepaint-bg');
-    if (p) p.remove();
-
-    applyTheme(computeInitialLight(), true);
-
+  function syncUi(dark) {
     var toggle = document.getElementById('theme-toggle');
+    var label  = document.getElementById('theme-label');
     if (toggle) {
-      toggle.addEventListener('change', function () {
-        applyTheme(toggle.checked, false);
-      });
+      toggle.checked = !dark;  // checked = light (sun icon visible)
+      toggle.setAttribute('aria-checked', dark ? 'false' : 'true');
     }
+    if (label) label.textContent = dark ? 'Dark mode' : 'Light mode';
+  }
 
+  function initUserMenu() {
     document.querySelectorAll('.user-menu').forEach(function (menu) {
-      var toggleBtn = menu.querySelector('.user-menu-toggle');
-      var dropdown = menu.querySelector('.user-menu-dropdown');
-      if (!toggleBtn || !dropdown) return;
+      var btn = menu.querySelector('.user-menu-toggle');
+      var dd  = menu.querySelector('.user-menu-dropdown');
+      if (!btn || !dd) return;
 
-      var closeMenu = function () {
-        toggleBtn.setAttribute('aria-expanded', 'false');
-        dropdown.hidden = true;
+      function close() {
+        btn.setAttribute('aria-expanded', 'false');
+        dd.hidden = true;
         menu.classList.remove('open');
-      };
+      }
 
-      toggleBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        var expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var expanded = btn.getAttribute('aria-expanded') === 'true';
         if (expanded) {
-          closeMenu();
+          close();
         } else {
-          dropdown.hidden = false;
-          toggleBtn.setAttribute('aria-expanded', 'true');
+          dd.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
           menu.classList.add('open');
         }
       });
 
-      toggleBtn.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-          closeMenu();
-          toggleBtn.focus();
-        }
-        if (event.key === 'ArrowDown' && dropdown.hidden) {
-          event.preventDefault();
-          dropdown.hidden = false;
-          toggleBtn.setAttribute('aria-expanded', 'true');
+      btn.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { close(); btn.focus(); }
+        if (e.key === 'ArrowDown' && dd.hidden) {
+          e.preventDefault();
+          dd.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
           menu.classList.add('open');
-          var firstLink = dropdown.querySelector('a');
-          if (firstLink) firstLink.focus();
+          var first = dd.querySelector('a');
+          if (first) first.focus();
         }
       });
 
-      dropdown.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-          closeMenu();
-          toggleBtn.focus();
-        }
+      dd.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { close(); btn.focus(); }
       });
 
-      dropdown.querySelectorAll('a').forEach(function (link) {
-        link.addEventListener('click', closeMenu);
+      dd.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', close);
       });
 
-      document.addEventListener('click', function (event) {
-        if (!menu.contains(event.target)) {
-          closeMenu();
-        }
+      document.addEventListener('click', function (e) {
+        if (!menu.contains(e.target)) close();
       });
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initThemeUi);
-  } else {
-    initThemeUi();
+  function init() {
+    applyTheme(isDark());
+
+    var toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+      // toggle.checked = light, so dark = !toggle.checked
+      toggle.addEventListener('change', function () {
+        applyTheme(!toggle.checked);
+      });
+    }
+
+    initUserMenu();
   }
 
-  window.addEventListener('pageshow', function () {
-    applyTheme(computeInitialLight(), true);
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Re-sync on back/forward cache restore
+  window.addEventListener('pageshow', function () { applyTheme(isDark()); });
 })();

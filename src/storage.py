@@ -36,10 +36,12 @@ class Storage(ABC):
 class S3Storage(Storage):
     backend_name = "s3"
 
-    def __init__(self, bucket: str, region: str, endpoint_url: Optional[str] = None):
+    def __init__(self, bucket: str, region: str, endpoint_url: Optional[str] = None,
+                 kms_key_id: Optional[str] = None):
         if not bucket:
             raise RuntimeError("S3Storage requires a bucket name (set S3_BUCKET).")
         self.bucket = bucket
+        self.kms_key_id = kms_key_id
         client_kwargs = {
             "region_name": region,
             "config": Config(retries={"max_attempts": 3, "mode": "standard"}),
@@ -49,7 +51,20 @@ class S3Storage(Storage):
         self._client = boto3.client("s3", **client_kwargs)
 
     def put(self, key: str, body: bytes, content_type: str = "application/octet-stream") -> str:
-        self._client.put_object(Bucket=self.bucket, Key=key, Body=body, ContentType=content_type)
+        kwargs = {
+            "Bucket": self.bucket,
+            "Key": key,
+            "Body": body,
+            "ContentType": content_type,
+        }
+        # Prefer SSE-KMS when a key is configured; fall back to SSE-S3 otherwise.
+        # Either way, server-side encryption is explicit (not relying on bucket default).
+        if self.kms_key_id:
+            kwargs["ServerSideEncryption"] = "aws:kms"
+            kwargs["SSEKMSKeyId"] = self.kms_key_id
+        else:
+            kwargs["ServerSideEncryption"] = "AES256"
+        self._client.put_object(**kwargs)
         return key
 
     def get(self, key: str) -> bytes:
@@ -112,7 +127,11 @@ def get_storage() -> Storage:
         _storage_singleton = LocalFileStorage(config.LOCAL_STORAGE_PATH)
     elif backend in ("s3", "minio"):
         endpoint = os.getenv("S3_ENDPOINT_URL") or None
-        _storage_singleton = S3Storage(config.S3_BUCKET, config.AWS_REGION, endpoint_url=endpoint)
+        kms_key = os.getenv("S3_KMS_KEY_ID") or None  # ARN, key id, or alias/...
+        _storage_singleton = S3Storage(
+            config.S3_BUCKET, config.AWS_REGION,
+            endpoint_url=endpoint, kms_key_id=kms_key,
+        )
     else:
         raise RuntimeError(f"Unknown STORAGE_BACKEND: {backend!r}")
 

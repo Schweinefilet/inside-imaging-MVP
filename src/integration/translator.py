@@ -30,7 +30,7 @@ def normalize_report_text(text: str) -> str:
 def run_translation(report_text: str, language: str = "English") -> Dict[str, Any]:
     """Run the existing build_structured pipeline; return a dict ready for the
     Patient's Copy template."""
-    from app import LAY_GLOSS, build_structured  # late import to avoid cycle at module load
+    from src.translate import LAY_GLOSS, build_structured
 
     text = normalize_report_text(report_text)
     if not text:

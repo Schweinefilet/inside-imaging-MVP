@@ -96,7 +96,7 @@
   z-index: 3;
   transform: translateX(-50%);
   pointer-events: none;
-  box-shadow: 0 0 10px rgba(62, 230, 176, 0.5);
+  box-shadow: 0 0 10px rgba(15, 23, 42, 0.10);
 }
 
 .compare-handle {
@@ -191,15 +191,15 @@
 }
 
 /* Light theme adjustments */
-html.light .compare-handle {
+html:not(.dark) .compare-handle {
   border-color: var(--panel);
 }
 
-html.light .compare-handle::before {
+html:not(.dark) .compare-handle::before {
   border-color: transparent var(--panel) transparent transparent;
 }
 
-html.light .compare-handle::after {
+html:not(.dark) .compare-handle::after {
   border-color: transparent transparent transparent var(--panel);
 }
 

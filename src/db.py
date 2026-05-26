@@ -127,6 +127,7 @@ def init_db() -> None:
         ("our_ae_title", "TEXT DEFAULT 'INSIDEIMG'"),
         ("return_path", "TEXT DEFAULT 'webhook'"),
         ("hospital_branding", "TEXT DEFAULT ''"),
+        ("ip_allowlist", "TEXT DEFAULT ''"),
     ]
     for col, ddl in _tenant_migrations:
         if col not in tenant_cols:
@@ -257,13 +258,19 @@ def init_db() -> None:
     cur.execute("CREATE INDEX IF NOT EXISTS idx_series_tenant ON dicom_series(tenant_id)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_instances_tenant ON dicom_instances(tenant_id)")
 
-    # Add tenant_id to users (default tenant for existing rows)
+    # Add tenant_id and login-lockout columns to users (idempotent)
     cur.execute("PRAGMA table_info(users)")
     user_cols_v2 = [row[1] for row in cur.fetchall()]
     if "tenant_id" not in user_cols_v2:
         cur.execute(
             f"ALTER TABLE users ADD COLUMN tenant_id TEXT NOT NULL DEFAULT '{config.DEFAULT_TENANT_ID}'"
         )
+    if "failed_login_attempts" not in user_cols_v2:
+        cur.execute("ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0")
+    if "locked_until" not in user_cols_v2:
+        cur.execute("ALTER TABLE users ADD COLUMN locked_until TIMESTAMP")
+    if "last_login_at" not in user_cols_v2:
+        cur.execute("ALTER TABLE users ADD COLUMN last_login_at TIMESTAMP")
 
     # Table for feedback/corrections from radiologists
     cur.execute(
@@ -1255,6 +1262,7 @@ def update_tenant_integration(
     our_ae_title: Optional[str] = None,
     return_path: Optional[str] = None,
     hospital_branding: Optional[str] = None,
+    ip_allowlist: Optional[str] = None,
 ) -> None:
     fields = []
     values: List[Any] = []
@@ -1266,6 +1274,7 @@ def update_tenant_integration(
         ("our_ae_title", our_ae_title),
         ("return_path", return_path),
         ("hospital_branding", hospital_branding),
+        ("ip_allowlist", ip_allowlist),
     ]:
         if val is not None:
             fields.append(f"{col} = ?")
@@ -1286,7 +1295,8 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
     cur.execute(
         """
         SELECT tenant_id, display_name, integration_webhook_url, pacs_ae_title,
-               pacs_host, pacs_port, our_ae_title, return_path, hospital_branding, phi_mode
+               pacs_host, pacs_port, our_ae_title, return_path, hospital_branding,
+               phi_mode, ip_allowlist
         FROM tenants WHERE tenant_id = ?
         """,
         (tenant_id,),
@@ -1306,6 +1316,7 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
         "return_path": row[7] or "webhook",
         "hospital_branding": row[8] or "",
         "phi_mode": row[9] or "passthrough",
+        "ip_allowlist": row[10] or "",
     }
 
 
@@ -1350,6 +1361,60 @@ def revoke_api_key(key_id: int) -> None:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("UPDATE integration_api_keys SET revoked = 1 WHERE id = ?", (key_id,))
+    conn.commit()
+    conn.close()
+
+
+def is_account_locked(username: str) -> bool:
+    if not username:
+        return False
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT locked_until FROM users WHERE username = ?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    if not row or not row[0]:
+        return False
+    try:
+        locked_until = datetime.fromisoformat(str(row[0]))
+    except Exception:
+        return False
+    return locked_until > datetime.now()
+
+
+def record_failed_login(username: str, max_attempts: int = 5, lock_minutes: int = 15) -> Dict[str, Any]:
+    """Increment the failed-login counter. Lock the account at max_attempts.
+    Returns {'locked': bool, 'attempts': int}."""
+    if not username:
+        return {"locked": False, "attempts": 0}
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT failed_login_attempts FROM users WHERE username = ?", (username,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return {"locked": False, "attempts": 0}
+    attempts = (row[0] or 0) + 1
+    locked = attempts >= max_attempts
+    locked_until = (datetime.now() + timedelta(minutes=lock_minutes)).isoformat() if locked else None
+    cur.execute(
+        "UPDATE users SET failed_login_attempts = ?, locked_until = ? WHERE username = ?",
+        (attempts, locked_until, username),
+    )
+    conn.commit()
+    conn.close()
+    return {"locked": locked, "attempts": attempts}
+
+
+def record_successful_login(username: str) -> None:
+    if not username:
+        return
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_login_at = CURRENT_TIMESTAMP WHERE username = ?",
+        (username,),
+    )
     conn.commit()
     conn.close()
 

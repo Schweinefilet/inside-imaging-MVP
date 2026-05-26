@@ -109,7 +109,7 @@
 
 .payment-form input:focus,
 .payment-form select:focus {
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
 }
 
 /* Fix dark mode dropdown text visibility */
@@ -149,9 +149,9 @@
   opacity: 0.9;
 }
 
-/* Light mode: darker text on mint */
-.light .primary-btn {
-  color: #000000;
+/* Light mode (default): contrast text on mint */
+html:not(.dark) .primary-btn {
+  color: #ffffff;
 }
 
 .secure-note {

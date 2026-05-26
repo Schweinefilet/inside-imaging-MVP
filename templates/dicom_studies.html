@@ -70,7 +70,7 @@
 
   <div class="dicom-upload-card">
     <h2>Upload DICOM files</h2>
-    <form id="dicom-upload-form">
+    <form id="dicom-upload-form" data-csrf="{{ csrf_token() }}">
       <div class="dicom-upload-row">
         <input type="file" id="dicom-files" name="files" accept=".dcm,application/dicom" multiple required>
         <button type="submit" id="dicom-submit">Upload</button>
@@ -129,7 +129,12 @@
     status.textContent = `Uploading ${fileInput.files.length} file(s)…`;
 
     try {
-      const res = await fetch('/dicom/upload', { method: 'POST', body: data });
+      const csrf = form.dataset.csrf || '';
+      const res = await fetch('/dicom/upload', {
+        method: 'POST',
+        body: data,
+        headers: csrf ? { 'X-CSRFToken': csrf } : {},
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       status.textContent = `Uploaded ${json.uploaded} instance(s) across ${json.study_uids.length} study/studies.`;

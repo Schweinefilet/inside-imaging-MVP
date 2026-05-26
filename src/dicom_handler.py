@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import io
 from typing import Any, Dict
 
@@ -11,6 +12,64 @@ from PIL import Image
 
 from src import db
 from src.storage import Storage, dicom_key
+
+
+# DICOM tags that carry direct PHI per the DICOM standard's Basic Profile.
+# Stripped before S3 put when tenant phi_mode != 'passthrough'.
+_PHI_TAGS_TO_REMOVE = [
+    "PatientName", "PatientID", "PatientBirthDate", "PatientBirthTime", "PatientAddress",
+    "PatientTelephoneNumbers", "PatientMotherBirthName", "OtherPatientIDs", "OtherPatientNames",
+    "PatientWeight", "PatientSize", "PatientComments", "MilitaryRank", "EthnicGroup",
+    "ReferringPhysicianName", "ReferringPhysicianAddress", "ReferringPhysicianTelephoneNumbers",
+    "PerformingPhysicianName", "OperatorsName", "RequestingPhysician", "PhysiciansOfRecord",
+    "InstitutionAddress", "StationName",
+    "StudyComments", "AdmissionID", "IssuerOfPatientID", "AccessionNumber",
+]
+
+
+def _pseudonym(value: str, salt: str) -> str:
+    if not value:
+        return ""
+    return "p_" + hashlib.sha256((salt + ":" + value).encode("utf-8")).hexdigest()[:12]
+
+
+def sanitize_dicom_bytes(dcm_bytes: bytes, mode: str, tenant_salt: str = "") -> bytes:
+    """Return new DICOM bytes with PHI tags removed/replaced according to mode.
+    mode: 'passthrough' (return as-is), 'pseudonymize', or 'full_deidentify'."""
+    if mode == "passthrough" or not dcm_bytes:
+        return dcm_bytes
+
+    ds = pydicom.dcmread(io.BytesIO(dcm_bytes), force=True)
+
+    if mode == "pseudonymize":
+        # Replace PatientName/PatientID with stable hashed tokens; clear the rest.
+        if hasattr(ds, "PatientName"):
+            ds.PatientName = _pseudonym(str(ds.PatientName), tenant_salt)
+        if hasattr(ds, "PatientID"):
+            ds.PatientID = _pseudonym(str(ds.PatientID), tenant_salt)
+        for tag in _PHI_TAGS_TO_REMOVE:
+            if tag in ("PatientName", "PatientID"):
+                continue
+            if hasattr(ds, tag):
+                try:
+                    delattr(ds, tag)
+                except Exception:
+                    pass
+    else:  # full_deidentify
+        for tag in _PHI_TAGS_TO_REMOVE:
+            if hasattr(ds, tag):
+                try:
+                    delattr(ds, tag)
+                except Exception:
+                    pass
+        if hasattr(ds, "PatientName"):
+            ds.PatientName = "ANON^PATIENT"
+        if hasattr(ds, "PatientID"):
+            ds.PatientID = "ANON"
+
+    buf = io.BytesIO()
+    pydicom.dcmwrite(buf, ds, write_like_original=True)
+    return buf.getvalue()
 
 
 def _str_tag(ds: "pydicom.Dataset", tag: str, default: str = "") -> str:

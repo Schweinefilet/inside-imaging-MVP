@@ -26,6 +26,7 @@
                     {% endwith %}
 
                     <form method="post" action="{{ url_for('signup') }}" class="auth-form" id="signup-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="auth-label" for="first-name">First name</label>

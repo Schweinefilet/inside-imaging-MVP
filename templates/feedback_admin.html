@@ -148,6 +148,7 @@
                     {% if feedback.status == 'pending' %}
                     <form method="POST" action="{{ url_for('review_feedback', feedback_id=feedback.id) }}"
                         style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div style="margin-bottom: 1rem;">
                             <label for="admin_notes_{{ feedback.id }}"
                                 style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Admin Notes</label>

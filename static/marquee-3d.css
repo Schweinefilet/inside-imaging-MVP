@@ -20,7 +20,7 @@ html.theme-transitioning .marquee-card {
     margin: 3rem auto;
     padding: 2rem;
     background: rgba(10, 10, 10, 0.9);
-    border: 1px solid rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(15, 23, 42, 0.10);
     border-radius: 24px;
     overflow: hidden;
     position: relative;
@@ -84,7 +84,7 @@ html.theme-transitioning .marquee-card {
     border-radius: 999px;
     display: inline-block;
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(62, 230, 176, 0.2);
+    border: 1px solid rgba(15, 23, 42, 0.10);
 }
 
 .marquee-3d-overlay h1 {
@@ -113,28 +113,28 @@ html.theme-transitioning .marquee-card {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 18px;
     backdrop-filter: blur(14px);
-    border: 1px solid rgba(62, 230, 176, 0.25);
+    border: 1px solid rgba(15, 23, 42, 0.10);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 /* Light Mode Overrides for Overlay Text */
-html.light .marquee-3d-overlay .marquee-kicker {
+html:not(.dark) .marquee-3d-overlay .marquee-kicker {
     background: rgba(255, 255, 255, 0.92);
-    color: #10b981;
-    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--ink-soft, #475569);
+    border-color: rgba(15, 23, 42, 0.10);
 }
 
-html.light .marquee-3d-overlay h1 {
+html:not(.dark) .marquee-3d-overlay h1 {
     background: rgba(255, 255, 255, 0.95);
     color: #051e14;
-    border-color: rgba(16, 185, 129, 0.2);
+    border-color: rgba(15, 23, 42, 0.10);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
-html.light .marquee-3d-overlay .marquee-description {
+html:not(.dark) .marquee-3d-overlay .marquee-description {
     background: rgba(255, 255, 255, 0.9);
     color: #1a2e28;
-    border-color: rgba(16, 185, 129, 0.35);
+    border-color: rgba(15, 23, 42, 0.10);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
@@ -168,17 +168,17 @@ html.light .marquee-3d-overlay .marquee-description {
 
 /* Primary Button - Filled Mint */
 .marquee-3d-overlay .btn-primary {
-    background: var(--mint, #10b981);
+    background: var(--mint, var(--ink-soft, #475569));
     color: #000;
     border: 2px solid transparent;
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
 }
 
 .marquee-3d-overlay .btn-primary:hover,
 .marquee-3d-overlay .btn-primary:focus-visible {
     transform: translateY(-3px);
-    background: color-mix(in oklab, var(--mint, #10b981) 85%, #ffffff);
-    box-shadow: 0 14px 40px rgba(16, 185, 129, 0.3);
+    background: color-mix(in oklab, var(--mint, var(--ink-soft, #475569)) 85%, #ffffff);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.10);
 }
 
 /* Secondary Button - Solid White (matches light mode appearance) */
@@ -203,7 +203,7 @@ html.light .marquee-3d-overlay .marquee-description {
 .marquee-3d-overlay .btn-secondary:focus-visible {
     transform: translateY(-3px);
     background: #ffffff;
-    border-color: var(--mint, #10b981);
+    border-color: var(--mint, var(--ink-soft, #475569));
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
 }
 
@@ -295,7 +295,7 @@ html.light .marquee-3d-overlay .marquee-description {
     border-radius: 12px;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(15, 23, 42, 0.10);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     flex-shrink: 0;
@@ -340,26 +340,12 @@ html.light .marquee-3d-overlay .marquee-description {
     opacity: 0;
 }
 
-/* Gradient overlays for edge fade */
+/* Edge-fade overlays removed — they rendered as dark bars after the
+   "no-gradients" cleanup. Keep the pseudo-element rules empty so legacy
+   selectors don't break, but render nothing. */
 .marquee-3d-wrapper::before,
 .marquee-3d-wrapper::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 150px;
-    left: 0;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.marquee-3d-wrapper::before {
-    top: 0;
-    background: rgba(10, 10, 10, 0.6);
-}
-
-.marquee-3d-wrapper::after {
-    bottom: 0;
-    background: rgba(10, 10, 10, 0.6);
+    content: none;
 }
 
 /* Responsive */
@@ -391,60 +377,57 @@ html.light .marquee-3d-overlay .marquee-description {
 }
 
 /* Dark mode (default) - Original look with white-backed icons */
-:root:not(.light) .marquee-3d-container {
+html.dark .marquee-3d-container {
     background: rgba(10, 10, 10, 0.82);
-    border-color: rgba(34, 197, 94, 0.15);
+    border-color: rgba(15, 23, 42, 0.10);
 }
 
-:root:not(.light) .marquee-3d-item {
+html.dark .marquee-3d-item {
     background: #ffffff;
     /* User requested: white images background */
-    border-color: rgba(34, 197, 94, 0.2);
+    border-color: rgba(15, 23, 42, 0.10);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-:root:not(.light) .marquee-3d-item img {
+html.dark .marquee-3d-item img {
     /* Restore original blue-on-white appearance */
     filter: brightness(0.9) contrast(1.1);
 }
 
 /* Light mode - Hero Marquee Inversion */
-:root.light .marquee-3d-container {
+html:not(.dark) .marquee-3d-container {
     background: rgba(255, 255, 255, 0.95) !important;
-    border-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(15, 23, 42, 0.10);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
-:root.light .marquee-3d-item {
+html:not(.dark) .marquee-3d-item {
     background: #080808;
     /* Black background for the cards as requested */
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
-:root.light .marquee-3d-item img {
+html:not(.dark) .marquee-3d-item img {
     /* Invert white background to black, restore blue hue, and brighten */
     filter: invert(1) hue-rotate(180deg) brightness(1.2) contrast(1.1);
 }
 
-:root.light .marquee-3d-item:hover {
+html:not(.dark) .marquee-3d-item:hover {
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
 }
 
 /* Glow removed as per user request */
-:root.light .marquee-3d-wrapper::before {
+html:not(.dark) .marquee-3d-wrapper::before {
     background: transparent;
 }
 
-:root.light .marquee-3d-wrapper::after {
+html:not(.dark) .marquee-3d-wrapper::after {
     background: transparent;
 }
 
-/* Edge Fades for Dark Mode */
-:root:not(.light) .marquee-3d-wrapper::before {
-    background: rgba(10, 10, 10, 0.7);
-}
-
-:root:not(.light) .marquee-3d-wrapper::after {
-    background: rgba(10, 10, 10, 0.7);
+/* Edge fades retired — see top of file. */
+html.dark .marquee-3d-wrapper::before,
+html.dark .marquee-3d-wrapper::after {
+    content: none;
 }

@@ -98,8 +98,8 @@
   color: #051e14;
   text-decoration: none;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  border-color: var(--mint);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+  border-color: var(--ink-soft, #475569);
 }
 
 .blog-quick-links.is-sticky .quick-link:hover,
@@ -107,30 +107,30 @@
   background: var(--mint);
   color: #051e14;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  border-color: var(--mint);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+  border-color: var(--ink-soft, #475569);
 }
 
 /* Light mode adjustments */
-html.light .blog-quick-links.is-sticky {
+html:not(.dark) .blog-quick-links.is-sticky {
   background: color-mix(in oklab, var(--panel) 98%, transparent);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-html.light .blog-quick-links.is-sticky .quick-link {
+html:not(.dark) .blog-quick-links.is-sticky .quick-link {
   background: var(--panel);
 }
 
-html.light .blog-hero {
+html:not(.dark) .blog-hero {
   background: color-mix(in oklab, var(--mint) 12%, var(--panel-2));
   color: var(--text);
 }
 
-html.light .blog-hero .hero-meta {
+html:not(.dark) .blog-hero .hero-meta {
   color: var(--muted);
 }
 
-html.light .blog-hero .hero-summary {
+html:not(.dark) .blog-hero .hero-summary {
   color: var(--text);
 }
 
@@ -542,9 +542,9 @@ html.light .blog-hero .hero-summary {
 .author-social a:focus-visible {
   background: var(--mint);
   color: #051e14;
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
 }
 
 .author-social svg {
@@ -553,57 +553,57 @@ html.light .blog-hero .hero-summary {
 }
 
 /* Light mode overrides */
-html.light .blogs-hero h1 {
+html:not(.dark) .blogs-hero h1 {
   color: var(--mint);
 }
 
-html.light .blogs-hero p {
+html:not(.dark) .blogs-hero p {
   color: var(--muted);
 }
 
-html.light .blog-card {
+html:not(.dark) .blog-card {
   background: var(--panel);
   border-color: var(--border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-html.light .blog-card:hover,
-html.light .blog-card:focus-within {
+html:not(.dark) .blog-card:hover,
+html:not(.dark) .blog-card:focus-within {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
-html.light .blog-summary {
+html:not(.dark) .blog-summary {
   color: rgba(10, 30, 28, 0.88);
 }
 
-html.light .blog-card a {
+html:not(.dark) .blog-card a {
   background: var(--mint);
   color: #051e14;
 }
 
-html.light .blog-card a:hover,
-html.light .blog-card a:focus-visible {
+html:not(.dark) .blog-card a:hover,
+html:not(.dark) .blog-card a:focus-visible {
   background: color-mix(in oklab, var(--mint) 90%, #000000);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
 }
 
-html.light .author-name {
+html:not(.dark) .author-name {
   color: var(--text);
 }
 
-html.light .author-description,
-html.light .blog-meta {
+html:not(.dark) .author-description,
+html:not(.dark) .blog-meta {
   color: var(--muted);
 }
 
-html.light .author-social a {
+html:not(.dark) .author-social a {
   background: var(--panel-2);
   border-color: var(--border);
   color: var(--muted);
 }
 
-html.light .author-social a:hover,
-html.light .author-social a:focus-visible {
+html:not(.dark) .author-social a:hover,
+html:not(.dark) .author-social a:focus-visible {
   background: var(--mint);
   color: #051e14;
 }

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import datetime as _dt
+import ipaddress
 import logging
+import os
 from functools import wraps
 from typing import Optional, Tuple
 
@@ -11,12 +13,57 @@ from flask import Blueprint, Response, jsonify, render_template, request
 
 from src import db
 from src.integration import auth as int_auth
+from src.integration import phi as int_phi
 from src.integration import return_paths as int_return
 from src.integration import translator as int_translator
+from src.integration import extensions as int_ext
 from src.storage import get_storage
 
 
 integration_bp = Blueprint("integration", __name__, url_prefix="/integration")
+
+_INTEGRATION_RATE_LIMIT = os.getenv("INTEGRATION_RATE_LIMIT", "120 per minute")
+
+
+def _rate_limit(view):
+    """Apply the shared Flask-Limiter from app.py if it's available.
+    Imported lazily to avoid the circular import api.py <- app.py <- api.py."""
+    _lim = int_ext.limiter
+    if _lim is None:
+        return view
+    return _lim.limit(_INTEGRATION_RATE_LIMIT, key_func=lambda: request.headers.get("X-API-Key") or _client_ip())(view)
+
+
+def _client_ip() -> str:
+    """Honor X-Forwarded-For when behind a trusted proxy (set TRUST_FORWARDED_FOR=1)."""
+    if os.getenv("TRUST_FORWARDED_FOR", "0") == "1":
+        xff = request.headers.get("X-Forwarded-For", "")
+        if xff:
+            return xff.split(",")[0].strip()
+    return request.remote_addr or ""
+
+
+def _ip_allowed(allowlist_csv: str, client_ip: str) -> bool:
+    """allowlist_csv = "10.0.0.0/8,203.0.113.5". Empty string = no restriction."""
+    if not allowlist_csv:
+        return True
+    if not client_ip:
+        return False
+    try:
+        ip_obj = ipaddress.ip_address(client_ip)
+    except ValueError:
+        return False
+    for raw in allowlist_csv.split(","):
+        entry = raw.strip()
+        if not entry:
+            continue
+        try:
+            net = ipaddress.ip_network(entry, strict=False)
+            if ip_obj in net:
+                return True
+        except ValueError:
+            continue
+    return False
 
 
 def _require_api_key(fn):
@@ -27,8 +74,19 @@ def _require_api_key(fn):
             raw = raw[7:]
         key_record = int_auth.resolve_api_key(raw)
         if not key_record:
+            logging.warning("Integration API: invalid/missing key from ip=%s", _client_ip())
             return jsonify({"error": "invalid or missing API key"}), 401
-        request.tenant_id = key_record["tenant_id"]
+
+        tenant_id = key_record["tenant_id"]
+        # Per-tenant IP allowlist (column added to tenants; empty = no restriction)
+        tenant_cfg = db.get_tenant_integration(tenant_id) or {}
+        allowlist = tenant_cfg.get("ip_allowlist", "") or ""
+        if allowlist and not _ip_allowed(allowlist, _client_ip()):
+            logging.warning("Integration API: IP not in tenant allowlist tenant=%s ip=%s",
+                            tenant_id, _client_ip())
+            return jsonify({"error": "source IP not permitted for this tenant"}), 403
+
+        request.tenant_id = tenant_id
         request.api_key_label = key_record.get("label", "")
         return fn(*args, **kwargs)
     return wrapped
@@ -109,6 +167,7 @@ def health():
 
 
 @integration_bp.route("/reports", methods=["POST"])
+@_rate_limit
 @_require_api_key
 def receive_report():
     tenant_id = request.tenant_id
@@ -122,6 +181,13 @@ def receive_report():
         return jsonify({"error": "no report text provided (use JSON 'report_text' or upload a PDF/text file as 'report')"}), 400
 
     tenant_integration = db.get_tenant_integration(tenant_id) or {}
+    phi_mode = int_phi.normalize_mode(tenant_integration.get("phi_mode", "passthrough"))
+
+    # Scrub identifiers + report text per tenant's PHI mode (before any persistence or LLM call).
+    if phi_mode != "passthrough":
+        metadata = int_phi.scrub_metadata(metadata, phi_mode, tenant_salt=tenant_id)
+        report_text = int_phi.scrub_text(report_text, phi_mode)
+
     storage = get_storage()
 
     report_id = db.insert_integration_report({

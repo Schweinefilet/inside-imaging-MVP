@@ -117,6 +117,7 @@
                 <h2>Contact Support (Not in Operation Yet)</h2>
                 <div class="contact-grid">
                     <form class="support-form" method="post" action="{{ url_for('contact_support') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <h3>Send us a message</h3>
                         <label for="support-name">Your Name</label>
                         <input id="support-name" name="name" type="text" placeholder="Type here..." required>

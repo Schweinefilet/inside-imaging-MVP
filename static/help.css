@@ -20,7 +20,7 @@
 }
 
 .search-bar input:focus {
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
 }
 
 .search-btn {
@@ -125,7 +125,7 @@
 
 .support-form input:focus,
 .support-form textarea:focus {
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
 }
 
 .support-form textarea {

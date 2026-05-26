@@ -107,7 +107,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--mint);
-  box-shadow: 0 4px 12px rgba(62, 230, 176, 0.2);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
 }
 
 .testimonial-info {
@@ -153,7 +153,7 @@
 }
 
 .testimonial-nav-btn:hover {
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
   background: color-mix(in oklab, var(--panel) 80%, var(--mint) 20%);
 }
 
@@ -186,13 +186,13 @@
 }
 
 /* Light theme adjustments */
-html.light .testimonials-section {
+html:not(.dark) .testimonials-section {
   background: var(--surface);
 }
 
 
 
-html.light .testimonial-card {
+html:not(.dark) .testimonial-card {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 

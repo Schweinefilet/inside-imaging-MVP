@@ -32,14 +32,39 @@ from authlib.integrations.flask_client import OAuth
 
 # local db
 from src import db
-from src.dicom_handler import parse_dicom_metadata, extract_frame_as_png, store_dicom
+from src.dicom_handler import parse_dicom_metadata, extract_frame_as_png, store_dicom, sanitize_dicom_bytes
 from src.storage import get_storage
-from src.integration.api import integration_bp
 
 _AWS_REGION = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1"
 
 # Configure logging before any logging calls
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+# Optional: ship logs to AWS CloudWatch when AWS_CLOUDWATCH_LOG_GROUP is set.
+# This gives you an immutable, off-host audit trail. Falls back silently when
+# unset so local dev is unaffected.
+_cw_group = os.environ.get("AWS_CLOUDWATCH_LOG_GROUP")
+if _cw_group:
+    try:
+        import boto3 as _boto3_cw
+        import watchtower
+        _cw_client = _boto3_cw.client(
+            "logs",
+            region_name=os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1",
+        )
+        _cw_handler = watchtower.CloudWatchLogHandler(
+            log_group_name=_cw_group,
+            stream_name=os.environ.get("AWS_CLOUDWATCH_LOG_STREAM", "app"),
+            boto3_client=_cw_client,
+            send_interval=5,
+            create_log_group=True,
+        )
+        _cw_handler.setLevel(logging.INFO)
+        _cw_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+        logging.getLogger().addHandler(_cw_handler)
+        logging.info("CloudWatch log shipping enabled (group=%s)", _cw_group)
+    except Exception:
+        logging.exception("CloudWatch log shipping requested but failed to initialize; continuing without it")
 
 logging.info("INSIDEIMAGING_ALLOW_LLM=%r", os.getenv("INSIDEIMAGING_ALLOW_LLM"))
 logging.info("OPENAI_MODEL=%r", os.getenv("OPENAI_MODEL"))
@@ -79,11 +104,62 @@ def _audit(action, **kwargs):
 
 # --- app ---
 app = Flask(__name__)
+
+# Phase 0.7: production detection
+_ENV = os.environ.get("INSIDEIMAGING_ENV", os.environ.get("FLASK_ENV", "development")).lower()
+_IS_PRODUCTION = _ENV in ("production", "prod")
+
+# Phase 0.1: SECRET_KEY — fail loudly in production, warn in dev
 _secret_key = os.environ.get("SECRET_KEY")
 if not _secret_key:
+    if _IS_PRODUCTION:
+        raise SystemExit(
+            "FATAL: SECRET_KEY env var is required in production. Refusing to start. "
+            "Generate one with: python -c 'import secrets; print(secrets.token_urlsafe(64))'"
+        )
     logging.warning("SECRET_KEY env var not set — using insecure default. Set SECRET_KEY in production.")
-    _secret_key = "supersecretkey"
+    _secret_key = "dev-only-do-not-use-in-production"
 app.secret_key = _secret_key
+
+# Phase 0.2: session cookies + general hardening
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=_IS_PRODUCTION,
+    PERMANENT_SESSION_LIFETIME=int(os.getenv("SESSION_LIFETIME_SECONDS", "43200")),  # 12h default
+    MAX_CONTENT_LENGTH=int(os.getenv("MAX_UPLOAD_MB", "50")) * 1024 * 1024,
+)
+
+# Phase 0.5: CSRF protection (Flask-WTF CSRFProtect, no WTForms dependency required)
+try:
+    from flask_wtf.csrf import CSRFProtect, CSRFError
+    csrf = CSRFProtect(app)
+
+    @app.errorhandler(CSRFError)
+    def _csrf_error(e):
+        logging.warning("CSRF rejected: %s ip=%s ep=%s", e.description, request.remote_addr, request.endpoint)
+        return jsonify({"error": "CSRF token missing or invalid"}), 400
+except Exception:
+    logging.exception("Flask-WTF not available; CSRF protection NOT active. Install Flask-WTF.")
+    csrf = None
+
+# Phase 1.1: rate limiting (login, integration endpoints)
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        default_limits=[os.getenv("RATELIMIT_DEFAULT", "300 per hour")],
+        storage_uri=os.getenv("RATELIMIT_STORAGE", "memory://"),
+        strategy="fixed-window",
+    )
+except Exception:
+    logging.exception("Flask-Limiter not available; rate limiting NOT active. Install Flask-Limiter.")
+    limiter = None
+
+from src.integration import extensions as integration_extensions
+integration_extensions.limiter = limiter
 
 # OAuth configuration
 oauth = OAuth(app)
@@ -106,7 +182,56 @@ _cors_origins_raw = os.getenv("CORS_ORIGINS", "")
 _cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()] or ["https://schweinefilet.github.io"]
 CORS(app, resources={r"/*": {"origins": _cors_origins}})
 
+# Import the integration blueprint only after shared extensions are initialized.
+from src.integration.api import integration_bp
+
+# Integration blueprint is API-only (hospital systems call it with API key, not session-bound).
+# CSRF on these endpoints would force hospital systems to fetch tokens; exempt the whole blueprint.
+if csrf is not None:
+    csrf.exempt(integration_bp)
 app.register_blueprint(integration_bp)
+
+
+# Phase 0.3: force HTTPS in production
+@app.before_request
+def _force_https():
+    if not _IS_PRODUCTION:
+        return None
+    # Hosts that terminate TLS upstream set X-Forwarded-Proto=https
+    proto = request.headers.get("X-Forwarded-Proto", request.scheme)
+    if proto != "https":
+        url = request.url.replace("http://", "https://", 1)
+        return redirect(url, code=301)
+    return None
+
+
+# Phase 0.4: security headers on every response
+_CSP_DEFAULT = (
+    "default-src 'self'; "
+    "img-src 'self' data: blob: https:; "
+    # 'unsafe-inline' kept until inline <style>/<script> blocks are fully extracted (Tier 3 of the redesign).
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com data:; "
+    "script-src 'self' 'unsafe-inline'; "
+    "connect-src 'self'; "
+    "frame-ancestors 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self' https://accounts.google.com"
+)
+_CSP = os.getenv("CONTENT_SECURITY_POLICY", _CSP_DEFAULT)
+
+
+@app.after_request
+def _security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(), camera=(), microphone=()")
+    response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    if _IS_PRODUCTION:
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    response.headers.setdefault("Content-Security-Policy", _CSP)
+    return response
 
 
 # Prevent browsers caching HTML responses (avoids stale theme scripts)
@@ -1220,7 +1345,7 @@ def upload():
             "Please upload a full imaging report (with sections like Findings and Impression)."
         )
         flash(message, "error")
-        logging.warning("Upload triage rejected: %s", triage_diag)
+        logging.warning("Upload triage rejected (reason=%s, words=%s)", triage_diag.get("reason"), triage_diag.get("word_count"))
         return redirect(url_for("dashboard"))
 
     # HIPAA-compliant name handling: Parse metadata BEFORE build_structured strips it
@@ -1601,7 +1726,7 @@ def submit_feedback():
             description=description
         )
         
-        logging.info("Feedback #%d submitted by %s: %s - %s", feedback_id, username, feedback_type, subject)
+        logging.info("Feedback #%d submitted (type=%s, subject_len=%d)", feedback_id, feedback_type, len(subject or ""))
         flash("Thank you! Your feedback has been submitted successfully.", "success")
         
     except Exception as e:
@@ -1681,8 +1806,8 @@ def contact_support():
         subject = request.form.get("subject", "").strip()
         message = request.form.get("message", "").strip()
         
-        # Log the support request (in production, send email or save to database)
-        logging.info("Support request from %s (%s): %s - %s", name, email, subject, message)
+        # Log only metadata, never user-supplied free text (may contain PHI)
+        logging.info("Support request received (subject_len=%d, message_len=%d)", len(subject or ""), len(message or ""))
         
         flash("Thank you for contacting us! We'll get back to you soon.", "success")
     except Exception as e:
@@ -1692,17 +1817,50 @@ def contact_support():
     return redirect(url_for("help_page"))
 
 
+_LOGIN_RATE_LIMIT = os.getenv("LOGIN_RATE_LIMIT", "10 per 15 minutes")
+_LOGIN_DUMMY_HASH = generate_password_hash("placeholder-do-not-use-as-credential")
+
+
+def _login_rate_limit_decorator(view):
+    return limiter.limit(_LOGIN_RATE_LIMIT, methods=["POST"])(view) if limiter else view
+
+
 @app.route("/login", methods=["GET", "POST"])
+@_login_rate_limit_decorator
 def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+
+        # Lockout check (independent of whether the user exists, to avoid leaking existence)
+        if username and db.is_account_locked(username):
+            flash("This account is temporarily locked. Try again in a few minutes.", "error")
+            logging.warning("Login attempt on locked account ip=%s", request.remote_addr)
+            return render_template("login.html")
+
         user = db.get_user_by_username(username)
-        if user and check_password_hash(user["password_hash"], password):
+
+        # Always perform a password hash check to equalize timing between
+        # "user exists" and "user does not exist" code paths.
+        if user and user["password_hash"]:
+            ok = check_password_hash(user["password_hash"], password)
+        else:
+            check_password_hash(_LOGIN_DUMMY_HASH, password)
+            ok = False
+
+        if ok:
+            db.record_successful_login(username)
+            session.clear()  # rotate session on auth change to mitigate fixation
             session["username"] = username
+            session.permanent = True
             flash("Logged in successfully.", "success")
             return redirect(url_for("dashboard"))
+
+        # Generic message — never leak whether username or password was wrong
+        if user:
+            db.record_failed_login(username)
         flash("Invalid username or password.", "error")
+        logging.warning("Failed login attempt ip=%s", request.remote_addr)
     return render_template("login.html")
 
 
@@ -1738,11 +1896,50 @@ def authorize():
     return redirect(url_for("dashboard"))
 
 
+_SIGNUP_RATE_LIMIT = os.getenv("SIGNUP_RATE_LIMIT", "10 per hour")
+
+
+def _signup_rate_limit_decorator(view):
+    return limiter.limit(_SIGNUP_RATE_LIMIT, methods=["POST"])(view) if limiter else view
+
+
+_PASSWORD_MIN_LEN = int(os.getenv("PASSWORD_MIN_LENGTH", "12"))
+
+
+def _password_complexity_error(password: str):
+    """Return a human-readable error if the password is too weak, else None."""
+    if not password or len(password) < _PASSWORD_MIN_LEN:
+        return f"Password must be at least {_PASSWORD_MIN_LEN} characters long."
+    classes = 0
+    if any(c.islower() for c in password): classes += 1
+    if any(c.isupper() for c in password): classes += 1
+    if any(c.isdigit() for c in password): classes += 1
+    if any(not c.isalnum() for c in password): classes += 1
+    if classes < 3:
+        return "Password must mix at least 3 of: lowercase, uppercase, digits, symbols."
+    if password.lower() in {"password", "passw0rd", "qwerty12345!", "letmeinplease"}:
+        return "Password is too common. Choose something less guessable."
+    return None
+
+
 @app.route("/signup", methods=["GET", "POST"])
+@_signup_rate_limit_decorator
 def signup():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+
+        # Username constraints (length + charset)
+        if not (3 <= len(username) <= 32) or not re.match(r"^[A-Za-z0-9_.\-]+$", username):
+            flash("Username must be 3–32 characters using letters, digits, _ . or -.", "error")
+            return render_template("signup.html")
+
+        # Password policy
+        pw_err = _password_complexity_error(password)
+        if pw_err:
+            flash(pw_err, "error")
+            return render_template("signup.html")
+
         if db.get_user_by_username(username):
             flash("Username already exists. Please choose a different one.", "error")
         else:
@@ -1773,6 +1970,8 @@ def dicom_upload():
 
     username = session["username"]
     tenant_id = db.get_user_tenant(username)
+    tenant_cfg = db.get_tenant_integration(tenant_id) or {}
+    phi_mode = (tenant_cfg.get("phi_mode") or "passthrough").lower()
     files = request.files.getlist("files")
     uploaded = 0
     skipped = 0
@@ -1785,22 +1984,31 @@ def dicom_upload():
             dcm_bytes = upload.read()
             meta = parse_dicom_metadata(dcm_bytes)
         except Exception:
-            logging.warning("Skipping invalid DICOM file: %s", getattr(upload, "filename", "?"))
+            # Filenames can contain accession # or patient identifiers — log size only
+            logging.warning("Skipping invalid DICOM (bytes=%d)", len(dcm_bytes or b""))
             skipped += 1
             continue
 
         if not meta.get("study_uid") or not meta.get("series_uid") or not meta.get("sop_uid"):
-            logging.warning("Skipping DICOM with missing UIDs: %s", upload.filename)
+            logging.warning("Skipping DICOM with missing UIDs (bytes=%d)", len(dcm_bytes or b""))
             skipped += 1
             continue
 
+        # Sanitize the raw DICOM file per tenant PHI mode BEFORE storage.
+        # If passthrough, this is a no-op and original bytes go to S3.
+        try:
+            sanitized_bytes = sanitize_dicom_bytes(dcm_bytes, phi_mode, tenant_salt=tenant_id)
+        except Exception:
+            logging.exception("DICOM sanitization failed for sop=%s; storing original", meta.get("sop_uid"))
+            sanitized_bytes = dcm_bytes
+
         try:
             storage_key = store_dicom(
-                storage, dcm_bytes, tenant_id,
+                storage, sanitized_bytes, tenant_id,
                 meta["study_uid"], meta["series_uid"], meta["sop_uid"],
             )
         except Exception:
-            logging.exception("Storage put failed for %s", upload.filename)
+            logging.exception("Storage put failed for sop=%s", meta.get("sop_uid"))
             skipped += 1
             continue
 
@@ -1814,7 +2022,7 @@ def dicom_upload():
             db.upsert_dicom_series(meta)
             db.insert_dicom_instance(meta)
         except Exception:
-            logging.exception("DB persistence failed for %s", upload.filename)
+            logging.exception("DB persistence failed for sop=%s", meta.get("sop_uid"))
             skipped += 1
             continue
 
@@ -1908,5 +2116,6 @@ def dicom_instance_raw(sop_uid):
 
 
 if __name__ == "__main__":
-    # Use app.run only for local dev. For prod use a WSGI server.
-    app.run(debug=True)
+    # Local dev only. Production should run gunicorn (see Procfile).
+    # Debug mode is hard-gated to non-production environments.
+    app.run(debug=not _IS_PRODUCTION, host="127.0.0.1", port=int(os.getenv("PORT", "5000")))

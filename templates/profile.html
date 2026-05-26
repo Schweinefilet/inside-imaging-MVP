@@ -94,6 +94,7 @@
                     </p>
 
                     <form method="POST" action="{{ url_for('submit_feedback') }}" style="max-width: 600px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div style="margin-bottom: 1rem;">
                             <label for="feedback_type"
                                 style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Feedback Type</label>

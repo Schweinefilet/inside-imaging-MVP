@@ -166,33 +166,33 @@
 .team-cta .btn-primary:hover {
     background: var(--mint-soft);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
 }
 
 /* Dark mode adjustments */
-:root:not(.light) .team-member {
+html.dark .team-member {
     background: rgba(255, 255, 255, 0.02);
 }
 
-:root:not(.light) .team-cta {
+html.dark .team-cta {
     background: rgba(255, 255, 255, 0.02);
 }
 
 /* Light mode adjustments */
-:root.light .team-hero h1 {
+html:not(.dark) .team-hero h1 {
     color: var(--primary);
 }
 
-:root.light .team-member {
+html:not(.dark) .team-member {
     background: #fff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-:root.light .team-member:hover {
+html:not(.dark) .team-member:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-:root.light .team-cta {
+html:not(.dark) .team-cta {
     background: #f9fafb;
 }
 
@@ -201,43 +201,43 @@
    Light Mode Overrides
    ======================================== */
 
-html.light .team-hero h1 {
+html:not(.dark) .team-hero h1 {
     color: var(--mint);
 }
 
-html.light .team-hero p {
+html:not(.dark) .team-hero p {
     color: rgba(10, 30, 28, 0.75);
 }
 
-html.light .team-card {
+html:not(.dark) .team-card {
     background: var(--panel);
     border-color: var(--border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-html.light .team-card:hover {
+html:not(.dark) .team-card:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-html.light .team-name {
+html:not(.dark) .team-name {
     color: rgba(10, 30, 28, 0.95);
 }
 
-html.light .team-role {
+html:not(.dark) .team-role {
     color: var(--mint);
 }
 
-html.light .team-bio {
+html:not(.dark) .team-bio {
     color: rgba(10, 30, 28, 0.75);
 }
 
-html.light .team-social a {
+html:not(.dark) .team-social a {
     color: rgba(10, 30, 28, 0.68);
     border-color: var(--border);
 }
 
-html.light .team-social a:hover {
+html:not(.dark) .team-social a:hover {
     background: var(--mint);
     color: #051e14;
-    border-color: var(--mint);
+    border-color: var(--ink-soft, #475569);
 }

@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import logging
 import os
+import socket
 import socketserver
+import ssl
 import threading
 from typing import Optional, Tuple
 
@@ -128,8 +130,9 @@ def _build_handler_class(target_url: str, api_key: str):
                     if status_code in (200, 201, 202):
                         ack = _build_ack(raw_msg, "AA", "Processed")
                     else:
-                        ack = _build_ack(raw_msg, "AE", f"Upstream {status_code}: {body_preview[:80]}")
-                        logging.warning("HL7 -> API forward failed: %s %s", status_code, body_preview)
+                        # Body preview may contain user error detail; do NOT log it (it can include PHI).
+                        ack = _build_ack(raw_msg, "AE", f"Upstream {status_code}")
+                        logging.warning("HL7 -> API forward failed (status=%s)", status_code)
                     self.request.sendall(ack)
     return MLLPHandler
 
@@ -137,6 +140,42 @@ def _build_handler_class(target_url: str, api_key: str):
 class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
     daemon_threads = True
+
+
+class TLSThreadingTCPServer(ThreadingTCPServer):
+    """MLLP-over-TLS server. Wraps the accept socket in an SSLContext."""
+
+    def __init__(self, server_address, RequestHandlerClass, *, ssl_context: ssl.SSLContext):
+        self._ssl_context = ssl_context
+        super().__init__(server_address, RequestHandlerClass)
+
+    def get_request(self):
+        sock, addr = self.socket.accept()
+        try:
+            tls_sock = self._ssl_context.wrap_socket(sock, server_side=True)
+        except ssl.SSLError as exc:
+            logging.warning("MLLP TLS handshake failed from %s: %s", addr, exc)
+            sock.close()
+            raise
+        return tls_sock, addr
+
+
+def _build_ssl_context() -> Optional[ssl.SSLContext]:
+    """Return an SSLContext if HL7_TLS_CERT and HL7_TLS_KEY env vars are set,
+    else None (caller falls back to plain MLLP)."""
+    cert = os.getenv("HL7_TLS_CERT", "")
+    key = os.getenv("HL7_TLS_KEY", "")
+    if not (cert and key):
+        return None
+    ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ctx.load_cert_chain(certfile=cert, keyfile=key)
+    # Require mutual TLS if a CA is provided — protects against rogue clients.
+    ca = os.getenv("HL7_TLS_CLIENT_CA", "")
+    if ca:
+        ctx.load_verify_locations(cafile=ca)
+        ctx.verify_mode = ssl.CERT_REQUIRED
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    return ctx
 
 
 def serve_forever(host: Optional[str] = None, port: Optional[int] = None,
@@ -150,8 +189,22 @@ def serve_forever(host: Optional[str] = None, port: Optional[int] = None,
         raise RuntimeError("HL7_FORWARD_API_KEY env var is required (issue via management CLI)")
 
     handler = _build_handler_class(target_url, api_key)
-    server = ThreadingTCPServer((host, port), handler)
-    logging.info("HL7 MLLP listener bound to %s:%s, forwarding to %s", host, port, target_url)
+    ssl_ctx = _build_ssl_context()
+
+    if ssl_ctx is not None:
+        server = TLSThreadingTCPServer((host, port), handler, ssl_context=ssl_ctx)
+        mode = "MLLP/TLS (mTLS)" if os.getenv("HL7_TLS_CLIENT_CA") else "MLLP/TLS"
+    else:
+        if os.getenv("INSIDEIMAGING_ENV", "").lower() in ("production", "prod"):
+            raise RuntimeError(
+                "HL7 listener refusing to start: production environment but no TLS configured. "
+                "Set HL7_TLS_CERT and HL7_TLS_KEY env vars, or run with INSIDEIMAGING_ENV=development."
+            )
+        server = ThreadingTCPServer((host, port), handler)
+        mode = "MLLP (plaintext — DEVELOPMENT ONLY)"
+
+    logging.info("HL7 listener bound to %s:%s [%s], forwarding to %s",
+                 host, port, mode, target_url)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

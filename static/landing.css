@@ -144,14 +144,14 @@
    Light Mode Overrides — Apple liquid glass
    ======================================== */
 
-html.light .landing-overlay {
+html:not(.dark) .landing-overlay {
   /* Light liquid glass: brighter, less opaque for better view */
   background: rgba(240, 245, 248, 0.15);
   backdrop-filter: blur(20px) saturate(180%) brightness(1.05);
   -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.05);
 }
 
-html.light .landing-inner {
+html:not(.dark) .landing-inner {
   /* Frosted bright glass card — more transparent */
   background: rgba(255, 255, 255, 0.32);
   backdrop-filter: blur(32px) saturate(200%) brightness(1.05);
@@ -166,40 +166,40 @@ html.light .landing-inner {
     inset -1px 0 rgba(255, 255, 255, 0.5);
 }
 
-html.light .landing-inner::before {
+html:not(.dark) .landing-inner::before {
   background: rgba(255, 255, 255, 0.25);
 }
 
-html.light .landing-heading span {
-  color: #0fb989;
+html:not(.dark) .landing-heading span {
+  color: var(--ink-soft, #475569);
   background: none;
   -webkit-background-clip: unset;
   background-clip: unset;
 }
 
-html.light .landing-heading span::after {
+html:not(.dark) .landing-heading span::after {
   color: rgba(10, 30, 28, 0.08);
 }
 
-html.light .landing-heading span:hover,
-html.light .landing-heading span:focus-visible {
-  filter: drop-shadow(0 12px 20px rgba(16, 185, 129, 0.35));
+html:not(.dark) .landing-heading span:hover,
+html:not(.dark) .landing-heading span:focus-visible {
+  filter: none;
 }
 
-html.light .landing-tagline {
+html:not(.dark) .landing-tagline {
   color: rgba(10, 30, 28, 0.85);
 }
 
-html.light .landing-continue {
+html:not(.dark) .landing-continue {
   background: var(--mint);
   color: #051e14;
   border-color: color-mix(in oklab, var(--mint) 35%, rgba(0, 0, 0, 0.15));
 }
 
-html.light .landing-continue:hover,
-html.light .landing-continue:focus-visible {
+html:not(.dark) .landing-continue:hover,
+html:not(.dark) .landing-continue:focus-visible {
   background: color-mix(in oklab, var(--mint) 85%, #ffffff);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
 }
 /* ========================================
    Hero Section — Sequential Fade-In Animation
@@ -309,13 +309,13 @@ html.light .landing-continue:focus-visible {
 .hero-btn-primary {
   background: var(--mint);
   color: #051e14;
-  box-shadow: 0 4px 12px rgba(62, 230, 176, 0.25);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
 }
 
 .hero-btn-primary:hover,
 .hero-btn-primary:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(62, 230, 176, 0.35);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
   background: color-mix(in oklab, var(--mint) 90%, #ffffff);
 }
 
@@ -335,29 +335,29 @@ html.light .landing-continue:focus-visible {
 }
 
 /* Light mode hero overrides */
-html.light .hero-badge {
+html:not(.dark) .hero-badge {
   background: color-mix(in oklab, var(--mint) 10%, transparent);
   border-color: color-mix(in oklab, var(--mint) 25%, transparent);
 }
 
-html.light .hero-badge-text {
-  color: #0fb989;
+html:not(.dark) .hero-badge-text {
+  color: var(--ink-soft, #475569);
 }
 
-html.light .hero-title {
+html:not(.dark) .hero-title {
   color: var(--ink);
 }
 
-html.light .hero-btn-secondary {
+html:not(.dark) .hero-btn-secondary {
   background: rgba(255, 255, 255, 0.7);
   border-color: rgba(0, 0, 0, 0.1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-html.light .hero-btn-secondary:hover,
-html.light .hero-btn-secondary:focus-visible {
+html:not(.dark) .hero-btn-secondary:hover,
+html:not(.dark) .hero-btn-secondary:focus-visible {
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(15, 23, 42, 0.10);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 

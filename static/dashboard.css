@@ -131,7 +131,7 @@
     display: inline-block;
     padding: 0.5rem 1.25rem;
     border-radius: 999px;
-    border: 1px solid rgba(62, 230, 176, 0.35);
+    border: 1px solid rgba(15, 23, 42, 0.10);
     color: var(--mint);
     font-size: 0.875rem;
     font-weight: 600;
@@ -140,22 +140,22 @@
 }
 
 .empty-state-cta:hover {
-    background: rgba(62, 230, 176, 0.08);
-    border-color: rgba(62, 230, 176, 0.6);
+    background: rgba(15, 23, 42, 0.10);
+    border-color: rgba(15, 23, 42, 0.10);
 }
 
 /* Upload section pulse highlight */
 @keyframes uploadPulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(62, 230, 176, 0.55);
+        box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.10);
     }
 
     50% {
-        box-shadow: 0 0 0 12px rgba(62, 230, 176, 0);
+        box-shadow: 0 0 0 12px rgba(15, 23, 42, 0.10);
     }
 
     100% {
-        box-shadow: 0 0 0 0 rgba(62, 230, 176, 0);
+        box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.10);
     }
 }
 
@@ -225,15 +225,15 @@
 
 .file-upload-label:hover,
 .file-upload-label.dragover {
-    border-color: var(--mint);
-    background: rgba(62, 230, 176, 0.05);
+    border-color: var(--ink-soft, #475569);
+    background: rgba(15, 23, 42, 0.10);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .upload-icon {
     width: 48px;
     height: 48px;
-    background: rgba(62, 230, 176, 0.12);
+    background: rgba(15, 23, 42, 0.10);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -245,7 +245,7 @@
 
 .file-upload-label:hover .upload-icon {
     transform: translateY(-4px) scale(1.05);
-    background: rgba(62, 230, 176, 0.2);
+    background: rgba(15, 23, 42, 0.10);
 }
 
 .upload-text strong {
@@ -275,8 +275,8 @@
 
 .file-name-display.selected {
     color: var(--mint);
-    border-color: rgba(62, 230, 176, 0.2);
-    background: rgba(62, 230, 176, 0.05);
+    border-color: rgba(15, 23, 42, 0.10);
+    background: rgba(15, 23, 42, 0.10);
 }
 
 .upload-section form select {
@@ -338,12 +338,12 @@
 }
 
 .reports-history::-webkit-scrollbar-thumb {
-    background: rgba(62, 230, 176, 0.25);
+    background: rgba(15, 23, 42, 0.10);
     border-radius: 999px;
 }
 
 .reports-history::-webkit-scrollbar-thumb:hover {
-    background: rgba(62, 230, 176, 0.45);
+    background: rgba(15, 23, 42, 0.10);
 }
 
 .history-item {
@@ -461,7 +461,7 @@
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: rgba(62, 230, 176, 0.16);
+    background: rgba(15, 23, 42, 0.10);
     color: var(--mint);
     font-size: 1.1rem;
     margin-bottom: 0.6rem;
@@ -541,7 +541,7 @@
     position: relative;
     height: 6px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--panel) 70%, rgba(62, 230, 176, 0.08));
+    background: color-mix(in oklab, var(--panel) 70%, rgba(15, 23, 42, 0.10));
     overflow: hidden;
 }
 
@@ -668,213 +668,213 @@
    Light Mode Overrides
    ======================================== */
 
-html.light .content h2 {
+html:not(.dark) .content h2 {
     color: var(--mint);
 }
 
-html.light .content p {
+html:not(.dark) .content p {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .upload-section,
-html.light .transformation-section,
-html.light .reports-section {
+html:not(.dark) .upload-section,
+html:not(.dark) .transformation-section,
+html:not(.dark) .reports-section {
     background: var(--panel);
     border-color: var(--border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-html.light .transformation-section h2 {
+html:not(.dark) .transformation-section h2 {
     color: var(--mint);
 }
 
-html.light .transformation-subtitle {
+html:not(.dark) .transformation-subtitle {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .reports-section-header h2 {
+html:not(.dark) .reports-section-header h2 {
     color: var(--mint);
 }
 
-html.light .reports-section-header p {
+html:not(.dark) .reports-section-header p {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .upload-section h2,
-html.light .reports-section h2,
-html.light .reports-section h3,
-html.light .reports-section h4 {
+html:not(.dark) .upload-section h2,
+html:not(.dark) .reports-section h2,
+html:not(.dark) .reports-section h3,
+html:not(.dark) .reports-section h4 {
     color: var(--mint);
 }
 
-html.light .upload-section form label {
+html:not(.dark) .upload-section form label {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .file-upload-label {
+html:not(.dark) .file-upload-label {
     background: #f8fafc;
     border-color: #e2e8f0;
 }
 
-html.light .file-upload-label:hover {
-    background: rgba(16, 185, 129, 0.04);
-    border-color: var(--mint);
+html:not(.dark) .file-upload-label:hover {
+    background: rgba(15, 23, 42, 0.10);
+    border-color: var(--ink-soft, #475569);
 }
 
-html.light .upload-text strong {
+html:not(.dark) .upload-text strong {
     color: #1a2e28;
 }
 
-html.light .upload-text span {
+html:not(.dark) .upload-text span {
     color: #64748b;
 }
 
-html.light .file-name-display {
+html:not(.dark) .file-name-display {
     background: #f1f5f9;
     color: #64748b;
 }
 
-html.light .file-name-display.selected {
-    background: rgba(16, 185, 129, 0.08);
-    color: #059669;
+html:not(.dark) .file-name-display.selected {
+    background: rgba(15, 23, 42, 0.10);
+    color: var(--ink-soft, #475569);
 }
 
-html.light .upload-section form select {
+html:not(.dark) .upload-section form select {
     background: #ffffff;
     border-color: var(--border);
     color: #1a2e28;
 }
 
-html.light .upload-section form button {
+html:not(.dark) .upload-section form button {
     background: var(--mint);
     color: #051e14;
     border-color: color-mix(in oklab, var(--mint) 32%, var(--border));
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-html.light .upload-section form button:hover {
+html:not(.dark) .upload-section form button:hover {
     background: color-mix(in oklab, var(--mint) 85%, #ffffff);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-html.light .upload-section form button:active {
+html:not(.dark) .upload-section form button:active {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-html.light .reports-section p {
+html:not(.dark) .reports-section p {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .history-item {
+html:not(.dark) .history-item {
     background: rgba(255, 255, 255, 0.85);
     border-color: var(--border);
 }
 
-html.light .history-item:hover {
+html:not(.dark) .history-item:hover {
     border-color: color-mix(in oklab, var(--mint) 55%, var(--border));
 }
 
-html.light .history-item.empty {
+html:not(.dark) .history-item.empty {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .history-primary strong {
+html:not(.dark) .history-primary strong {
     color: rgba(10, 30, 28, 0.95);
 }
 
-html.light .history-language {
+html:not(.dark) .history-language {
     color: rgba(10, 30, 28, 0.75);
     border-color: var(--border);
-    background: rgba(62, 230, 176, 0.08);
+    background: rgba(15, 23, 42, 0.10);
 }
 
-html.light .history-meta {
+html:not(.dark) .history-meta {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .history-tags {
-    background: rgba(62, 230, 176, 0.12);
+html:not(.dark) .history-tags {
+    background: rgba(15, 23, 42, 0.10);
     color: rgba(10, 30, 28, 0.85);
 }
 
-html.light .history-link {
+html:not(.dark) .history-link {
     color: var(--mint);
 }
 
-html.light .reports-insights h3 {
+html:not(.dark) .reports-insights h3 {
     color: var(--mint);
 }
 
-html.light .insight-card {
+html:not(.dark) .insight-card {
     background: var(--surface);
     border-color: var(--border);
     box-shadow: var(--shadow-sm);
 }
 
-html.light .insight-icon {
-    background: rgba(62, 230, 176, 0.12);
+html:not(.dark) .insight-icon {
+    background: rgba(15, 23, 42, 0.10);
     color: var(--mint);
 }
 
-html.light .insight-label {
+html:not(.dark) .insight-label {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .insight-value {
+html:not(.dark) .insight-value {
     color: rgba(10, 30, 28, 0.95);
 }
 
-html.light .insight-column {
+html:not(.dark) .insight-column {
     background: rgba(255, 255, 255, 0.9);
     border-color: var(--border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-html.light .insight-column h4 {
+html:not(.dark) .insight-column h4 {
     color: var(--mint);
 }
 
-html.light .insight-name,
-html.light .insight-count {
+html:not(.dark) .insight-name,
+html:not(.dark) .insight-count {
     color: rgba(10, 30, 28, 0.95);
 }
 
-html.light .insight-bar {
-    background: rgba(62, 230, 176, 0.08);
+html:not(.dark) .insight-bar {
+    background: rgba(15, 23, 42, 0.10);
 }
 
-html.light .insight-bar .insight-progress {
+html:not(.dark) .insight-bar .insight-progress {
     background: var(--primary);
 }
 
-html.light .insight-empty {
+html:not(.dark) .insight-empty {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .history-tags span {
-    background: rgba(62, 230, 176, 0.12);
+html:not(.dark) .history-tags span {
+    background: rgba(15, 23, 42, 0.10);
     color: rgba(10, 30, 28, 0.85);
 }
 
-html.light .footer {
+html:not(.dark) .footer {
     background: var(--panel);
     border-top-color: var(--border);
 }
 
-html.light .footer-col h4 {
+html:not(.dark) .footer-col h4 {
     color: var(--mint);
 }
 
-html.light .footer-col p,
-html.light .footer-col a {
+html:not(.dark) .footer-col p,
+html:not(.dark) .footer-col a {
     color: rgba(10, 30, 28, 0.68);
 }
 
-html.light .footer-col a:hover {
+html:not(.dark) .footer-col a:hover {
     color: var(--mint);
 }
 
-html.light .footer-bottom {
+html:not(.dark) .footer-bottom {
     color: rgba(10, 30, 28, 0.68);
     border-top-color: var(--border);
 }

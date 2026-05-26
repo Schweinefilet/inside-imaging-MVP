@@ -124,7 +124,7 @@
   border-top-color: color-mix(in oklab, var(--mint) 80%, #ffffff 20%);
   border-left-color: color-mix(in oklab, var(--mint) 40%, rgba(255, 255, 255, 0));
   animation: loaderSweep 1.15s linear infinite;
-  filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.45));
+  filter: none;
 }
 
 .loader-copy {
@@ -148,7 +148,7 @@
   text-align: center;
   gap: 1rem;
   padding: 4rem 1.5rem;
-  background: rgba(62, 230, 176, 0.08);
+  background: rgba(15, 23, 42, 0.10);
   border: 1px dashed var(--mint);
   border-radius: 14px;
 }
@@ -213,42 +213,42 @@
    Light Mode Overrides
    ======================================== */
 
-html.light .magazine-hero h1 {
+html:not(.dark) .magazine-hero h1 {
   color: var(--mint);
 }
 
-html.light .magazine-hero p {
+html:not(.dark) .magazine-hero p {
   color: rgba(10, 30, 28, 0.75);
 }
 
-html.light .magazine-grid {
+html:not(.dark) .magazine-grid {
   background: transparent;
 }
 
-html.light .magazine-card {
+html:not(.dark) .magazine-card {
   background: var(--panel);
   border-color: var(--border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-html.light .magazine-card:hover {
+html:not(.dark) .magazine-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-html.light .magazine-title {
+html:not(.dark) .magazine-title {
   color: rgba(10, 30, 28, 0.95);
 }
 
-html.light .magazine-description {
+html:not(.dark) .magazine-description {
   color: rgba(10, 30, 28, 0.75);
 }
 
-html.light .magazine-link {
+html:not(.dark) .magazine-link {
   background: var(--mint);
   color: #051e14;
   border-color: var(--mint);
 }
 
-html.light .magazine-link:hover {
+html:not(.dark) .magazine-link:hover {
   background: color-mix(in oklab, var(--mint) 85%, #ffffff);
 }

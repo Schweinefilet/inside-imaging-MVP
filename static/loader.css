@@ -74,16 +74,16 @@
    Light Mode Overrides
    ======================================== */
 
-html.light .loader-overlay {
+html:not(.dark) .loader-overlay {
 	background: rgba(248, 250, 252, 0.95);
 }
 
-html.light .loader-spinner {
-	border-color: rgba(16, 185, 129, 0.2);
+html:not(.dark) .loader-spinner {
+	border-color: rgba(15, 23, 42, 0.10);
 	border-top-color: var(--mint);
 }
 
-html.light .loader-text {
+html:not(.dark) .loader-text {
 	color: rgba(10, 30, 28, 0.85);
 }
 
@@ -92,21 +92,21 @@ html.light .loader-text {
    Light Mode Overrides
    ======================================== */
 
-html.light .loader-overlay {
+html:not(.dark) .loader-overlay {
 	background: rgba(248, 250, 252, 0.95);
 }
 
-html.light .loader-card {
+html:not(.dark) .loader-card {
 	background: rgba(255, 255, 255, 0.9);
 	border-color: rgba(15, 23, 42, 0.08);
 	box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
 }
 
-html.light .loader-spinner {
-	border-color: rgba(16, 185, 129, 0.2);
+html:not(.dark) .loader-spinner {
+	border-color: rgba(15, 23, 42, 0.10);
 	border-top-color: var(--mint);
 }
 
-html.light .loader-text {
+html:not(.dark) .loader-text {
 	color: rgba(10, 30, 28, 0.85);
 }

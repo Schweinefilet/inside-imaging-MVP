@@ -141,8 +141,8 @@ textarea {
 }
 
 textarea:focus {
-  border-color: var(--mint);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--mint) 35%, transparent);
+  border-color: var(--ink-soft, #475569);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ink-soft, #475569) 35%, transparent);
 }
 
 button {
@@ -168,17 +168,17 @@ button:active {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
 
-/* Light mode button fix */
-.light button {
+/* Light mode button fix (light is default; only fires when .dark is absent) */
+html:not(.dark) button {
   background: var(--mint);
-  color: #000000;
+  color: #ffffff;
   font-weight: 700;
   border: 1px solid color-mix(in oklab, var(--mint) 50%, #000000);
 }
 
-.light button:hover {
-  background: color-mix(in oklab, var(--mint) 75%, #000000);
-  box-shadow: 0 14px 34px rgba(34, 197, 94, 0.4);
+html:not(.dark) button:hover {
+  background: var(--primary-hover, color-mix(in oklab, var(--mint) 85%, #000000));
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
 }
 
 input[type="file"] {
@@ -390,12 +390,9 @@ a:hover {
   border-radius: 0;
 }
 
-/* Fix logo visibility in light mode - simple inversion */
-.light .logo,
-.light .navbar-brand .logo,
-.light .navbar-brand img {
-  filter: invert(1);
-}
+/* Legacy logo-invert rule removed — the .logo-dark / .logo-light swap is
+   now handled by the rules at the bottom of this file based on the .dark
+   class. Inverting the SVG would compete with that and distort the brand. */
 
 .brand {
   font-size: 1.5rem;
@@ -513,7 +510,7 @@ a:hover {
 
 
 /* Light theme variables */
-:root.light,
+html:not(.dark),
 [data-theme='light'] {
   --bg: #f8f9fa;
   --panel: #ffffff;
@@ -521,7 +518,7 @@ a:hover {
   --text: #1f2937;
   --muted: #4b5563;
   --border: #d7dde5;
-  --mint: #0fb989;
+  --mint: var(--ink-soft, #475569);
   --shadow: 0 4px 10px rgba(0, 0, 0, .08);
   --card-bg: #ffffff;
   --border-color: #d7dde5;
@@ -531,16 +528,16 @@ a:hover {
 
 /* Explicit light-mode backgrounds — covers both the html element and
    body::before fixed backdrop on all browsers / rendering engines */
-html.light {
+html:not(.dark) {
   background: var(--bg);
 }
-html.light body::before,
+html:not(.dark) body::before,
 [data-theme='light'] body::before {
   background: var(--bg);
 }
 
 /* Light theme selection contrast */
-html.light ::selection,
+html:not(.dark) ::selection,
 [data-theme='light'] ::selection {
   background: color-mix(in oklab, var(--mint) 25%, #00000010);
 }
@@ -578,13 +575,13 @@ html.light ::selection,
 
 .user-menu-toggle:hover,
 .user-menu-toggle:focus-visible {
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
   background: color-mix(in oklab, var(--panel-2) 70%, var(--mint) 18%);
   outline: none;
 }
 
 .user-menu-toggle:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--mint) 45%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ink-soft, #475569) 45%, transparent);
 }
 
 .user-caret {
@@ -781,11 +778,11 @@ html.light ::selection,
   opacity: 0;
 }
 
-html.light .navbar-brand .logo-dark {
+html:not(.dark) .navbar-brand .logo-dark {
   opacity: 0;
 }
 
-html.light .navbar-brand .logo-light {
+html:not(.dark) .navbar-brand .logo-light {
   opacity: 1;
 }
 
@@ -890,53 +887,53 @@ html.theme-transitioning.to-dark .navbar-brand .logo-dark {
 .navbar a:hover::before,
 .navbar a:focus-visible::before {
   background: var(--mint-soft);
-  box-shadow: inset 0 0 0 1px rgba(62, 230, 176, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.10);
 }
 
-html.light .navbar {
+html:not(.dark) .navbar {
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
 }
 
 @supports (backdrop-filter: blur(0.1px)) {
-  html.light .navbar {
+  html:not(.dark) .navbar {
     background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(14px);
   }
 }
 
-html.light .navbar a {
+html:not(.dark) .navbar a {
   color: color-mix(in oklab, #0f172a 75%, rgba(15, 23, 42, 0.35));
 }
 
-html.light .navbar a:hover,
-html.light .navbar a:focus-visible {
+html:not(.dark) .navbar a:hover,
+html:not(.dark) .navbar a:focus-visible {
   color: #0f172a;
 }
 
-html.light .navbar a::before {
+html:not(.dark) .navbar a::before {
   background: transparent;
 }
 
-html.light .navbar a:hover::before,
-html.light .navbar a:focus-visible::before {
+html:not(.dark) .navbar a:hover::before,
+html:not(.dark) .navbar a:focus-visible::before {
   background: rgba(15, 23, 42, 0.08);
   box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.1);
 }
 
-html.light .navbar a.active {
+html:not(.dark) .navbar a.active {
   color: var(--mint);
 }
 
-html.light .navbar a.active::before {
+html:not(.dark) .navbar a.active::before {
   background: color-mix(in oklab, var(--mint) 25%, rgba(15, 23, 42, 0.08));
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--mint) 45%, rgba(15, 23, 42, 0.1));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink-soft, #475569) 45%, rgba(15, 23, 42, 0.1));
 }
 
-html.light .username-badge,
-html.light .nav-auth a,
-html.light .nav-auth span {
+html:not(.dark) .username-badge,
+html:not(.dark) .nav-auth a,
+html:not(.dark) .nav-auth span {
   color: #0f172a;
 }
 
@@ -949,8 +946,8 @@ html.light .nav-auth span {
 }
 
 .navbar a.active::before {
-  background: rgba(62, 230, 176, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(62, 230, 176, 0.45);
+  background: rgba(15, 23, 42, 0.10);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.10);
 }
 
 @media (max-width: 900px) {
@@ -983,21 +980,21 @@ html.light .nav-auth span {
 }
 
 /* Light mode theme switcher overrides */
-html.light .theme-switch-track {
+html:not(.dark) .theme-switch-track {
   background: #e5e7eb;
   border: 1px solid #d1d5db;
 }
 
-html.light .theme-switch-track::after {
+html:not(.dark) .theme-switch-track::after {
   background: #111827;
 }
 
-html.light .theme-switch-input:checked+.theme-switch-track {
-  background: #10b981;
-  border-color: #10b981;
+html:not(.dark) .theme-switch-input:checked+.theme-switch-track {
+  background: var(--ink-soft, #475569);
+  border-color: var(--ink-soft, #475569);
 }
 
-html.light .theme-switch-input:checked+.theme-switch-track::after {
+html:not(.dark) .theme-switch-input:checked+.theme-switch-track::after {
   background: #f3f4f6;
 }
 
@@ -1043,7 +1040,7 @@ html.light .theme-switch-input:checked+.theme-switch-track::after {
 }
 
 .login-button:hover {
-  border-color: var(--mint);
+  border-color: var(--ink-soft, #475569);
   text-decoration: none;
 }
 
@@ -1059,11 +1056,11 @@ html.light .theme-switch-input:checked+.theme-switch-track::after {
   text-decoration: none;
 }
 
-html.light .login-button {
+html:not(.dark) .login-button {
   color: var(--text);
 }
 
-html.light .signup-button {
+html:not(.dark) .signup-button {
   color: #000;
 }
 
@@ -1138,10 +1135,8 @@ html.light .signup-button {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: saturate(160%) blur(8px);
-  -webkit-backdrop-filter: saturate(160%) blur(8px);
-  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface);
+  border-bottom: 0;
 }
 
 .site-main {
@@ -1351,3 +1346,30 @@ html.dark .navbar-brand .logo-light { display: none; }
 /* Hide the fixed-switch from old templates that still render it,
    so we don't get two theme toggles on the page. */
 body > label.theme-switch.fixed-switch { display: none !important; }
+
+/* --- Reset any legacy logo-fade positioning that left a white sliver ----- */
+/* The legacy system absolutely-positioned .logo-light on top of .logo-dark
+   and faded between them. The new system uses display: none/block via the
+   .dark class. These overrides kill the legacy positioning so the img
+   participates in flex layout cleanly. */
+.navbar-brand .logo {
+  position: static !important;
+  opacity: 1 !important;
+  vertical-align: middle;
+  border: 0;
+}
+.navbar-brand .logo-light,
+.navbar-brand .logo-dark {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  opacity: 1 !important;
+}
+/* Re-assert which logo is shown based on the .dark class set by theme.js */
+.navbar-brand .logo-dark { display: none !important; }
+html.dark .navbar-brand .logo-dark { display: block !important; }
+html.dark .navbar-brand .logo-light { display: none !important; }
+
+/* Belt-and-braces: remove default margins from html/body so no white gap
+   appears between the viewport edge and the sticky header. */
+html, body { margin: 0; padding: 0; border: 0; }

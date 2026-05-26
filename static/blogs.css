@@ -184,8 +184,8 @@ html.light .blog-hero .hero-summary {
 }
 
 .blog-hero {
-  background: linear-gradient(180deg, rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.6));
-  color: #fff;
+  background: var(--surface-2);
+  color: var(--ink);
   padding: clamp(2rem, 6vw, 4rem);
 }
 

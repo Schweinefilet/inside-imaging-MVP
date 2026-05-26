@@ -115,8 +115,8 @@
 }
 
 .options-buttons .btn-primary {
-  background-image: linear-gradient(to right, var(--mint-600), var(--mint-300));
-  color: var(--gray-900);
+  background: var(--primary);
+  color: var(--surface);
 }
 
 .options-buttons .btn-secondary {

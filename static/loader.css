@@ -7,7 +7,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 1.5rem;
-	background: radial-gradient(900px 900px at 50% 50%, rgba(10, 16, 24, 0.96), rgba(6, 9, 14, 0.82));
+	background: rgba(10, 16, 24, 0.85);
 	backdrop-filter: blur(12px) saturate(120%);
 	transition: opacity 0.25s ease, visibility 0.25s ease;
 	opacity: 1;

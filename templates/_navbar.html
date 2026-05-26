@@ -1,0 +1,68 @@
+{# Shared site navbar. Active state driven by request.endpoint. #}
+{% set ep = request.endpoint or '' %}
+<div class="header-shell">
+  <a class="navbar-brand" href="{{ url_for('dashboard') }}" aria-label="Inside Imaging — home">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="" class="logo logo-dark">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="" class="logo logo-light">
+    <span class="navbar-brand-name">Inside Imaging</span>
+  </a>
+
+  <nav class="navbar" aria-label="Primary">
+    <a href="{{ url_for('projects') }}"      class="{{ 'active' if ep == 'projects' }}">Projects</a>
+    <a href="{{ url_for('dashboard') }}"     class="{{ 'active' if ep == 'dashboard' }}">Dashboard</a>
+    <a href="{{ url_for('report_status') }}" class="{{ 'active' if ep == 'report_status' }}">Statistics</a>
+    <a href="{{ url_for('team') }}"          class="{{ 'active' if ep == 'team' }}">Our Team</a>
+    <a href="{{ url_for('dicom_studies') }}" class="{{ 'active' if ep in ('dicom_studies', 'dicom_study_detail') }}">DICOM</a>
+    <a href="{{ url_for('help_page') }}"     class="{{ 'active' if ep == 'help_page' }}">Help</a>
+  </nav>
+
+  <div class="nav-auth">
+    <label class="theme-switch" aria-label="Toggle theme">
+      <span class="theme-row">
+        <span class="theme-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </span>
+        <input id="theme-toggle" class="theme-switch-input" type="checkbox" role="switch" aria-checked="false">
+        <span class="theme-switch-track" aria-hidden="true"></span>
+        <span class="theme-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1"    x2="12"    y2="3"></line>
+            <line x1="12" y1="21"   x2="12"    y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1"  y1="12" x2="3"  y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </span>
+      </span>
+      <span id="theme-label" class="theme-switch-text">Light mode</span>
+    </label>
+
+    {% if session.get('username') %}
+      {% set tenant_name = session.get('tenant_display_name') %}
+      {% if tenant_name %}
+        <span class="tenant-pill" title="Active hospital tenant">{{ tenant_name }}</span>
+      {% endif %}
+      <div class="user-menu">
+        <button class="user-menu-toggle" type="button" aria-expanded="false" aria-haspopup="menu">
+          <span class="user-name" aria-live="polite">{{ session.get('username') }}</span>
+          <span class="user-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="user-menu-dropdown" role="menu" hidden>
+          <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+          <a href="{{ url_for('logout') }}"  role="menuitem">Log Out</a>
+        </div>
+      </div>
+    {% else %}
+      <a href="{{ url_for('login') }}"  class="btn btn-ghost login-button">Log In</a>
+      <a href="{{ url_for('signup') }}" class="btn btn-primary signup-button">Sign Up</a>
+    {% endif %}
+  </div>
+</div>

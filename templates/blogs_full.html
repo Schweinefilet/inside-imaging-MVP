@@ -1,21 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="header-shell">
-  <a href="/" class="nav-logo">Inside Imaging</a>
-  <nav>
-    <a href="/dashboard">Dashboard</a>
-    <a href="/magazine">Magazine</a>
-    <a href="/blogs">Blogs</a>
-    <a href="/projects">Projects</a>
-    <a href="/team">Team</a>
-    <a href="/help">Help</a>
-  </nav>
-  <div class="theme-switcher">
-    <input type="checkbox" id="theme-toggle" />
-    <label for="theme-toggle">Dark Mode</label>
-  </div>
 </div>
-<main class="blogs-full">
+<div class="blogs-full">
   <section class="blogs-hero">
     <h1>Insights</h1>
     <p>Practical advice from clinicians who turn complex findings into conversations patients actually understand.</p>
@@ -44,5 +30,5 @@
     <p><strong>Dr. Tima Nassir Ali Khamis</strong><br>Radiologist and researcher dedicated to advancing diagnostic imaging practices and technology integration in African healthcare.</p>
     <p>[Full blog post content from magazine goes here]</p>
   </article>
-</main>
+</div>
 {% endblock %}

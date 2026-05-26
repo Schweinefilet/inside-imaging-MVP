@@ -12,25 +12,24 @@
   border-radius: clamp(24px, 5vw, 40px);
   padding: clamp(2.5rem, 6vw, 5rem);
   min-height: clamp(26rem, 70vh, 40rem);
-  background: radial-gradient(120% 120% at 50% 50%, rgba(21, 34, 45, 0.85), rgba(8, 12, 18, 0.92));
+  background: var(--surface-2);
   display: grid;
   place-items: center;
   isolation: isolate;
 }
 
 html.light .marquee-hero {
-  background: radial-gradient(120% 120% at 50% 50%, rgba(211, 245, 236, 0.85), rgba(230, 248, 242, 0.92));
+  background: var(--surface-2);
 }
 
 .marquee-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(145deg, rgba(15, 23, 32, 0.65), rgba(9, 12, 19, 0.85));
-  mix-blend-mode: multiply;
+  background: rgba(15, 23, 32, 0.4);
 }
 
 html.light .marquee-overlay {
-  background: linear-gradient(145deg, rgba(22, 43, 51, 0.35), rgba(8, 81, 83, 0.25));
+  background: rgba(15, 23, 32, 0.06);
 }
 
 .marquee-content {
@@ -353,12 +352,12 @@ html.light .project-card p {
 .cta-panel {
   border-radius: clamp(20px, 4vw, 32px);
   padding: clamp(2rem, 5vw, 3rem);
-  background: linear-gradient(125deg, rgba(16, 185, 129, 0.16), rgba(6, 94, 70, 0.45));
-  border: 1px solid color-mix(in oklab, var(--mint) 40%, var(--border));
+  background: var(--primary-soft);
+  border: 1px solid var(--border);
 }
 
 html.light .cta-panel {
-  background: linear-gradient(125deg, rgba(16, 185, 129, 0.18), rgba(5, 67, 60, 0.12));
+  background: var(--primary-soft);
 }
 
 .cta-content {

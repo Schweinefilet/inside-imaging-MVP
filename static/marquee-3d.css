@@ -42,10 +42,7 @@ html.theme-transitioning .marquee-card {
     pointer-events: none;
     width: 100%;
     max-width: 1000px;
-    background: radial-gradient(ellipse at center,
-            rgba(0, 0, 0, 0.6) 0%,
-            rgba(0, 0, 0, 0.4) 40%,
-            transparent 70%);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 /* Initially hide all overlay items */
@@ -332,10 +329,7 @@ html.light .marquee-3d-overlay .marquee-description {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg,
-            rgba(34, 197, 94, 0.15) 0%,
-            transparent 50%,
-            rgba(20, 184, 166, 0.15) 100%);
+    background: transparent;
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: 1;
@@ -360,16 +354,12 @@ html.light .marquee-3d-overlay .marquee-description {
 
 .marquee-3d-wrapper::before {
     top: 0;
-    background: linear-gradient(180deg,
-            rgba(10, 10, 10, 0.9) 0%,
-            transparent 100%);
+    background: rgba(10, 10, 10, 0.6);
 }
 
 .marquee-3d-wrapper::after {
     bottom: 0;
-    background: linear-gradient(0deg,
-            rgba(10, 10, 10, 0.9) 0%,
-            transparent 100%);
+    background: rgba(10, 10, 10, 0.6);
 }
 
 /* Responsive */
@@ -452,9 +442,9 @@ html.light .marquee-3d-overlay .marquee-description {
 
 /* Edge Fades for Dark Mode */
 :root:not(.light) .marquee-3d-wrapper::before {
-    background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+    background: rgba(10, 10, 10, 0.7);
 }
 
 :root:not(.light) .marquee-3d-wrapper::after {
-    background: linear-gradient(0deg, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+    background: rgba(10, 10, 10, 0.7);
 }

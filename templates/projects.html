@@ -30,61 +30,17 @@
   </div>
 </div>
 
-<div class="content projects-page">
-            <!-- 3D Marquee Showcase Section -->
-            <section class="marquee-3d-container" data-marquee-3d data-images='{{ marquee_images | tojson }}'
-                data-radius="600" data-autoplay="true" data-speed="30">
-                <!-- Marquee will be initialized by JavaScript -->
-            </section>
+<div class="marquee-3d-container" data-marquee-3d
+     data-images='{{ marquee_images | tojson }}'></div>
 
-            <section id="portfolio" class="portfolio-section">
+<div class="content projects-page">
+<section id="portfolio" class="portfolio-section">
                 <header class="section-heading">
                     <h2>Projects & Learning Tracks</h2>
                     <p>Tools that make imaging conversations clearer today, plus sneak peeks at what is landing next.
                     </p>
                 </header>
                 <div class="portfolio-grid">
-                    <article class="project-card">
-                        <div class="project-icon" aria-hidden="true">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                            </svg>
-                        </div>
-                        <h3>Inside Imaging Magazine</h3>
-                        <p>Monthly deep-dives on radiology storytelling, AI adoption, and patient-centered education.
-                        </p>
-                        <a class="project-link" href="{{ url_for('magazine') }}">Browse magazine archives →</a>
-                        <span class="project-pill" style="background: var(--mint); color: var(--bg);">Live Now</span>
-                    </article>
-                    <article class="project-card">
-                        <div class="project-icon" aria-hidden="true">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                                <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
-                                <line x1="12" y1="19" x2="12" y2="23"></line>
-                                <line x1="8" y1="23" x2="16" y2="23"></line>
-                            </svg>
-                        </div>
-                        <h3>Exposure Button Series</h3>
-                        <p>Candid conversations with radiology leaders, exploring the stories behind the scans.</p>
-                        <div class="project-links">
-                            <a class="project-link" href="#" id="poster-link">
-                                See poster
-                            </a>
-                            <a class="project-link" href="https://open.spotify.com" target="_blank" rel="noopener">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
-                                    style="vertical-align: middle; margin-right: 8px;">
-                                    <path
-                                        d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                                </svg>
-                                Listen on Spotify
-                            </a>
-                        </div>
-                        <span class="project-pill">Coming soon</span>
-                    </article>
                     <article class="project-card">
                         <div class="project-icon" aria-hidden="true">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -101,7 +57,34 @@
                         <p>Transform complex radiology reports into clear, patient-friendly summaries with interactive
                             3D anatomy visualization and multilingual support.</p>
                         <a class="project-link" href="{{ url_for('dashboard') }}">Try the platform →</a>
-                        <span class="project-pill" style="background: var(--mint); color: var(--bg);">Live Now</span>
+                        <span class="project-pill project-pill--live">Live Now</span>
+                    </article>
+                    <article class="project-card">
+                        <div class="project-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <h3>Inside Imaging Magazine</h3>
+                        <p>Monthly deep-dives on radiology storytelling, AI adoption, and patient-centered education.</p>
+                        <a class="project-link" href="{{ url_for('magazine') }}">Browse magazine archives →</a>
+                        <span class="project-pill project-pill--live">Live Now</span>
+                    </article>
+                    <article class="project-card">
+                        <div class="project-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </div>
+                        <h3>Exposure Button Series</h3>
+                        <p>Candid conversations with radiology leaders, exploring the stories behind the scans.</p>
+                        <span class="project-pill">Coming soon</span>
                     </article>
                 </div>
                 <div class="project-note">
@@ -231,88 +214,39 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='marquee-3d.js') }}?v=8"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var posterLink = document.getElementById('poster-link');
-            if (posterLink) {
-                posterLink.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    alert('Poster coming soon!');
-                });
-            }
-        });
-    </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Landing overlay: hide instantly on internal nav; show once per fresh visit.
+    var overlay = document.getElementById('landing-overlay');
+    if (!overlay) return;
+    var continueBtn = document.getElementById('landing-continue');
 
-    <script>
-        (function () {
-            var overlay = document.getElementById('landing-overlay');
-            if (!overlay) return;
-            var continueBtn = document.getElementById('landing-continue');
+    function hide() {
+      overlay.classList.add('landing-hidden');
+      overlay.setAttribute('aria-hidden', 'true');
+      setTimeout(function () { overlay.parentNode && overlay.parentNode.removeChild(overlay); }, 600);
+    }
 
-            // Check if user is navigating within site (has sessionStorage flag)
-            var isInternalNav = sessionStorage.getItem('iiInternalNav') === '1';
+    if (sessionStorage.getItem('iiInternalNav') === '1') {
+      hide();
+      return;
+    }
+    sessionStorage.setItem('iiInternalNav', '1');
 
-            var showMarqueeOverlay = function () {
-                var marqueeOverlay = document.querySelector('.marquee-3d-overlay');
-                if (marqueeOverlay) {
-                    marqueeOverlay.classList.add('marquee-overlay-visible');
-                }
-            };
+    requestAnimationFrame(function () {
+      overlay.classList.remove('landing-hidden');
+      overlay.setAttribute('aria-hidden', 'false');
+      if (continueBtn) continueBtn.focus();
+    });
 
-            var disableOverlay = function () {
-                overlay.classList.add('landing-hidden');
-                overlay.setAttribute('aria-hidden', 'true');
-                setTimeout(function () { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 650);
-                
-                // Trigger marquee overlay animation after landing overlay starts hiding
-                setTimeout(showMarqueeOverlay, 300);
-            };
-
-            // Set flag to indicate user has navigated within site
-            sessionStorage.setItem('iiInternalNav', '1');
-
-            // Only show overlay if NOT internal navigation (i.e., fresh site entry)
-            if (isInternalNav) {
-                disableOverlay();
-                // Show marquee overlay immediately on return visits
-                showMarqueeOverlay();
-                return;
-            }
-
-            // Show intro overlay for fresh site entry
-            requestAnimationFrame(function () {
-                overlay.classList.remove('landing-hidden');
-                overlay.setAttribute('aria-hidden', 'false');
-                if (continueBtn) continueBtn.focus();
-            });
-
-            var updateGradient = function (evt) {
-                var rect = overlay.getBoundingClientRect();
-                var x = ((evt.clientX - rect.left) / rect.width) * 100;
-                var y = ((evt.clientY - rect.top) / rect.height) * 100;
-                overlay.style.setProperty('--mx', x + '%');
-                overlay.style.setProperty('--my', y + '%');
-            };
-
-            overlay.addEventListener('mousemove', updateGradient);
-            overlay.addEventListener('touchmove', function (evt) {
-                if (!evt.touches || !evt.touches.length) return;
-                updateGradient(evt.touches[0]);
-            }, { passive: true });
-
-            if (continueBtn) continueBtn.addEventListener('click', disableOverlay);
-            overlay.addEventListener('click', function (evt) {
-                if (evt.target === overlay) disableOverlay();
-            });
-            overlay.addEventListener('keydown', function (evt) {
-                if (evt.key === 'Enter' || evt.key === ' ') {
-                    evt.preventDefault();
-                    disableOverlay();
-                }
-                if (evt.key === 'Escape') {
-                    disableOverlay();
-                }
-            });
-        })();
-    </script>
+    if (continueBtn) continueBtn.addEventListener('click', hide);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) hide(); });
+    overlay.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault();
+        hide();
+      }
+    });
+  });
+</script>
 {% endblock %}

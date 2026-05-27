@@ -227,28 +227,6 @@ html:not(.dark) .testimonial-card {
 }
 
 /* Animation classes */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes slideOutLeft {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-100%) scale(0.9);
-  }
-}
-
 /* Placeholder state when no real testimonials exist */
 .testimonials-placeholder {
   text-align: center;

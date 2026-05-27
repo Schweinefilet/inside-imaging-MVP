@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Two-Factor Authentication · Inside Imaging{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="content auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 class="auth-title">Two-Factor Authentication</h2>
+            <p class="auth-subtitle">Enter the 6-digit code from your authenticator app.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form method="post" action="{{ url_for('mfa_verify') }}" class="auth-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label class="auth-label" for="code">Authentication Code</label>
+                    <input
+                        type="text"
+                        id="code"
+                        name="code"
+                        class="auth-input"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        pattern="\d{6}"
+                        placeholder="000000"
+                        autofocus
+                        required
+                    >
+                </div>
+                <button type="submit" class="auth-button">Verify</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

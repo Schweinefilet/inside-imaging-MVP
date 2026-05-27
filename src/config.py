@@ -31,7 +31,7 @@ DEFAULT_TENANT_NAME = _env("DEFAULT_TENANT_NAME", "Default Tenant")
 
 AUDIT_LOG_ENABLED = _env_bool("AUDIT_LOG_ENABLED", True)
 
-PHI_MODE = _env("PHI_MODE", "passthrough").lower()
+PHI_MODE = _env("PHI_MODE", "pseudonymize").lower()
 
 # Integration listeners
 HL7_LISTENER_HOST = _env("HL7_LISTENER_HOST", "0.0.0.0")

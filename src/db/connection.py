@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -12,11 +13,42 @@ from src import config
 
 DB_PATH = Path("data/patient_data.db")
 
+_DB_ENCRYPTION_KEY = (os.environ.get("DB_ENCRYPTION_KEY") or "").strip()
+
+
+def _get_sqlcipher():
+    try:
+        import sqlcipher3
+        return sqlcipher3
+    except ImportError:
+        raise RuntimeError(
+            "DB_ENCRYPTION_KEY is set but the sqlcipher3 package is not installed.\n"
+            "Install it: pip install sqlcipher3\n"
+            "  macOS:          brew install sqlcipher\n"
+            "  Ubuntu/Debian:  apt install libsqlcipher-dev"
+        )
+
 
 def get_connection() -> sqlite3.Connection:
     """Return a new database connection (foreign keys enabled, Row factory)."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    if _DB_ENCRYPTION_KEY:
+        sc = _get_sqlcipher()
+        conn = sc.connect(str(DB_PATH))
+        try:
+            conn.execute(f"PRAGMA key=\"x'{_DB_ENCRYPTION_KEY}'\"")
+            conn.execute("SELECT count(*) FROM sqlite_master")
+        except Exception as exc:
+            conn.close()
+            if "not a database" in str(exc).lower():
+                raise RuntimeError(
+                    f"Database at {DB_PATH} appears unencrypted but DB_ENCRYPTION_KEY is set.\n"
+                    "Run: python scripts/encrypt_db.py   to migrate the existing database."
+                ) from exc
+            raise
+        conn.row_factory = sqlite3.Row
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -117,9 +149,16 @@ def init_db() -> None:
         ("disease_tags", "TEXT"),
         ("username", "TEXT"),
         ("context", "TEXT"),
+        ("expires_at", "TIMESTAMP"),
     ):
         if col not in cols:
             cur.execute(f"ALTER TABLE patients ADD COLUMN {col} {ddl}")
+    # Backfill expires_at for existing rows using the configured retention window.
+    _retention_years = int(os.environ.get("DATA_RETENTION_YEARS", "6"))
+    cur.execute(
+        f"UPDATE patients SET expires_at = datetime(created_at, '+{_retention_years} years') "
+        "WHERE expires_at IS NULL"
+    )
 
     # --- Users -----------------------------------------------------------
     cur.execute(
@@ -150,7 +189,7 @@ def init_db() -> None:
             tenant_id TEXT UNIQUE NOT NULL,
             display_name TEXT,
             region TEXT,
-            phi_mode TEXT DEFAULT 'passthrough',
+            phi_mode TEXT DEFAULT 'pseudonymize',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
@@ -233,6 +272,24 @@ def init_db() -> None:
     )
     cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_tenant_time ON dicom_audit(tenant_id, created_at)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_resource ON dicom_audit(resource_uid)")
+    cur.execute(
+        """
+        CREATE TRIGGER IF NOT EXISTS audit_no_delete
+        BEFORE DELETE ON dicom_audit
+        BEGIN
+            SELECT RAISE(ABORT, 'Audit records are immutable and cannot be deleted');
+        END
+        """
+    )
+    cur.execute(
+        """
+        CREATE TRIGGER IF NOT EXISTS audit_no_update
+        BEFORE UPDATE ON dicom_audit
+        BEGIN
+            SELECT RAISE(ABORT, 'Audit records are immutable and cannot be modified');
+        END
+        """
+    )
 
     # --- DICOM study/series/instance -----------------------------------
     cur.execute(
@@ -294,7 +351,7 @@ def init_db() -> None:
     cur.execute("CREATE INDEX IF NOT EXISTS idx_series_tenant ON dicom_series(tenant_id)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_instances_tenant ON dicom_instances(tenant_id)")
 
-    # --- Users: tenant_id + lockout columns -----------------------------
+    # --- Users: tenant_id + lockout + MFA columns -----------------------
     cur.execute("PRAGMA table_info(users)")
     user_cols_v2 = [row[1] for row in cur.fetchall()]
     if "tenant_id" not in user_cols_v2:
@@ -307,6 +364,32 @@ def init_db() -> None:
         cur.execute("ALTER TABLE users ADD COLUMN locked_until TIMESTAMP")
     if "last_login_at" not in user_cols_v2:
         cur.execute("ALTER TABLE users ADD COLUMN last_login_at TIMESTAMP")
+    if "totp_secret" not in user_cols_v2:
+        cur.execute("ALTER TABLE users ADD COLUMN totp_secret TEXT")
+    if "totp_enabled" not in user_cols_v2:
+        cur.execute("ALTER TABLE users ADD COLUMN totp_enabled INTEGER DEFAULT 0")
+
+    # --- Roles -----------------------------------------------------------
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_roles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            role TEXT NOT NULL,
+            assigned_by TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(username, role)
+        )
+        """
+    )
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_roles_username ON user_roles(username)")
+    # Seed legacy hardcoded accounts with proper roles so existing deployments
+    # continue to work after the RBAC migration.
+    for _uname, _role in [("admin", "admin"), ("admin", "radiologist"), ("radiologist", "radiologist")]:
+        cur.execute(
+            "INSERT OR IGNORE INTO user_roles (username, role, assigned_by) VALUES (?, ?, ?)",
+            (_uname, _role, "system_migration"),
+        )
 
     # --- Feedback --------------------------------------------------------
     cur.execute(

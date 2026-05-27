@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from src.db.connection import execute, fetch_one
 
@@ -65,3 +65,56 @@ def record_successful_login(username: str) -> None:
         " last_login_at = CURRENT_TIMESTAMP WHERE username = ?",
         (username,),
     )
+
+
+# --- Role management -----------------------------------------------------
+
+def assign_role(username: str, role: str, assigned_by: str = "") -> None:
+    execute(
+        "INSERT OR IGNORE INTO user_roles (username, role, assigned_by) VALUES (?, ?, ?)",
+        (username, role, assigned_by),
+    )
+
+
+def remove_role(username: str, role: str) -> None:
+    execute("DELETE FROM user_roles WHERE username = ? AND role = ?", (username, role))
+
+
+def get_user_roles(username: str) -> List[str]:
+    rows = fetch_all("SELECT role FROM user_roles WHERE username = ?", (username,))
+    return [str(row[0]) for row in rows]
+
+
+def has_any_role(username: str, roles: List[str]) -> bool:
+    if not username or not roles:
+        return False
+    placeholders = ",".join("?" * len(roles))
+    row = fetch_one(
+        f"SELECT 1 FROM user_roles WHERE username = ? AND role IN ({placeholders}) LIMIT 1",
+        (username, *roles),
+    )
+    return row is not None
+
+
+# --- TOTP / MFA ----------------------------------------------------------
+
+def get_totp_secret(username: str) -> Optional[str]:
+    row = fetch_one("SELECT totp_secret FROM users WHERE username = ?", (username,))
+    return str(row[0]) if row and row[0] else None
+
+
+def is_totp_enabled(username: str) -> bool:
+    row = fetch_one("SELECT totp_enabled FROM users WHERE username = ?", (username,))
+    return bool(row and row[0])
+
+
+def set_totp_secret(username: str, secret: str) -> None:
+    execute("UPDATE users SET totp_secret = ? WHERE username = ?", (secret, username))
+
+
+def enable_totp(username: str) -> None:
+    execute("UPDATE users SET totp_enabled = 1 WHERE username = ?", (username,))
+
+
+def disable_totp(username: str) -> None:
+    execute("UPDATE users SET totp_enabled = 0, totp_secret = NULL WHERE username = ?", (username,))

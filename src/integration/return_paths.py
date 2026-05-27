@@ -4,15 +4,53 @@ from __future__ import annotations
 
 import datetime as _dt
 import io
+import ipaddress
 import logging
+import socket
+import urllib.parse
 from typing import Dict, List
 
 import requests
 
 
+def _validate_webhook_url(url: str) -> None:
+    """Raise ValueError if the URL targets a private/reserved address (SSRF prevention)."""
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except Exception as exc:
+        raise ValueError(f"Invalid webhook URL: {exc}") from exc
+
+    if parsed.scheme not in ("https", "http"):
+        raise ValueError(
+            f"Webhook URL must use http or https scheme, got: {parsed.scheme!r}"
+        )
+
+    host = parsed.hostname
+    if not host:
+        raise ValueError("Webhook URL has no hostname")
+
+    try:
+        resolved = {info[4][0] for info in socket.getaddrinfo(host, None)}
+    except socket.gaierror as exc:
+        raise ValueError(f"Webhook hostname could not be resolved: {host!r}") from exc
+
+    for addr_str in resolved:
+        try:
+            addr = ipaddress.ip_address(addr_str)
+        except ValueError:
+            continue
+        if (addr.is_loopback or addr.is_private or addr.is_link_local
+                or addr.is_reserved or addr.is_unspecified):
+            raise ValueError(
+                f"Webhook URL resolves to a private/reserved address ({addr_str}). "
+                "Only public endpoints are permitted."
+            )
+
+
 def deliver_webhook(webhook_url: str, pdf_bytes: bytes, metadata: Dict[str, str]) -> Dict:
     if not webhook_url:
         raise ValueError("webhook_url is empty")
+    _validate_webhook_url(webhook_url)
 
     files = {"pdf": ("patient_copy.pdf", pdf_bytes, "application/pdf")}
     data = {k: str(v or "") for k, v in metadata.items()}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Enable Two-Factor Authentication · Inside Imaging{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="content auth-page">
+    <div class="auth-container">
+        <div class="auth-card" style="max-width:480px">
+            <h2 class="auth-title">Enable 2FA</h2>
+            <p class="auth-subtitle">Scan the QR code with Google Authenticator, Authy, or any TOTP app, then enter the 6-digit code to confirm.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div style="text-align:center;margin:1.5rem 0">
+                <img src="data:image/png;base64,{{ qr_b64 }}" alt="QR code" style="width:200px;height:200px;border:1px solid #ddd;border-radius:8px">
+            </div>
+
+            <p style="font-size:0.8rem;color:var(--text-muted,#888);text-align:center;margin-bottom:1rem">
+                Can't scan? Enter this key manually:<br>
+                <code style="font-size:0.85rem;letter-spacing:0.1em">{{ secret }}</code>
+            </p>
+
+            <form method="post" action="{{ url_for('mfa_setup') }}" class="auth-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label class="auth-label" for="code">Verification Code</label>
+                    <input
+                        type="text"
+                        id="code"
+                        name="code"
+                        class="auth-input"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        pattern="\d{6}"
+                        placeholder="000000"
+                        autofocus
+                        required
+                    >
+                </div>
+                <button type="submit" class="auth-button">Confirm &amp; Enable</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

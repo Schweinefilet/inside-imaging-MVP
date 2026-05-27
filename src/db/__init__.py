@@ -35,6 +35,15 @@ from src.db.users import (
     is_account_locked,
     record_failed_login,
     record_successful_login,
+    assign_role,
+    remove_role,
+    get_user_roles,
+    has_any_role,
+    get_totp_secret,
+    is_totp_enabled,
+    set_totp_secret,
+    enable_totp,
+    disable_totp,
 )
 from src.db.tenants import (
     get_user_tenant,
@@ -84,6 +93,10 @@ __all__ = [
     "get_user_by_username", "create_user",
     "get_user_by_google_id", "create_oauth_user",
     "is_account_locked", "record_failed_login", "record_successful_login",
+    # roles
+    "assign_role", "remove_role", "get_user_roles", "has_any_role",
+    # mfa
+    "get_totp_secret", "is_totp_enabled", "set_totp_secret", "enable_totp", "disable_totp",
     # tenants
     "get_user_tenant", "get_tenant", "create_tenant",
     "update_tenant_integration", "get_tenant_integration",

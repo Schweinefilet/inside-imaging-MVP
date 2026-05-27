@@ -4,6 +4,7 @@ import io
 import re
 import json
 import logging
+import time
 from pathlib import Path
 import boto3
 from botocore.config import Config
@@ -30,8 +31,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 
-# local db
+# local db + auth
 from src import db
+from src.auth import require_role
 from src.dicom_handler import parse_dicom_metadata, extract_frame_as_png, store_dicom, sanitize_dicom_bytes
 from src.storage import get_storage
 
@@ -190,6 +192,26 @@ from src.integration.api import integration_bp
 if csrf is not None:
     csrf.exempt(integration_bp)
 app.register_blueprint(integration_bp)
+
+
+# Phase 0.3b: session inactivity timeout
+_INACTIVITY_TIMEOUT_SECONDS = int(os.getenv("SESSION_INACTIVITY_SECONDS", "1800"))  # 30 min
+
+
+@app.before_request
+def _check_inactivity_timeout():
+    if "username" not in session:
+        return None
+    last = session.get("_last_active")
+    now = time.time()
+    if last and (now - float(last)) > _INACTIVITY_TIMEOUT_SECONDS:
+        session.clear()
+        if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
+            return jsonify({"error": "Session expired"}), 401
+        flash("Your session expired due to inactivity. Please log in again.", "info")
+        return redirect(url_for("login"))
+    session["_last_active"] = now
+    return None
 
 
 # Phase 0.3: force HTTPS in production
@@ -1669,10 +1691,9 @@ def profile():
     # Get user's feedback submissions
     user_feedback = db.get_user_feedback(username)
     
-    # Check if user is admin (for now, hardcoded check - you can enhance this)
-    is_admin = username in ["admin", "radiologist"]
-    
-    return render_template("profile.html", feedback_list=user_feedback, is_admin=is_admin)
+    is_admin = db.has_any_role(username, ["admin", "radiologist"])
+    mfa_enabled = db.is_totp_enabled(username)
+    return render_template("profile.html", feedback_list=user_feedback, is_admin=is_admin, mfa_enabled=mfa_enabled)
 
 
 @app.route("/submit-feedback", methods=["POST"])
@@ -1720,12 +1741,10 @@ def feedback_admin():
     if not username:
         return redirect(url_for("login"))
     
-    # Check if user is admin
-    is_admin = username in ["admin", "radiologist"]
-    if not is_admin:
+    if not db.has_any_role(username, ["admin", "radiologist"]):
         flash("Access denied. Admin privileges required.", "error")
         return redirect(url_for("profile"))
-    
+
     # Get filter status from query params
     status_filter = request.args.get("status", "pending")
     if status_filter == "all":
@@ -1743,9 +1762,7 @@ def review_feedback(feedback_id):
     if not username:
         return redirect(url_for("login"))
     
-    # Check if user is admin
-    is_admin = username in ["admin", "radiologist"]
-    if not is_admin:
+    if not db.has_any_role(username, ["admin", "radiologist"]):
         flash("Access denied. Admin privileges required.", "error")
         return redirect(url_for("feedback_admin"))
     
@@ -1828,7 +1845,12 @@ def login():
         if ok:
             db.record_successful_login(username)
             session.clear()  # rotate session on auth change to mitigate fixation
+            if db.is_totp_enabled(username):
+                session["_mfa_pending"] = username
+                session.permanent = True
+                return redirect(url_for("mfa_verify"))
             session["username"] = username
+            session["_last_active"] = time.time()
             session.permanent = True
             flash("Logged in successfully.", "success")
             return redirect(url_for("dashboard"))
@@ -1932,6 +1954,113 @@ def logout():
     session.clear()  # Clear entire session instead of just username
     flash("Logged out successfully.", "success")
     return redirect(url_for("login"))
+
+
+# --- MFA routes ----------------------------------------------------------
+
+@app.route("/mfa/verify", methods=["GET", "POST"])
+def mfa_verify():
+    import pyotp
+    pending_username = session.get("_mfa_pending")
+    if not pending_username:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        code = (request.form.get("code") or "").strip()
+        secret = db.get_totp_secret(pending_username)
+        if not secret:
+            session.pop("_mfa_pending", None)
+            flash("MFA not configured. Please contact support.", "error")
+            return redirect(url_for("login"))
+
+        if pyotp.TOTP(secret).verify(code, valid_window=1):
+            session.pop("_mfa_pending", None)
+            session["username"] = pending_username
+            session["_last_active"] = time.time()
+            session.permanent = True
+            flash("Logged in successfully.", "success")
+            return redirect(url_for("dashboard"))
+
+        flash("Invalid authentication code. Please try again.", "error")
+
+    return render_template("mfa_verify.html")
+
+
+@app.route("/mfa/setup", methods=["GET", "POST"])
+def mfa_setup():
+    import base64
+    import pyotp
+    import qrcode
+
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        code = (request.form.get("code") or "").strip()
+        pending_secret = session.get("_mfa_setup_secret")
+        if not pending_secret:
+            flash("Setup session expired. Please try again.", "error")
+            return redirect(url_for("mfa_setup"))
+
+        if pyotp.TOTP(pending_secret).verify(code, valid_window=1):
+            db.set_totp_secret(username, pending_secret)
+            db.enable_totp(username)
+            session.pop("_mfa_setup_secret", None)
+            flash("Two-factor authentication enabled.", "success")
+            return redirect(url_for("profile"))
+
+        flash("Invalid code — please try again.", "error")
+
+    secret = pyotp.random_base32()
+    session["_mfa_setup_secret"] = secret
+    uri = pyotp.TOTP(secret).provisioning_uri(name=username, issuer_name="Inside Imaging")
+    buf = io.BytesIO()
+    qrcode.make(uri).save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    return render_template("mfa_setup.html", secret=secret, qr_b64=qr_b64, uri=uri)
+
+
+@app.route("/mfa/disable", methods=["POST"])
+def mfa_disable():
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    db.disable_totp(username)
+    flash("Two-factor authentication disabled.", "success")
+    return redirect(url_for("profile"))
+
+
+# --- Data retention admin endpoint ---------------------------------------
+
+@app.route("/admin/retention-purge", methods=["POST"])
+@require_role("admin")
+def retention_purge():
+    from src.db.connection import execute, fetch_one
+    username = session.get("username")
+    dry_run = request.form.get("dry_run", "1") != "0"
+
+    count_row = fetch_one(
+        "SELECT count(*) FROM patients WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')"
+    )
+    expired_count = count_row[0] if count_row else 0
+
+    if dry_run:
+        return jsonify({"dry_run": True, "would_purge": expired_count})
+
+    execute(
+        "DELETE FROM patients WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')"
+    )
+    _audit(
+        tenant_id=_current_tenant(),
+        username=username,
+        action="retention_purge",
+        resource_type="patients",
+        details=f"Purged {expired_count} expired patient records",
+    )
+    logging.info("Retention purge by %s: deleted %d expired patient records", username, expired_count)
+    return jsonify({"dry_run": False, "purged": expired_count})
 
 
 @app.route("/dicom/upload", methods=["POST"])

@@ -1273,180 +1273,157 @@ def dashboard():
                           recent_reports=recent_reports, user_reports=user_reports)
 
 
-@app.route("/upload", methods=["GET", "POST"])
-def upload():
-    if request.method == "GET":
-        return redirect(url_for("dashboard"))
+# Dispatch table for file uploads: extension → (extractor, kind, flash-message-on-empty)
+_IMG_ERR = ("Unable to extract text from the image. Please try a clearer image "
+            "or paste the text directly.")
+_UPLOAD_EXTRACTORS = {
+    ".pdf":  (_extract_text_from_pdf_bytes,  "pdf",
+              "Unable to extract text from the PDF. Please try a different file or paste the text directly."),
+    ".heic": (_extract_text_from_heif_bytes, "heif",
+              "Unable to extract text from the HEIF/HEIC image. Please try a different format or paste the text directly."),
+    ".heif": (_extract_text_from_heif_bytes, "heif",
+              "Unable to extract text from the HEIF/HEIC image. Please try a different format or paste the text directly."),
+    ".docx": (_extract_text_from_docx_bytes, "docx",
+              "Unable to extract text from the Word document. Please try a different file or paste the text directly."),
+    ".png":  (_extract_text_from_image_bytes, "image", _IMG_ERR),
+    ".jpg":  (_extract_text_from_image_bytes, "image", _IMG_ERR),
+    ".jpeg": (_extract_text_from_image_bytes, "image", _IMG_ERR),
+    ".webp": (_extract_text_from_image_bytes, "image", _IMG_ERR),
+    ".tif":  (_extract_text_from_image_bytes, "image", _IMG_ERR),
+    ".tiff": (_extract_text_from_image_bytes, "image", _IMG_ERR),
+    ".bmp":  (_extract_text_from_image_bytes, "image", _IMG_ERR),
+}
 
-    file = request.files.get("file")
-    lang = request.form.get("language", "English")
-    file_text = request.form.get("file_text", "")
-    context = request.form.get("context", "")
-    extracted = ""
-    src_kind = ""
 
-    # Prefer pasted text if provided
+def _extract_uploaded_report(file, file_text):
+    """Return (text, kind, error_message). A non-empty error triggers flash+redirect."""
     if file_text and file_text.strip():
-        extracted = file_text.strip()
-        src_kind = "text"
-    elif file and file.filename:
-        fname = secure_filename(file.filename)
-        data = file.read()
-        lower_name = fname.lower()
-        try:
-            if lower_name.endswith(".pdf"):
-                extracted = _extract_text_from_pdf_bytes(data)
-                src_kind = "pdf"
-            elif lower_name.endswith((".heic", ".heif")):
-                extracted = _extract_text_from_heif_bytes(data)
-                src_kind = "heif"
-                if not extracted:
-                    flash(
-                        "Unable to extract text from the HEIF/HEIC image. The file may be corrupted "
-                        "or contain no readable text. Please try a different format or paste the text directly.",
-                        "error",
-                    )
-                    return redirect(url_for("dashboard"))
-            elif lower_name.endswith((".docx",)):
-                extracted = _extract_text_from_docx_bytes(data)
-                src_kind = "docx"
-                if not extracted:
-                    flash(
-                        "Unable to extract text from the Word document. The file may be corrupted "
-                        "or empty. Please try a different file or paste the text directly.",
-                        "error",
-                    )
-                    return redirect(url_for("dashboard"))
-            elif lower_name.endswith((".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp")):
-                extracted = _extract_text_from_image_bytes(data)
-                src_kind = "image"
-                if not extracted:
-                    flash(
-                        "Unable to extract text from the image. The image may be too large (>5MB), "
-                        "corrupted, or contain no readable text. Please try a clearer image or paste the text directly.",
-                        "error",
-                    )
-                    return redirect(url_for("dashboard"))  # ✅ Fixed
-            else:
-                try:
-                    extracted = data.decode("utf-8", "ignore")
-                    src_kind = "text"
-                except Exception:
-                    logging.exception("decode failed; extracted empty")
-        except Exception:
-            logging.exception("file handling failed; extracted empty")
+        return file_text.strip(), "text", ""
+    if not (file and file.filename):
+        return "", "", ""
 
-    logging.info("len(extracted)=%s kind=%s", len(extracted or ""), src_kind or "?")
+    fname = secure_filename(file.filename)
+    data = file.read()
+    ext = "." + fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
 
-    triage_ok, triage_diag = _triage_radiology_report(extracted)
-    if not triage_ok:
-        message = (
-            "The uploaded file doesn't appear to be a radiology report. "
-            "Please upload a full imaging report (with sections like Findings and Impression)."
-        )
-        flash(message, "error")
-        logging.warning("Upload triage rejected (reason=%s, words=%s)", triage_diag.get("reason"), triage_diag.get("word_count"))
-        return redirect(url_for("dashboard"))
-
-    # HIPAA-compliant name handling: Parse metadata BEFORE build_structured strips it
-    full_patient_name = ""
-    if parse_metadata:
-        try:
-            raw_meta = parse_metadata(extracted)
-            full_patient_name = raw_meta.get("name", "")
-            logging.info("Extracted patient name (length=%d) for session-only storage", len(full_patient_name))
-        except Exception:
-            logging.exception("Failed to parse metadata for name extraction")
-
-    # Build structured summary
     try:
-        logging.info("calling build_structured language=%s", lang)
-        S = build_structured(extracted, LAY_GLOSS, language=lang) or {}
-        logging.info(
-            "summary_keys=%s",
-            {k: len((S or {}).get(k) or "") for k in ("reason", "technique", "findings", "conclusion", "concern")},
-        )
+        if ext in _UPLOAD_EXTRACTORS:
+            extractor, kind, err = _UPLOAD_EXTRACTORS[ext]
+            text = extractor(data) or ""
+            return text, kind, ("" if text else err)
+        # Unknown extension: best-effort UTF-8 decode
+        return data.decode("utf-8", "ignore"), "text", ""
     except Exception:
-        logging.exception("build_structured failed")
-        S = {"reason": "", "technique": "", "findings": "", "conclusion": "", "concern": ""}
+        logging.exception("file handling failed; extracted empty")
+        return "", ext.lstrip("."), ""
 
-    # Patient and study from structured metadata
-    patient_struct = S.get("patient") if isinstance(S, dict) else None
-    if isinstance(patient_struct, dict) and patient_struct:
-        patient = {
-            "hospital": patient_struct.get("hospital", ""),
-            "study": patient_struct.get("study", "Unknown"),
-            "name": full_patient_name,  # Restore full name for display (never sent to OpenAI)
-            "sex": patient_struct.get("sex", ""),
-            "age": patient_struct.get("age", ""),
-            "date": patient_struct.get("date", ""),
-            "history": patient_struct.get("history", ""),
-        }
-    else:
-        patient = {
-            "hospital": S.get("hospital", ""),
-            "study": S.get("study", "Unknown"),
-            "name": full_patient_name,  # Restore full name for display (never sent to OpenAI)
-            "sex": S.get("sex", ""),
-            "age": S.get("age", ""),
-            "date": S.get("date", ""),
-            "history": "",
-        }
-    study = {"organ": patient.get("study") or "Unknown"}
-    structured = S
 
-    # Simple report stats for UI
-    high_html = (S.get("findings", "") or "") + (S.get("conclusion", "") or "")
-    report_stats = {
-        "words": len((extracted or "").split()),
-        "sentences": len(re.findall(r"[.!?]+", extracted or "")),
-        "highlights_positive": high_html.count('class="ii-pos"'),
-        "highlights_negative": high_html.count('class="ii-neg"'),
+def _build_patient_block(structured, full_patient_name):
+    """Patient display dict; restores full_patient_name (display-only, session-only)."""
+    pstruct = structured.get("patient") if isinstance(structured, dict) else None
+    src = pstruct if isinstance(pstruct, dict) and pstruct else structured
+    return {
+        "hospital": src.get("hospital", ""),
+        "study":    src.get("study", "Unknown"),
+        "name":     full_patient_name,
+        "sex":      src.get("sex", ""),
+        "age":      src.get("age", ""),
+        "date":     src.get("date", ""),
+        "history":  src.get("history", ""),
     }
 
-    # Calculate disease tags for immediate display
-    findings_blob = (structured.get("findings") or "") + (structured.get("conclusion") or "") + (structured.get("concern") or "")
-    disease_tags = db.detect_disease_tags(findings_blob)
-    
 
-
-    # persist for later pages like /payment and PDF download
-    session["structured"] = structured
-    session["patient"] = patient
-    session["language"] = lang
-    session["context"] = context
-
-    report_id = None
+def _persist_recent_report(patient, structured, report_stats, lang, context):
+    """Persist analytics + prepend the new report to the session's recent list."""
     try:
         username = session.get("username", "")
         report_id = db.store_report_event(patient, structured, report_stats, lang, username, context)
     except Exception:
         logging.exception("Failed to persist report analytics.")
+        return
+    if not report_id:
+        return
+    try:
+        brief = db.get_report_brief(report_id)
+    except Exception:
+        logging.exception("Failed to fetch report brief.")
+        return
+    if brief:
+        history = [item for item in (session.get("recent_reports") or []) if item.get("id") != report_id]
+        session["recent_reports"] = [brief] + history[:4]
 
-    if report_id:
+
+@app.route("/upload", methods=["GET", "POST"])
+def upload():
+    if request.method == "GET":
+        return redirect(url_for("dashboard"))
+
+    lang = request.form.get("language", "English")
+    context = request.form.get("context", "")
+
+    extracted, kind, err = _extract_uploaded_report(
+        request.files.get("file"),
+        request.form.get("file_text", ""),
+    )
+    if err:
+        flash(err, "error")
+        return redirect(url_for("dashboard"))
+    logging.info("len(extracted)=%s kind=%s", len(extracted), kind or "?")
+
+    triage_ok, triage_diag = _triage_radiology_report(extracted)
+    if not triage_ok:
+        flash(
+            "The uploaded file doesn't appear to be a radiology report. "
+            "Please upload a full imaging report (with sections like Findings and Impression).",
+            "error",
+        )
+        logging.warning("Upload triage rejected (reason=%s, words=%s)",
+                        triage_diag.get("reason"), triage_diag.get("word_count"))
+        return redirect(url_for("dashboard"))
+
+    # PHI handling: extract the full name from raw text BEFORE build_structured strips it,
+    # then keep it ONLY in session (never sent to OpenAI). Display-only on result page.
+    full_patient_name = ""
+    if parse_metadata:
         try:
-            brief = db.get_report_brief(report_id)
+            full_patient_name = (parse_metadata(extracted) or {}).get("name", "")
+            logging.info("Extracted patient name (length=%d) for session-only storage", len(full_patient_name))
         except Exception:
-            logging.exception("Failed to fetch report brief.")
-            brief = None
-        if brief:
-            history = session.get("recent_reports") or []
-            filtered = [item for item in history if item.get("id") != report_id]
-            session["recent_reports"] = [brief] + filtered[:4]
+            logging.exception("Failed to parse metadata for name extraction")
 
-    # If context is provided, prepend it to the reason for scan
+    try:
+        structured = build_structured(extracted, LAY_GLOSS, language=lang) or {}
+    except Exception:
+        logging.exception("build_structured failed")
+        structured = {"reason": "", "technique": "", "findings": "", "conclusion": "", "concern": ""}
+
+    patient = _build_patient_block(structured, full_patient_name)
+    high_html = (structured.get("findings", "") or "") + (structured.get("conclusion", "") or "")
+    report_stats = {
+        "words": len(extracted.split()),
+        "sentences": len(re.findall(r"[.!?]+", extracted)),
+        "highlights_positive": high_html.count('class="ii-pos"'),
+        "highlights_negative": high_html.count('class="ii-neg"'),
+    }
+    disease_tags = db.detect_disease_tags(
+        (structured.get("findings") or "") + (structured.get("conclusion") or "") + (structured.get("concern") or "")
+    )
+
+    session["structured"] = structured
+    session["patient"] = patient
+    session["language"] = lang
+    session["context"] = context
+
+    _persist_recent_report(patient, structured, report_stats, lang, context)
+
     if context:
         structured["reason"] = f"<strong>Patient context:</strong> {context}<br><br>" + (structured.get("reason") or "")
+
     return render_template(
         "result.html",
-        S=structured,
-        structured=structured,
-        patient=patient,
-        extracted=extracted,
-        study=study,
-        language=lang,
-        report_stats=report_stats,
-        disease_tags=disease_tags,
+        S=structured, structured=structured, patient=patient,
+        extracted=extracted, study={"organ": patient.get("study") or "Unknown"},
+        language=lang, report_stats=report_stats, disease_tags=disease_tags,
     )
 
 

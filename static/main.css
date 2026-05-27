@@ -41,29 +41,7 @@
 /* Smooth theme transitions - element-level transitions applied during toggle */
 
 /* Apply transitions to header shell, navbar and team elements during theme change */
-html.theme-transitioning .header-shell,
-html.theme-transitioning .navbar,
-html.theme-transitioning .navbar a,
-html.theme-transitioning .navbar a::before,
-html.theme-transitioning .nav-auth a,
-html.theme-transitioning .nav-auth span,
-html.theme-transitioning .username-badge,
-html.theme-transitioning .team-member,
-html.theme-transitioning .team-cta,
-html.theme-transitioning .team-hero h1 {
-  transition: background 0.5s ease,
-              background-color 0.5s ease,
-              color 0.5s ease,
-              border-color 0.5s ease,
-              box-shadow 0.5s ease,
-              backdrop-filter 0.5s ease !important;
-}
-
 /* Restore slider knob transform animation during theme change */
-html.theme-transitioning .theme-switch-track::after {
-  transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
-}
-
 html, body { height: 100%; }
 
 html {
@@ -171,14 +149,19 @@ button:active {
 /* Light mode button fix (light is default; only fires when .dark is absent) */
 html:not(.dark) button {
   background: var(--mint);
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 700;
   border: 1px solid color-mix(in oklab, var(--mint) 50%, #000000);
+  box-shadow: none;
+}
+
+html:not(.dark) button:active {
+  box-shadow: none;
 }
 
 html:not(.dark) button:hover {
   background: var(--primary-hover, color-mix(in oklab, var(--mint) 85%, #000000));
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  box-shadow: none;
 }
 
 input[type="file"] {
@@ -356,18 +339,6 @@ a:hover {
 }
 
 /* fade in the main container */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* Header with logo and navigation */
 .header {
   display: flex;
@@ -384,7 +355,7 @@ a:hover {
 .logo,
 .navbar-brand .logo,
 .navbar-brand img {
-  height: 64px;
+  height: 52px;
   width: auto;
   object-fit: contain;
   border-radius: 0;
@@ -573,6 +544,39 @@ html:not(.dark) ::selection,
   transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 
+/* Light mode: explicitly lock in navy bg + white text (8.8:1 contrast).
+   Needed because html:not(.dark) button (specificity 0,1,1) would otherwise
+   override .user-menu-toggle (0,1,0) and bleed in margin/box-shadow. */
+html:not(.dark) .user-menu-toggle {
+  background: var(--primary);        /* #1e3a5f navy */
+  color: #ffffff;
+  border-color: var(--primary-hover);
+  box-shadow: none;
+  margin: 0;
+}
+
+html:not(.dark) .user-menu-toggle:hover,
+html:not(.dark) .user-menu-toggle:focus-visible {
+  background: var(--primary-hover);  /* #152a45 — stays legible */
+  border-color: var(--primary-hover);
+  box-shadow: none;
+}
+
+/* Dark mode: surface-2 bg + ink text (≈13:1 contrast) */
+html.dark .user-menu-toggle {
+  background: var(--surface-2);      /* #22242d */
+  color: var(--ink);                 /* #f2f6f4 */
+  border-color: var(--border);
+  box-shadow: none;
+  margin: 0;
+}
+
+html.dark .user-menu-toggle:hover,
+html.dark .user-menu-toggle:focus-visible {
+  background: color-mix(in oklab, var(--surface-2) 70%, var(--primary) 30%);
+  border-color: var(--ink-soft);
+}
+
 .user-menu-toggle:hover,
 .user-menu-toggle:focus-visible {
   border-color: var(--ink-soft, #475569);
@@ -711,13 +715,6 @@ html:not(.dark) ::selection,
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  html.theme-transitioning *,
-  html.theme-transitioning *::before,
-  html.theme-transitioning *::after,
-  .theme-switch-track,
-  .theme-switch-track::after {
-    transition: none !important;
-  }
 }
 
 /* ---- Simple-output lists and highlight colors sitewide ---- */
@@ -760,58 +757,15 @@ html:not(.dark) ::selection,
   align-items: center;
   flex: 0 0 auto;
   position: relative;
+  outline: none;
 }
 
-/* Logo sequential fade: 0.25s out + 0.25s in */
+.navbar-brand:focus {
+  outline: none;
+}
+
 .navbar-brand .logo {
   display: block;
-}
-
-.navbar-brand .logo-dark {
-  opacity: 1;
-}
-
-.navbar-brand .logo-light {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-}
-
-html:not(.dark) .navbar-brand .logo-dark {
-  opacity: 0;
-}
-
-html:not(.dark) .navbar-brand .logo-light {
-  opacity: 1;
-}
-
-@keyframes logo-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes logo-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-html.theme-transitioning.to-light .navbar-brand .logo-dark {
-  animation: logo-fade-out 0.25s ease forwards;
-}
-
-html.theme-transitioning.to-light .navbar-brand .logo-light {
-  opacity: 0;
-  animation: logo-fade-in 0.25s ease 0.25s forwards;
-}
-
-html.theme-transitioning.to-dark .navbar-brand .logo-light {
-  animation: logo-fade-out 0.25s ease forwards;
-}
-
-html.theme-transitioning.to-dark .navbar-brand .logo-dark {
-  opacity: 0;
-  animation: logo-fade-in 0.25s ease 0.25s forwards;
 }
 
 .navbar {
@@ -833,7 +787,7 @@ html.theme-transitioning.to-dark .navbar-brand .logo-dark {
 }
 
 .navbar:hover {
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateX(-50%);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
 }
 
@@ -935,6 +889,10 @@ html:not(.dark) .username-badge,
 html:not(.dark) .nav-auth a,
 html:not(.dark) .nav-auth span {
   color: #0f172a;
+}
+
+html:not(.dark) .nav-auth .user-name {
+  color: #ffffff;
 }
 
 .navbar a:focus-visible {
@@ -1169,16 +1127,11 @@ html:not(.dark) .signup-button {
 }
 
 .navbar-brand .logo {
-  height: 28px;
+  height: 52px;
   width: auto;
   display: block;
 }
 
-/* Show only the light-mode logo since we default to light.
-   Dark mode: would need a real dark-bg-friendly variant. */
-.navbar-brand .logo-dark { display: none; }
-html.dark .navbar-brand .logo-dark { display: block; }
-html.dark .navbar-brand .logo-light { display: none; }
 
 .navbar-brand-name {
   font-family: var(--font-sans);
@@ -1347,28 +1300,11 @@ html.dark .navbar-brand .logo-light { display: none; }
    so we don't get two theme toggles on the page. */
 body > label.theme-switch.fixed-switch { display: none !important; }
 
-/* --- Reset any legacy logo-fade positioning that left a white sliver ----- */
-/* The legacy system absolutely-positioned .logo-light on top of .logo-dark
-   and faded between them. The new system uses display: none/block via the
-   .dark class. These overrides kill the legacy positioning so the img
-   participates in flex layout cleanly. */
 .navbar-brand .logo {
-  position: static !important;
-  opacity: 1 !important;
-  vertical-align: middle;
+  display: block;
   border: 0;
+  outline: 0;
 }
-.navbar-brand .logo-light,
-.navbar-brand .logo-dark {
-  position: static !important;
-  top: auto !important;
-  left: auto !important;
-  opacity: 1 !important;
-}
-/* Re-assert which logo is shown based on the .dark class set by theme.js */
-.navbar-brand .logo-dark { display: none !important; }
-html.dark .navbar-brand .logo-dark { display: block !important; }
-html.dark .navbar-brand .logo-light { display: none !important; }
 
 /* Belt-and-braces: remove default margins from html/body so no white gap
    appears between the viewport edge and the sticky header. */

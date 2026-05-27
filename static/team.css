@@ -153,20 +153,37 @@
 
 .team-cta .btn-primary {
     display: inline-block;
-    padding: 1rem 2.5rem;
+    padding: 12px 16px;
     background: var(--mint);
-    color: #000;
+    color: #051e14;
     text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
+    border-radius: 14px;
+    border: 1px solid color-mix(in oklab, var(--mint) 28%, var(--border));
+    font-weight: 700;
     font-size: 1rem;
-    transition: all 0.2s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .team-cta .btn-primary:hover {
-    background: var(--mint-soft);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+    background: color-mix(in oklab, var(--mint) 85%, #ffffff);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+
+.team-cta .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .team-cta .btn-primary {
+    color: #051e14;
+    box-shadow: none;
+}
+
+html:not(.dark) .team-cta .btn-primary:hover {
+    background: color-mix(in oklab, var(--mint) 85%, #000000);
+    box-shadow: none;
 }
 
 /* Dark mode adjustments */

@@ -224,14 +224,14 @@ def receive_report():
         translation = int_translator.run_translation(report_text, language=metadata.get("language", "English"))
     except Exception as exc:
         db.update_integration_report(report_id, status="error", error=str(exc), mark_processed=True)
-        return jsonify({"error": f"translation failed: {exc}", "report_id": report_id}), 500
+        return jsonify({"error": "translation failed", "report_id": report_id}), 500
 
     try:
         pdf_bytes = _render_patient_copy(tenant_integration, translation, metadata)
     except Exception as exc:
         logging.exception("PDF render failed")
         db.update_integration_report(report_id, status="error", error=f"pdf_render: {exc}", mark_processed=True)
-        return jsonify({"error": f"pdf render failed: {exc}", "report_id": report_id}), 500
+        return jsonify({"error": "pdf render failed", "report_id": report_id}), 500
 
     outbound_key = f"tenants/{tenant_id}/integration/outbound/{report_id}.pdf"
     try:

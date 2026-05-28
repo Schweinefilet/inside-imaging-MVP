@@ -79,6 +79,7 @@ from src.db.feedback import (
     update_feedback_status,
     get_user_feedback,
 )
+from src.db.backup import backup_db
 
 __all__ = [
     # connection
@@ -112,4 +113,6 @@ __all__ = [
     # feedback
     "submit_feedback", "get_all_feedback",
     "update_feedback_status", "get_user_feedback",
+    # backup
+    "backup_db",
 ]

@@ -50,6 +50,7 @@ def get_connection() -> sqlite3.Connection:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA journal_mode = WAL")
     return conn
 
 
@@ -96,6 +97,9 @@ def execute_many(stmts: list) -> Optional[int]:
             cur = conn.execute(sql, params)
             last_id = cur.lastrowid
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
     return int(last_id) if last_id is not None else None
@@ -159,6 +163,11 @@ def init_db() -> None:
         f"UPDATE patients SET expires_at = datetime(created_at, '+{_retention_years} years') "
         "WHERE expires_at IS NULL"
     )
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_created_at ON patients(created_at)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_language ON patients(language)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_sex ON patients(sex)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_study ON patients(study)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_username ON patients(username)")
 
     # --- Users -----------------------------------------------------------
     cur.execute(

@@ -40,10 +40,24 @@ def get_stats() -> Dict[str, Any]:
         gender[_gender_bucket(sex)] += count
 
     ranges = {"0-17": 0, "18-30": 0, "31-50": 0, "51-65": 0, "66+": 0}
-    for (raw,) in fetch_all("SELECT age FROM patients WHERE age IS NOT NULL AND age != ''"):
-        age = _parse_age(raw)
-        if age is not None:
-            ranges[_age_bucket(age)] += 1
+    for bucket, count in fetch_all(
+        """
+        SELECT
+            CASE
+                WHEN CAST(age AS INTEGER) BETWEEN 1 AND 17  THEN '0-17'
+                WHEN CAST(age AS INTEGER) BETWEEN 18 AND 30 THEN '18-30'
+                WHEN CAST(age AS INTEGER) BETWEEN 31 AND 50 THEN '31-50'
+                WHEN CAST(age AS INTEGER) BETWEEN 51 AND 65 THEN '51-65'
+                WHEN CAST(age AS INTEGER) > 65              THEN '66+'
+            END AS bucket,
+            COUNT(*) AS cnt
+        FROM patients
+        WHERE age IS NOT NULL AND age != '' AND CAST(age AS INTEGER) > 0
+        GROUP BY bucket
+        """
+    ):
+        if bucket:
+            ranges[bucket] += count
 
     language_mix = [
         {"label": row[0], "count": row[1]}

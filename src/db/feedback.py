@@ -40,7 +40,7 @@ def submit_feedback(username: str, feedback_type: str, subject: str,
 
 
 def get_all_feedback(status: Optional[str] = None) -> List[Dict[str, Any]]:
-    if status:
+    if status is not None:
         rows = fetch_all(
             f"SELECT {_FEEDBACK_COLS} FROM feedback WHERE status = ? ORDER BY created_at DESC",
             (status,),

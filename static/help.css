@@ -27,7 +27,7 @@
   flex: 0 0 auto;
   padding: 0.75rem 1.25rem;
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   border: none;
   border-radius: 8px;
   cursor: pointer;

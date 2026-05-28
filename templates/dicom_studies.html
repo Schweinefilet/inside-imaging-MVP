@@ -2,11 +2,12 @@
 
 {% block title %}DICOM Studies - Inside Imaging{% endblock %}
 
-{% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=7">
+{% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
 <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}">
+{% endblock %}
 
+{% block content %}
 <style>
   .dicom-page { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
   .dicom-page h1 { color: var(--text); margin-bottom: 8px; }

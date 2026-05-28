@@ -4,7 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
-<link rel="stylesheet" href="/static/magazine.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='magazine.css') }}">
 {% endblock %}
 
 {% block content %}

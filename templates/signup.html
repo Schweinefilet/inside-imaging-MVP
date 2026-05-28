@@ -15,11 +15,11 @@
                     <p class="auth-subtitle">Create your account to start translating radiology reports into plain
                         language</p>
 
-                    {% with messages = get_flashed_messages() %}
+                    {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                     <div class="flash-messages">
-                        {% for message in messages %}
-                        <div class="flash-message">{{ message }}</div>
+                        {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category or 'error' }}">{{ message }}</div>
                         {% endfor %}
                     </div>
                     {% endif %}

@@ -298,7 +298,7 @@
     border-radius: 8px;
     font-weight: 600;
     background: var(--mint);
-    color: #051e14;
+    color: var(--btn-primary-text);
     cursor: pointer;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
     transition: background 0.18s ease, transform 0.1s ease, box-shadow 0.18s ease;
@@ -747,7 +747,6 @@ html:not(.dark) .upload-section form select {
 
 html:not(.dark) .upload-section form button {
     background: var(--mint);
-    color: #051e14;
     border-color: color-mix(in oklab, var(--mint) 32%, var(--border));
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }

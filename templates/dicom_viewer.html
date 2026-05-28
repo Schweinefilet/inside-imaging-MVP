@@ -2,10 +2,11 @@
 
 {% block title %}DICOM Viewer - Inside Imaging{% endblock %}
 
-{% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=7">
+{% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+{% endblock %}
 
+{% block content %}
 <style>
   .viewer-shell {
     display: grid;

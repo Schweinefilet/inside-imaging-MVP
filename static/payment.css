@@ -131,7 +131,7 @@
   margin-top: 0.5rem;
   padding: 0.75rem 1rem;
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -147,11 +147,6 @@
 
 .primary-btn:active {
   opacity: 0.9;
-}
-
-/* Light mode (default): contrast text on mint */
-html:not(.dark) .primary-btn {
-  color: #ffffff;
 }
 
 .secure-note {

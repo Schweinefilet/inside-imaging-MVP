@@ -36,7 +36,7 @@
   border-radius: 999px;
   padding: 0.65rem 1.75rem;
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   font-weight: 600;
   letter-spacing: 0.035em;
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
@@ -245,7 +245,6 @@ html:not(.dark) .magazine-description {
 
 html:not(.dark) .magazine-link {
   background: var(--mint);
-  color: #051e14;
   border-color: var(--mint);
 }
 

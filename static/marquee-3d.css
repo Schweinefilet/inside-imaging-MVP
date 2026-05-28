@@ -147,7 +147,7 @@ html:not(.dark) .marquee-3d-overlay .marquee-description {
 /* Primary Button - Filled Mint */
 .marquee-3d-overlay .btn-primary {
     background: var(--mint, var(--ink-soft, #475569));
-    color: #000;
+    color: var(--btn-primary-text);
     border: 2px solid transparent;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
 }

@@ -228,20 +228,20 @@ html:not(.dark) .blog-hero .hero-summary {
   gap: 0.75rem;
 }
 
-.btn-primary,
-.btn-secondary {
+.hero-actions .btn-primary,
+.hero-actions .btn-secondary {
   padding: 0.7rem 1.25rem;
   border-radius: 999px;
   text-decoration: none;
   font-weight: 700;
 }
 
-.btn-primary {
+.hero-actions .btn-primary {
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
 }
 
-.btn-secondary {
+.hero-actions .btn-secondary {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.95);
@@ -405,7 +405,7 @@ html:not(.dark) .blog-hero .hero-summary {
   padding: 12px 16px;
   border-radius: 14px;
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   font-weight: 700;
   text-decoration: none;
   border: 1px solid color-mix(in oklab, var(--mint) 28%, var(--border));
@@ -449,7 +449,7 @@ html:not(.dark) .blog-hero .hero-summary {
   border: 1px solid color-mix(in oklab, var(--mint) 32%, var(--border));
   text-decoration: none;
   font-weight: 600;
-  color: #051e14;
+  color: var(--btn-primary-text);
   background: var(--mint);
 }
 
@@ -579,7 +579,6 @@ html:not(.dark) .blog-summary {
 
 html:not(.dark) .blog-card a {
   background: var(--mint);
-  color: #051e14;
   box-shadow: none;
 }
 

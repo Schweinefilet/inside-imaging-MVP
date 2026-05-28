@@ -129,7 +129,7 @@ button {
   border: 1px solid color-mix(in oklab, var(--mint) 28%, var(--border));
   border-radius: 14px;
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
@@ -149,7 +149,7 @@ button:active {
 /* Light mode button fix (light is default; only fires when .dark is absent) */
 html:not(.dark) button {
   background: var(--mint);
-  color: #ffffff !important;
+  color: var(--btn-primary-text) !important;
   font-weight: 700;
   border: 1px solid color-mix(in oklab, var(--mint) 50%, #000000);
   box-shadow: none;
@@ -1003,7 +1003,7 @@ html:not(.dark) .theme-switch-input:checked+.theme-switch-track::after {
 }
 
 .signup-button {
-  color: #051e14;
+  color: var(--btn-primary-text);
   background: var(--mint);
   border: 1px solid transparent;
   transition: background 0.15s ease;
@@ -1016,10 +1016,6 @@ html:not(.dark) .theme-switch-input:checked+.theme-switch-track::after {
 
 html:not(.dark) .login-button {
   color: var(--text);
-}
-
-html:not(.dark) .signup-button {
-  color: #000;
 }
 
 /* ---- Mobile: nav links below header, full width ---- */

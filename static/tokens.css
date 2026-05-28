@@ -23,6 +23,9 @@
   --accent-soft:    #eef2ff;
   --accent-hover:   #4338ca;
 
+  /* Button text on mint/primary backgrounds */
+  --btn-primary-text: #ffffff;
+
   /* Semantic states */
   --success:        #0f766e;
   --success-soft:   #d1fae5;
@@ -114,6 +117,8 @@ html[data-theme="dark"] {
   --accent:         #818cf8;
   --accent-soft:    #312e81;
   --accent-hover:   #a5b4fc;
+
+  --btn-primary-text: #051e14;
 
   --success:        #34d399;
   --success-soft:   #064e3b;

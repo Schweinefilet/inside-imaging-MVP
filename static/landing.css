@@ -107,7 +107,7 @@
   border-radius: 999px;
   border: 1px solid color-mix(in oklab, var(--mint) 35%, rgba(0, 0, 0, 0.8));
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   font-family: inherit;
   font-size: 1rem;
   font-weight: 700;
@@ -192,7 +192,6 @@ html:not(.dark) .landing-tagline {
 
 html:not(.dark) .landing-continue {
   background: var(--mint);
-  color: #051e14;
   border-color: color-mix(in oklab, var(--mint) 35%, rgba(0, 0, 0, 0.15));
 }
 
@@ -308,7 +307,7 @@ html:not(.dark) .landing-continue:focus-visible {
 
 .hero-btn-primary {
   background: var(--mint);
-  color: #051e14;
+  color: var(--btn-primary-text);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
 }
 

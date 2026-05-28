@@ -45,12 +45,32 @@
 
 .flash-message {
     padding: 0.875rem 1rem;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid;
     border-radius: 8px;
-    color: #ef4444;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
+    /* default / error */
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.flash-message.flash-success {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.flash-message.flash-info {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+.flash-message.flash-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
 }
 
 /* Form Styles */
@@ -233,11 +253,6 @@
 }
 
 /* Light Mode Overrides */
-html:not(.dark) .flash-message {
-    background: rgba(239, 68, 68, 0.05);
-    border-color: rgba(239, 68, 68, 0.2);
-}
-
 html:not(.dark) .auth-submit:hover {
     box-shadow: 0 10px 25px rgba(15, 23, 42, 0.10);
 }
@@ -260,6 +275,24 @@ html:not(.dark) .flash-message {
     background: rgba(239, 68, 68, 0.08);
     border-color: rgba(239, 68, 68, 0.25);
     color: #dc2626;
+}
+
+html:not(.dark) .flash-message.flash-success {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #059669;
+}
+
+html:not(.dark) .flash-message.flash-info {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.25);
+    color: #2563eb;
+}
+
+html:not(.dark) .flash-message.flash-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #d97706;
 }
 
 html:not(.dark) .auth-label {

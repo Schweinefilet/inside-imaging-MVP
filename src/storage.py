@@ -90,8 +90,9 @@ class LocalFileStorage(Storage):
         self.root.mkdir(parents=True, exist_ok=True)
 
     def _path(self, key: str) -> Path:
-        safe = key.lstrip("/").replace("..", "_")
-        full = self.root / safe
+        full = (self.root / key).resolve()
+        if not str(full).startswith(str(self.root.resolve())):
+            raise ValueError(f"Storage key escapes root: {key!r}")
         full.parent.mkdir(parents=True, exist_ok=True)
         return full
 

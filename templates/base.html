@@ -42,6 +42,7 @@
   </header>
 
   <main id="app" class="site-main" tabindex="-1">
+    {% if request.endpoint != 'login' %}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="flash-stack" role="status" aria-live="polite">
@@ -51,6 +52,7 @@
         </div>
       {% endif %}
     {% endwith %}
+    {% endif %}
 
     {% block content %}{% endblock %}
   </main>

@@ -214,7 +214,7 @@ def get_report_detail(report_id: int) -> Optional[Dict[str, Any]]:
         """
         SELECT id, truncated_name, age, sex, date, hospital, study,
                reason, technique, findings, conclusion, concern,
-               language, word_count, disease_tags, created_at
+               language, word_count, disease_tags, created_at, username
         FROM patients WHERE id = ?
         """,
         (report_id,),
@@ -234,6 +234,7 @@ def get_report_detail(report_id: int) -> Optional[Dict[str, Any]]:
     }
     return {
         "id": row[0],
+        "username": row[16] or "",
         "patient": patient,
         "structured": structured,
         "language": row[12] or "",

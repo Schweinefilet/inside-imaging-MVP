@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.db.connection import execute, fetch_one
+from src.db.connection import execute, fetch_all, fetch_one
 
 
 def get_user_by_username(username: str) -> Optional[sqlite3.Row]:

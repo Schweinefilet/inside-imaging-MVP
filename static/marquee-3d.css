@@ -410,3 +410,57 @@ html.dark .marquee-3d-wrapper::before,
 html.dark .marquee-3d-wrapper::after {
     content: none;
 }
+
+/* ── Phone: hide 3D scene, show only the hero text ───────────────────── */
+@media (max-width: 680px) {
+    .marquee-3d-wrapper {
+        display: none;
+    }
+
+    .marquee-3d-container {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        padding: 2rem 1.25rem 1rem;
+        margin: 0 auto;
+        overflow: visible;
+        min-height: unset;
+    }
+
+    .marquee-3d-overlay {
+        position: static;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        background: transparent !important;
+        padding: 0;
+        pointer-events: auto;
+    }
+
+    /* Bypass JS-driven fade-in — items should be immediately visible */
+    .marquee-3d-overlay [data-marquee-item] {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+
+    .marquee-3d-overlay h1 {
+        font-size: 1.75rem;
+    }
+
+    .marquee-3d-overlay .marquee-description {
+        font-size: 0.95rem;
+    }
+
+    .marquee-3d-overlay .marquee-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .marquee-3d-overlay .marquee-actions a {
+        text-align: center;
+        justify-content: center;
+    }
+}

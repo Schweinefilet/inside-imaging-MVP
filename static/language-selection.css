@@ -115,8 +115,8 @@
 }
 
 .options-buttons .btn-primary {
-  background: var(--primary);
-  color: var(--surface);
+  background: var(--mint);
+  color: var(--btn-primary-text);
 }
 
 .options-buttons .btn-secondary {

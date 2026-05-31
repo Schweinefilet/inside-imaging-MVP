@@ -123,8 +123,8 @@
     position: relative;
     width: 100%;
     padding: 0.875rem 1rem;
-    background: var(--primary);
-    color: var(--surface);
+    background: var(--mint);
+    color: var(--btn-primary-text);
     border: none;
     border-radius: var(--radius-sm);
     font-size: 1rem;
@@ -253,10 +253,6 @@
 }
 
 /* Light Mode Overrides */
-html:not(.dark) .auth-submit:hover {
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.10);
-}
-
 html:not(.dark) .auth-card {
     background: var(--panel);
     border-color: var(--border);
@@ -315,8 +311,8 @@ html:not(.dark) .auth-input:focus {
 }
 
 html:not(.dark) .auth-submit {
-    background: var(--primary);
-    color: var(--surface);
+    background: var(--mint);
+    color: var(--btn-primary-text);
 }
 
 html:not(.dark) .auth-submit:hover {

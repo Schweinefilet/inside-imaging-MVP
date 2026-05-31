@@ -132,18 +132,15 @@ button {
   color: var(--btn-primary-text);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
+  transition: background .15s ease;
 }
 
 button:hover {
   background: color-mix(in oklab, var(--mint) 85%, #ffffff);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
 }
 
 button:active {
   transform: translateY(1px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
 
 /* Light mode button fix (light is default; only fires when .dark is absent) */
@@ -152,16 +149,10 @@ html:not(.dark) button {
   color: var(--btn-primary-text) !important;
   font-weight: 700;
   border: 1px solid color-mix(in oklab, var(--mint) 50%, #000000);
-  box-shadow: none;
-}
-
-html:not(.dark) button:active {
-  box-shadow: none;
 }
 
 html:not(.dark) button:hover {
   background: var(--primary-hover, color-mix(in oklab, var(--mint) 85%, #000000));
-  box-shadow: none;
 }
 
 input[type="file"] {
@@ -835,7 +826,6 @@ html.dark .user-menu-toggle:focus-visible {
 .navbar a:hover,
 .navbar a:focus-visible {
   color: var(--text);
-  transform: translateY(-3px);
 }
 
 .navbar a:hover::before,
@@ -886,9 +876,13 @@ html:not(.dark) .navbar a.active::before {
 }
 
 html:not(.dark) .username-badge,
-html:not(.dark) .nav-auth a,
+html:not(.dark) .nav-auth a:not(.signup-button),
 html:not(.dark) .nav-auth span {
   color: #0f172a;
+}
+
+html:not(.dark) .nav-auth .signup-button {
+  color: var(--btn-primary-text);
 }
 
 html:not(.dark) .nav-auth .user-name {
@@ -1222,11 +1216,11 @@ html:not(.dark) .login-button {
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: var(--surface);
-  border-color: var(--primary);
+  background: var(--mint);
+  color: var(--btn-primary-text);
+  border-color: var(--mint);
 }
-.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn-primary:hover { background: color-mix(in oklab, var(--mint) 85%, #ffffff); border-color: var(--mint); }
 
 .btn-accent {
   background: var(--accent);

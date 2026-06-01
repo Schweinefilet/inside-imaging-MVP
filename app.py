@@ -326,11 +326,15 @@ def backup_db_command(label: str) -> None:
 # --- translate wiring ---
 try:
     from src.translate import Glossary, build_structured  # type: ignore
+    from src.translate.flag import check_report_sensitivity  # type: ignore
     from src.parse import parse_metadata  # type: ignore
 except Exception:
     logging.exception("translate import failed")
     Glossary = None  # type: ignore
     parse_metadata = None  # type: ignore
+
+    def check_report_sensitivity(text: str):  # type: ignore
+        return {"flagged": False}
 
     def build_structured(report_text: str, glossary=None, language: str = "English"):
         return {
@@ -736,6 +740,10 @@ def upload():
                         triage_diag.get("reason"), triage_diag.get("word_count"))
         return redirect(url_for("dashboard"))
 
+    is_flagged = check_report_sensitivity(extracted)["flagged"]
+    if is_flagged:
+        logging.info(json.dumps({"event": "sensitivity_flag", "timestamp": time.time(), "flagged": True, "acknowledged": False}))
+
     # PHI handling: extract the full name from raw text BEFORE build_structured strips it,
     # then keep it ONLY in session (never sent to OpenAI). Display-only on result page.
     full_patient_name = ""
@@ -779,7 +787,14 @@ def upload():
         S=structured, structured=structured, patient=patient,
         extracted=extracted, study={"organ": patient.get("study") or "Unknown"},
         language=lang, report_stats=report_stats, disease_tags=disease_tags,
+        flagged=is_flagged,
     )
+
+
+@app.route("/flag-acknowledge", methods=["POST"])
+def flag_acknowledge():
+    logging.info(json.dumps({"event": "sensitivity_flag", "timestamp": time.time(), "flagged": True, "acknowledged": True}))
+    return "", 204
 
 
 @app.route("/reports/<int:report_id>")

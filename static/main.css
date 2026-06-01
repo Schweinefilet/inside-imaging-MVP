@@ -42,7 +42,8 @@
 
 /* Apply transitions to header shell, navbar and team elements during theme change */
 /* Restore slider knob transform animation during theme change */
-html, body { height: 100%; }
+html { height: 100%; }
+body { min-height: 100%; }
 
 html {
   background: var(--bg);
@@ -1014,6 +1015,10 @@ html:not(.dark) .login-button {
 
 /* ---- Mobile: nav links below header, full width ---- */
 @media (max-width: 680px) {
+  .site-header {
+    position: static;
+  }
+
   .header-shell {
     flex-wrap: wrap;
     padding: 0.6rem 1rem;

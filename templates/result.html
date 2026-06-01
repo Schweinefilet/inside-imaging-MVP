@@ -237,6 +237,53 @@
 {% endblock %}
 
 {% block content %}
+{% if flagged %}
+<div id="sensitivity-overlay" role="dialog" aria-modal="true" aria-labelledby="sensitivity-title"
+     style="position:fixed;inset:0;
+            background:color-mix(in srgb,var(--bg) 88%,transparent);
+            backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+            display:flex;align-items:center;justify-content:center;
+            z-index:var(--z-modal);padding:var(--space-4);">
+  <div style="background:var(--surface);
+              border:1px solid var(--border);
+              border-radius:var(--radius-md);
+              padding:var(--space-7) var(--space-6);
+              max-width:480px;width:100%;text-align:center;
+              box-shadow:var(--shadow-md);">
+    <div aria-hidden="true" style="color:var(--warning);margin-bottom:var(--space-5);">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <h1 id="sensitivity-title"
+        style="font-family:var(--font-serif);font-size:var(--fs-xl);font-weight:var(--fw-bold);
+               margin:0 0 var(--space-3);color:var(--ink);">
+      A note before you continue
+    </h1>
+    <p style="font-size:var(--fs-md);line-height:var(--lh-relaxed);
+              color:var(--ink-soft);margin:0 0 var(--space-6);">
+      This report may contain results that are best discussed with your doctor first.
+      Please contact your ordering physician before reviewing this summary.
+    </p>
+    <button id="sensitivity-dismiss"
+            style="width:100%;padding:var(--space-3) var(--space-5);
+                   background:var(--primary);color:var(--btn-primary-text);
+                   border:none;border-radius:var(--radius-sm);
+                   font-family:var(--font-sans);font-size:var(--fs-sm);font-weight:var(--fw-semibold);
+                   cursor:pointer;transition:opacity var(--duration-fast) var(--ease);">
+      I have spoken with my doctor. Show my report.
+    </button>
+  </div>
+</div>
+<script>
+  document.getElementById('sensitivity-dismiss').addEventListener('click', function () {
+    document.getElementById('sensitivity-overlay').remove();
+    fetch('{{ url_for("flag_acknowledge") }}', { method: 'POST' });
+  });
+</script>
+{% endif %}
   <div class="content">
       <h1>Report Summary</h1>
 

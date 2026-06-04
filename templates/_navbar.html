@@ -64,4 +64,49 @@
       <a href="{{ url_for('signup') }}" class="btn btn-primary signup-button">Sign Up</a>
     {% endif %}
   </div>
+
+  {# Hamburger — only visible on mobile #}
+  <button class="hamburger-btn" id="hamburger-btn" type="button"
+          aria-expanded="false" aria-controls="mobile-nav"
+          aria-label="Open navigation menu">
+    <span class="hamburger-bar"></span>
+    <span class="hamburger-bar"></span>
+    <span class="hamburger-bar"></span>
+  </button>
+
+  {# Mobile nav drawer — toggled by hamburger-btn #}
+  <div class="mobile-nav" id="mobile-nav" hidden>
+    <nav class="mobile-nav-links" aria-label="Mobile primary navigation">
+      <a href="{{ url_for('projects') }}"      class="{{ 'active' if ep == 'projects' }}">Projects</a>
+      <a href="{{ url_for('dashboard') }}"     class="{{ 'active' if ep == 'dashboard' }}">Dashboard</a>
+      <a href="{{ url_for('report_status') }}" class="{{ 'active' if ep == 'report_status' }}">Statistics</a>
+      <a href="{{ url_for('team') }}"          class="{{ 'active' if ep == 'team' }}">Our Team</a>
+      <a href="{{ url_for('dicom_studies') }}" class="{{ 'active' if ep in ('dicom_studies', 'dicom_study_detail') }}">DICOM</a>
+      <a href="{{ url_for('help_page') }}"     class="{{ 'active' if ep == 'help_page' }}">Help</a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="mobile-theme-btn" id="mobile-theme-btn" type="button" aria-label="Toggle theme">
+        <span class="mobile-theme-icon" id="mobile-theme-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </span>
+        <span id="mobile-theme-label">Dark mode</span>
+      </button>
+      <div class="mobile-nav-auth-buttons">
+        {% if session.get('username') %}
+          {% set tenant_name = session.get('tenant_display_name') %}
+          {% if tenant_name %}
+            <span class="tenant-pill">{{ tenant_name }}</span>
+          {% endif %}
+          <a href="{{ url_for('profile') }}" class="btn btn-ghost">Profile</a>
+          <a href="{{ url_for('logout') }}"  class="btn btn-ghost">Log Out</a>
+        {% else %}
+          <a href="{{ url_for('login') }}"  class="btn btn-ghost login-button">Log In</a>
+          <a href="{{ url_for('signup') }}" class="btn btn-primary signup-button">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>

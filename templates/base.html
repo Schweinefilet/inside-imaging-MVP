@@ -30,8 +30,8 @@
 
   {# tokens.css MUST load first — main.css and all page CSS consume its vars. #}
   <link rel="stylesheet" href="{{ url_for('static', filename='tokens.css') }}?v=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=8">
-  <link rel="stylesheet" href="{{ url_for('static', filename='loader.css') }}?v=8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=9">
+  <link rel="stylesheet" href="{{ url_for('static', filename='loader.css') }}?v=9">
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -59,8 +59,8 @@
 
   {% include "_footer.html" %}
 
-  <script src="{{ url_for('static', filename='theme.js') }}?v=8" defer></script>
-  <script src="{{ url_for('static', filename='loader.js') }}?v=8" defer></script>
+  <script src="{{ url_for('static', filename='theme.js') }}?v=9" defer></script>
+  <script src="{{ url_for('static', filename='loader.js') }}?v=9" defer></script>
 
   {% block extra_js %}{% endblock %}
 </body>

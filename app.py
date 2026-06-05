@@ -323,6 +323,12 @@ def backup_db_command(label: str) -> None:
     else:
         click.echo("No database file found — nothing to back up.")
 
+
+# Register tenant and apikey management CLI commands.
+from src.cli import tenant_group, apikey_group  # noqa: E402
+app.cli.add_command(tenant_group, "tenant")
+app.cli.add_command(apikey_group, "apikey")
+
 # --- translate wiring ---
 try:
     from src.translate import Glossary, build_structured  # type: ignore

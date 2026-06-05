@@ -18,6 +18,7 @@ from src.integration import return_paths as int_return
 from src.integration import translator as int_translator
 from src.integration import extensions as int_ext
 from src.storage import get_storage
+from src.translate.flag import check_report_sensitivity
 
 
 integration_bp = Blueprint("integration", __name__, url_prefix="/integration")
@@ -144,7 +145,8 @@ def _extract_report_payload() -> Tuple[str, Optional[str], dict]:
     return report_text, inbound_blob, metadata
 
 
-def _render_patient_copy(tenant_integration: dict, translation: dict, metadata: dict) -> bytes:
+def _render_patient_copy(tenant_integration: dict, translation: dict, metadata: dict,
+                         flagged: bool = False) -> bytes:
     from app import HTML as _HTML  # WeasyPrint binding, late import
 
     if not _HTML:
@@ -157,6 +159,7 @@ def _render_patient_copy(tenant_integration: dict, translation: dict, metadata: 
         hospital_name=tenant_integration.get("display_name") or translation["patient"].get("hospital"),
         accession_number=metadata.get("accession_number", ""),
         generated_at=_dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        flagged=flagged,
     )
     return _HTML(string=html_str, base_url=request.host_url).write_pdf()
 
@@ -180,6 +183,11 @@ def receive_report():
     if not report_text:
         return jsonify({"error": "no report text provided (use JSON 'report_text' or upload a PDF/text file as 'report')"}), 400
 
+    # Sensitivity check — informational only; does NOT block translation.
+    # The radiologist has already released the report by sending it via HL7/HTTP.
+    sensitivity = check_report_sensitivity(report_text)
+    is_flagged = sensitivity.get("flagged", False)
+
     tenant_integration = db.get_tenant_integration(tenant_id) or {}
     phi_mode = int_phi.normalize_mode(tenant_integration.get("phi_mode", "passthrough"))
 
@@ -199,7 +207,20 @@ def receive_report():
         "study_uid": metadata.get("study_uid", ""),
         "status": "received",
         "language": metadata.get("language", "English"),
+        "flagged": is_flagged,
     })
+
+    if is_flagged:
+        db.log_audit_event(
+            tenant_id=tenant_id,
+            username=f"apikey:{request.api_key_label or 'unlabeled'}",
+            action="integration.report.flagged",
+            resource_type="integration_report",
+            resource_uid=str(report_id),
+            ip_address=request.remote_addr or "",
+            user_agent=request.headers.get("User-Agent", ""),
+            details=f"accession={metadata.get('accession_number', '')} flagged=True",
+        )
 
     inbound_key = f"tenants/{tenant_id}/integration/inbound/{report_id}.bin"
     if inbound_blob:
@@ -227,7 +248,7 @@ def receive_report():
         return jsonify({"error": "translation failed", "report_id": report_id}), 500
 
     try:
-        pdf_bytes = _render_patient_copy(tenant_integration, translation, metadata)
+        pdf_bytes = _render_patient_copy(tenant_integration, translation, metadata, flagged=is_flagged)
     except Exception as exc:
         logging.exception("PDF render failed")
         db.update_integration_report(report_id, status="error", error=f"pdf_render: {exc}", mark_processed=True)

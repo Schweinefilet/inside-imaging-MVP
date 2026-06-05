@@ -20,7 +20,10 @@ def _call_gpt5(messages: List[dict]) -> str:
     """
     allow = os.getenv("INSIDEIMAGING_ALLOW_LLM", "0").strip()
     if allow not in ("1", "true", "True", "yes", "YES"):
-        logger.info("LLM disabled by INSIDEIMAGING_ALLOW_LLM=%r", allow)
+        logger.warning(
+            "LLM call blocked: INSIDEIMAGING_ALLOW_LLM is not enabled. "
+            "Returning empty string; fallback heuristic will be used."
+        )
         return ""
 
     try:

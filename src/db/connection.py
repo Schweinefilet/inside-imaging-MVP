@@ -441,9 +441,19 @@ def init_db() -> None:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             reviewed_at TIMESTAMP,
             reviewed_by TEXT,
-            admin_notes TEXT
+            admin_notes TEXT,
+            expires_at TIMESTAMP
         )
         """
+    )
+    cur.execute("PRAGMA table_info(feedback)")
+    feedback_cols = [row[1] for row in cur.fetchall()]
+    if "expires_at" not in feedback_cols:
+        cur.execute("ALTER TABLE feedback ADD COLUMN expires_at TIMESTAMP")
+    _retention_years_fb = int(os.environ.get("DATA_RETENTION_YEARS", "6"))
+    cur.execute(
+        f"UPDATE feedback SET expires_at = datetime(created_at, '+{_retention_years_fb} years')"
+        " WHERE expires_at IS NULL"
     )
 
     conn.commit()

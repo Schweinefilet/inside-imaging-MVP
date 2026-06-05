@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional
 
 from src.db.connection import _format_timestamp, execute, fetch_all
@@ -28,12 +29,14 @@ def _row_to_feedback(row) -> Dict[str, Any]:
 def submit_feedback(username: str, feedback_type: str, subject: str,
                     original: str = "", corrected: str = "",
                     description: str = "") -> int:
+    _retention_years = int(os.environ.get("DATA_RETENTION_YEARS", "6"))
     return execute(
-        """
+        f"""
         INSERT INTO feedback (
             username, feedback_type, subject, original_text,
-            corrected_text, description, status
-        ) VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            corrected_text, description, status, expires_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'pending',
+                  datetime('now', '+{_retention_years} years'))
         """,
         (username, feedback_type, subject, original, corrected, description),
     )

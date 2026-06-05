@@ -1402,17 +1402,31 @@ def retention_purge():
     count_row = fetch_one(
         "SELECT count(*) FROM patients WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')"
     )
-    expired_count = count_row[0] if count_row else 0
+    expired_patients = count_row[0] if count_row else 0
+
+    fb_count_row = fetch_one(
+        "SELECT count(*) FROM feedback WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')"
+    )
+    expired_feedback = fb_count_row[0] if fb_count_row else 0
 
     if dry_run:
-        return jsonify({"dry_run": True, "would_purge": expired_count})
+        return jsonify({"dry_run": True, "would_purge": expired_patients,
+                        "would_purge_feedback": expired_feedback})
 
     execute(
         "DELETE FROM patients WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')"
     )
-    _audit("retention_purge", resource_type="patients", details=f"Purged {expired_count} expired patient records")
-    logging.info("Retention purge by %s: deleted %d expired patient records", username, expired_count)
-    return jsonify({"dry_run": False, "purged": expired_count})
+    execute(
+        "DELETE FROM feedback WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')"
+    )
+    _audit("retention_purge", resource_type="patients",
+           details=f"Purged {expired_patients} expired patient records")
+    _audit("retention_purge", resource_type="feedback",
+           details=f"Purged {expired_feedback} expired feedback rows")
+    logging.info("Retention purge by %s: deleted %d patient records, %d feedback rows",
+                 username, expired_patients, expired_feedback)
+    return jsonify({"dry_run": False, "purged": expired_patients,
+                    "purged_feedback": expired_feedback})
 
 
 @app.route("/dicom/upload", methods=["POST"])

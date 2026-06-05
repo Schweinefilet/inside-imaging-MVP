@@ -23,6 +23,7 @@ import click
 
 from src import db
 from src.integration import auth as int_auth
+from src.integration.return_paths import _validate_webhook_url
 
 
 # ---------------------------------------------------------------------------
@@ -62,6 +63,13 @@ def tenant_create(tenant_id, display_name, region, phi_mode, hl7_sending_facilit
                   webhook_url, return_path, pacs_host, pacs_port, pacs_ae_title):
     """Create a new tenant record. Prints the tenant_id on success."""
     db.init_db()
+
+    if webhook_url:
+        try:
+            _validate_webhook_url(webhook_url)
+        except ValueError as exc:
+            click.echo(f"ERROR: invalid webhook URL — {exc}", err=True)
+            raise SystemExit(1)
 
     existing = db.get_tenant(tenant_id)
     if existing:

@@ -48,7 +48,6 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  min-height: 480px;
   overflow: hidden;
   border-radius: 12px;
   user-select: none;
@@ -206,6 +205,10 @@ html:not(.dark) .compare-handle::after {
 @media (max-width: 768px) {
   .compare-wrapper {
     max-width: 100%;
+  }
+
+  .compare-wrapper-fullwidth {
+    aspect-ratio: 3 / 4;
   }
 
   .compare-handle {

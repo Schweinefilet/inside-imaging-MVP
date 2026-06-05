@@ -2,8 +2,8 @@
 {% set ep = request.endpoint or '' %}
 <div class="header-shell">
   <a class="navbar-brand" href="{{ url_for('dashboard') }}" aria-label="Inside Imaging — home">
-    <img src="{{ url_for('static', filename='logo.svg') }}" alt="" class="logo">
-    <span class="navbar-brand-name">Inside Imaging</span>
+    <img src="{{ url_for('static', filename='logo_converted.png') }}" alt="" class="logo logo-light-scheme">
+    <img src="{{ url_for('static', filename='logo_dark.png') }}" alt="" class="logo logo-dark-scheme">
   </a>
 
   <nav class="navbar" aria-label="Primary">

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from src import config
-from src.db.connection import _format_timestamp, execute, fetch_one
+from src.db.connection import _format_timestamp, execute, fetch_all, fetch_one
 
 
 def get_user_tenant(username: str) -> str:
@@ -33,11 +33,12 @@ def get_tenant(tenant_id: str) -> Optional[Dict[str, Any]]:
 
 
 def create_tenant(tenant_id: str, display_name: str = "",
-                  region: str = "", phi_mode: str = "passthrough") -> None:
+                  region: str = "", phi_mode: str = "passthrough",
+                  hl7_sending_facility: str = "") -> None:
     execute(
-        "INSERT OR IGNORE INTO tenants (tenant_id, display_name, region, phi_mode)"
-        " VALUES (?, ?, ?, ?)",
-        (tenant_id, display_name, region, phi_mode),
+        "INSERT OR IGNORE INTO tenants (tenant_id, display_name, region, phi_mode, hl7_sending_facility)"
+        " VALUES (?, ?, ?, ?, ?)",
+        (tenant_id, display_name, region, phi_mode, hl7_sending_facility),
     )
 
 
@@ -50,6 +51,8 @@ _TENANT_INTEGRATION_FIELDS = (
     ("return_path", "return_path"),
     ("hospital_branding", "hospital_branding"),
     ("ip_allowlist", "ip_allowlist"),
+    ("hl7_sending_facility", "hl7_sending_facility"),
+    ("hl7_api_key", "hl7_api_key"),
 )
 
 
@@ -74,7 +77,7 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
         """
         SELECT tenant_id, display_name, integration_webhook_url, pacs_ae_title,
                pacs_host, pacs_port, our_ae_title, return_path, hospital_branding,
-               phi_mode, ip_allowlist
+               phi_mode, ip_allowlist, hl7_sending_facility, hl7_api_key
         FROM tenants WHERE tenant_id = ?
         """,
         (tenant_id,),
@@ -93,4 +96,65 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
         "hospital_branding": row[8] or "",
         "phi_mode": row[9] or "passthrough",
         "ip_allowlist": row[10] or "",
+        "hl7_sending_facility": row[11] or "",
+        "hl7_api_key": row[12] or "",
     }
+
+
+def get_tenant_by_sending_facility(sending_facility: str) -> Optional[Dict[str, Any]]:
+    """Look up a tenant by HL7 MSH-4 Sending Facility.
+
+    Falls back to HL7_DEFAULT_TENANT when no exact match is found.
+    Returns None only when neither a match nor a default tenant exists.
+    """
+    if sending_facility:
+        row = fetch_one(
+            "SELECT tenant_id, display_name, region, phi_mode, hl7_sending_facility, hl7_api_key"
+            " FROM tenants WHERE hl7_sending_facility = ?",
+            (sending_facility,),
+        )
+        if row:
+            return {
+                "tenant_id": row[0],
+                "display_name": row[1] or "",
+                "region": row[2] or "",
+                "phi_mode": row[3] or "passthrough",
+                "hl7_sending_facility": row[4] or "",
+                "hl7_api_key": row[5] or "",
+            }
+
+    default_tid = config.HL7_DEFAULT_TENANT
+    if default_tid:
+        row = fetch_one(
+            "SELECT tenant_id, display_name, region, phi_mode, hl7_sending_facility, hl7_api_key"
+            " FROM tenants WHERE tenant_id = ?",
+            (default_tid,),
+        )
+        if row:
+            return {
+                "tenant_id": row[0],
+                "display_name": row[1] or "",
+                "region": row[2] or "",
+                "phi_mode": row[3] or "passthrough",
+                "hl7_sending_facility": row[4] or "",
+                "hl7_api_key": row[5] or "",
+            }
+    return None
+
+
+def list_tenants() -> List[Dict[str, Any]]:
+    rows = fetch_all(
+        "SELECT tenant_id, display_name, region, phi_mode, return_path, created_at"
+        " FROM tenants ORDER BY created_at ASC"
+    )
+    return [
+        {
+            "tenant_id": r[0],
+            "display_name": r[1] or "",
+            "region": r[2] or "",
+            "phi_mode": r[3] or "passthrough",
+            "return_path": r[4] or "webhook",
+            "created_at": _format_timestamp(r[5]),
+        }
+        for r in rows
+    ]

@@ -88,7 +88,21 @@ def _build_ack(message: str, ack_code: str = "AA", text: str = "") -> bytes:
     return SB + ack_payload + EB + CR
 
 
-def _forward_to_api(parsed: dict, target_url: str, api_key: str) -> Tuple[int, str]:
+def _forward_to_api(parsed: dict, target_url: str, fallback_api_key: str) -> Tuple[int, str]:
+    # Resolve a tenant-specific API key from the HL7 Sending Facility (MSH-4).
+    # Falls back to the global fallback key when no facility match exists.
+    from src.db.tenants import get_tenant_by_sending_facility
+
+    api_key = fallback_api_key
+    sending_facility = parsed.get("sending_facility", "")
+    try:
+        tenant = get_tenant_by_sending_facility(sending_facility)
+        if tenant and tenant.get("hl7_api_key"):
+            api_key = tenant["hl7_api_key"]
+            logging.debug("HL7 routed to tenant=%s via facility=%s", tenant["tenant_id"], sending_facility)
+    except Exception:
+        logging.exception("Tenant lookup failed for facility=%r; using fallback key", sending_facility)
+
     headers = {"X-API-Key": api_key, "Content-Type": "application/json"}
     payload = {
         "report_text": parsed.get("report_text", ""),

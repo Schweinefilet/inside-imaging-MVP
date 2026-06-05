@@ -6,20 +6,25 @@ from typing import Any, Dict, List, Optional
 
 from src import config
 from src.db.connection import _format_timestamp, execute, execute_many, fetch_all, fetch_one
+from src.db.patients import truncate_name
 
 
 def upsert_dicom_study(data: Dict[str, Any]) -> str:
+    # Truncate patient_id before storage — same contract as patient_name_truncated.
+    raw_pid = data.get("patient_id") or data.get("patient_id_truncated") or ""
+    patient_id_truncated = truncate_name(raw_pid) if raw_pid else ""
+
     execute(
         """
         INSERT OR IGNORE INTO dicom_studies (
-            study_instance_uid, patient_name_truncated, patient_id, study_date,
+            study_instance_uid, patient_name_truncated, patient_id_truncated, study_date,
             modality, study_description, accession_number, username, tenant_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             data.get("study_uid", ""),
             data.get("patient_name_truncated", ""),
-            data.get("patient_id", ""),
+            patient_id_truncated,
             data.get("study_date", ""),
             data.get("modality", ""),
             data.get("study_description", ""),
@@ -84,7 +89,7 @@ def _study_row(row) -> Dict[str, Any]:
     return {
         "study_instance_uid": row[0],
         "patient_name_truncated": row[1] or "",
-        "patient_id": row[2] or "",
+        "patient_id_truncated": row[2] or "",
         "study_date": row[3] or "",
         "modality": row[4] or "",
         "study_description": row[5] or "",
@@ -96,7 +101,7 @@ def _study_row(row) -> Dict[str, Any]:
 
 
 def get_dicom_studies(tenant_id: str, username: Optional[str] = None) -> List[Dict[str, Any]]:
-    base = ("SELECT study_instance_uid, patient_name_truncated, patient_id, study_date,"
+    base = ("SELECT study_instance_uid, patient_name_truncated, patient_id_truncated, study_date,"
             " modality, study_description, accession_number, username, created_at, tenant_id"
             " FROM dicom_studies WHERE tenant_id = ?")
     if username:

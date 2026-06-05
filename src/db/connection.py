@@ -218,9 +218,16 @@ def init_db() -> None:
         ("return_path", "TEXT DEFAULT 'webhook'"),
         ("hospital_branding", "TEXT DEFAULT ''"),
         ("ip_allowlist", "TEXT DEFAULT ''"),
+        ("hl7_sending_facility", "TEXT DEFAULT ''"),
+        ("hl7_api_key", "TEXT DEFAULT ''"),
     ):
         if col not in tenant_cols:
             cur.execute(f"ALTER TABLE tenants ADD COLUMN {col} {ddl}")
+    if "hl7_sending_facility" in tenant_cols:
+        cur.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_tenants_hl7_facility"
+            " ON tenants(hl7_sending_facility) WHERE hl7_sending_facility != ''"
+        )
 
     # --- Integration: API keys + reports --------------------------------
     cur.execute(
@@ -252,12 +259,17 @@ def init_db() -> None:
             inbound_storage_key TEXT,
             outbound_pdf_key TEXT,
             language TEXT DEFAULT 'English',
+            flagged INTEGER DEFAULT 0,
             error TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             processed_at TIMESTAMP
         )
         """
     )
+    cur.execute("PRAGMA table_info(integration_reports)")
+    ireport_cols = [row[1] for row in cur.fetchall()]
+    if "flagged" not in ireport_cols:
+        cur.execute("ALTER TABLE integration_reports ADD COLUMN flagged INTEGER DEFAULT 0")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ireports_tenant_time ON integration_reports(tenant_id, created_at)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ireports_accession ON integration_reports(accession_number)")
 
@@ -356,6 +368,14 @@ def init_db() -> None:
     inst_cols = [row[1] for row in cur.fetchall()]
     if "storage_backend" not in inst_cols:
         cur.execute("ALTER TABLE dicom_instances ADD COLUMN storage_backend TEXT DEFAULT 's3'")
+
+    # Rename patient_id → patient_id_truncated in dicom_studies (runs once; SQLite 3.25+).
+    cur.execute("PRAGMA table_info(dicom_studies)")
+    study_col_names = [row[1] for row in cur.fetchall()]
+    if "patient_id" in study_col_names and "patient_id_truncated" not in study_col_names:
+        cur.execute("ALTER TABLE dicom_studies RENAME COLUMN patient_id TO patient_id_truncated")
+    elif "patient_id_truncated" not in study_col_names:
+        cur.execute("ALTER TABLE dicom_studies ADD COLUMN patient_id_truncated TEXT DEFAULT ''")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_studies_tenant ON dicom_studies(tenant_id, username)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_series_tenant ON dicom_series(tenant_id)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_instances_tenant ON dicom_instances(tenant_id)")

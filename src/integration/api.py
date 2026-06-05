@@ -175,6 +175,25 @@ def health():
 def receive_report():
     tenant_id = request.tenant_id
 
+    # Allow trusted internal callers (e.g. the HL7 listener) to route to a
+    # specific tenant by including "tenant_id" in the JSON payload. The API key
+    # still authenticates the request; the payload field controls which tenant's
+    # config and pipeline are used. Unrecognised tenant IDs are silently ignored
+    # and the key's own tenant is used as the fallback.
+    _payload_tid = ""
+    if request.is_json:
+        _payload_tid = str((request.get_json(silent=True) or {}).get("tenant_id", "")).strip()
+    elif request.form:
+        _payload_tid = str(request.form.get("tenant_id", "")).strip()
+    if _payload_tid and _payload_tid != tenant_id:
+        if db.get_tenant(_payload_tid):
+            tenant_id = _payload_tid
+        else:
+            logging.warning(
+                "Integration API: payload tenant_id=%r not found; using key tenant=%s",
+                _payload_tid, tenant_id,
+            )
+
     try:
         report_text, inbound_blob, metadata = _extract_report_payload()
     except Exception as exc:

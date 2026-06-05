@@ -52,7 +52,6 @@ _TENANT_INTEGRATION_FIELDS = (
     ("hospital_branding", "hospital_branding"),
     ("ip_allowlist", "ip_allowlist"),
     ("hl7_sending_facility", "hl7_sending_facility"),
-    ("hl7_api_key", "hl7_api_key"),
 )
 
 
@@ -77,7 +76,7 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
         """
         SELECT tenant_id, display_name, integration_webhook_url, pacs_ae_title,
                pacs_host, pacs_port, our_ae_title, return_path, hospital_branding,
-               phi_mode, ip_allowlist, hl7_sending_facility, hl7_api_key
+               phi_mode, ip_allowlist, hl7_sending_facility
         FROM tenants WHERE tenant_id = ?
         """,
         (tenant_id,),
@@ -97,7 +96,6 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
         "phi_mode": row[9] or "passthrough",
         "ip_allowlist": row[10] or "",
         "hl7_sending_facility": row[11] or "",
-        "hl7_api_key": row[12] or "",
     }
 
 
@@ -109,7 +107,7 @@ def get_tenant_by_sending_facility(sending_facility: str) -> Optional[Dict[str, 
     """
     if sending_facility:
         row = fetch_one(
-            "SELECT tenant_id, display_name, region, phi_mode, hl7_sending_facility, hl7_api_key"
+            "SELECT tenant_id, display_name, region, phi_mode, hl7_sending_facility"
             " FROM tenants WHERE hl7_sending_facility = ?",
             (sending_facility,),
         )
@@ -120,13 +118,12 @@ def get_tenant_by_sending_facility(sending_facility: str) -> Optional[Dict[str, 
                 "region": row[2] or "",
                 "phi_mode": row[3] or "passthrough",
                 "hl7_sending_facility": row[4] or "",
-                "hl7_api_key": row[5] or "",
             }
 
     default_tid = config.HL7_DEFAULT_TENANT
     if default_tid:
         row = fetch_one(
-            "SELECT tenant_id, display_name, region, phi_mode, hl7_sending_facility, hl7_api_key"
+            "SELECT tenant_id, display_name, region, phi_mode, hl7_sending_facility"
             " FROM tenants WHERE tenant_id = ?",
             (default_tid,),
         )
@@ -137,7 +134,6 @@ def get_tenant_by_sending_facility(sending_facility: str) -> Optional[Dict[str, 
                 "region": row[2] or "",
                 "phi_mode": row[3] or "passthrough",
                 "hl7_sending_facility": row[4] or "",
-                "hl7_api_key": row[5] or "",
             }
     return None
 

@@ -219,7 +219,6 @@ def init_db() -> None:
         ("hospital_branding", "TEXT DEFAULT ''"),
         ("ip_allowlist", "TEXT DEFAULT ''"),
         ("hl7_sending_facility", "TEXT DEFAULT ''"),
-        ("hl7_api_key", "TEXT DEFAULT ''"),
     ):
         if col not in tenant_cols:
             cur.execute(f"ALTER TABLE tenants ADD COLUMN {col} {ddl}")
@@ -228,6 +227,13 @@ def init_db() -> None:
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_tenants_hl7_facility"
             " ON tenants(hl7_sending_facility) WHERE hl7_sending_facility != ''"
         )
+    # Remove hl7_api_key if it was added by an earlier migration — raw keys must
+    # not be stored in the DB (security model: integration_api_keys stores hashes only).
+    if "hl7_api_key" in tenant_cols:
+        cur.execute("SELECT sqlite_version()")
+        _ver = tuple(int(x) for x in (cur.fetchone()[0] or "0.0.0").split("."))
+        if _ver >= (3, 35, 0):
+            cur.execute("ALTER TABLE tenants DROP COLUMN hl7_api_key")
 
     # --- Integration: API keys + reports --------------------------------
     cur.execute(

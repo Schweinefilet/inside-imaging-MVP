@@ -88,20 +88,21 @@ def _build_ack(message: str, ack_code: str = "AA", text: str = "") -> bytes:
     return SB + ack_payload + EB + CR
 
 
-def _forward_to_api(parsed: dict, target_url: str, fallback_api_key: str) -> Tuple[int, str]:
-    # Resolve a tenant-specific API key from the HL7 Sending Facility (MSH-4).
-    # Falls back to the global fallback key when no facility match exists.
+def _forward_to_api(parsed: dict, target_url: str, api_key: str) -> Tuple[int, str]:
+    # Resolve the target tenant from HL7 MSH-4 Sending Facility. The API key
+    # authenticates the request; tenant_id in the payload tells the endpoint
+    # which tenant's pipeline and config to use (no raw keys stored in DB).
     from src.db.tenants import get_tenant_by_sending_facility
 
-    api_key = fallback_api_key
     sending_facility = parsed.get("sending_facility", "")
+    tenant_id = ""
     try:
         tenant = get_tenant_by_sending_facility(sending_facility)
-        if tenant and tenant.get("hl7_api_key"):
-            api_key = tenant["hl7_api_key"]
-            logging.debug("HL7 routed to tenant=%s via facility=%s", tenant["tenant_id"], sending_facility)
+        if tenant:
+            tenant_id = tenant["tenant_id"]
+            logging.debug("HL7 routed to tenant=%s via facility=%r", tenant_id, sending_facility)
     except Exception:
-        logging.exception("Tenant lookup failed for facility=%r; using fallback key", sending_facility)
+        logging.exception("Tenant lookup failed for facility=%r; endpoint will use key's default tenant", sending_facility)
 
     headers = {"X-API-Key": api_key, "Content-Type": "application/json"}
     payload = {
@@ -112,6 +113,8 @@ def _forward_to_api(parsed: dict, target_url: str, fallback_api_key: str) -> Tup
         "study_uid": parsed.get("study_uid", ""),
         "source_ref": f"hl7:{parsed.get('control_id', '')}",
     }
+    if tenant_id:
+        payload["tenant_id"] = tenant_id
     try:
         resp = requests.post(target_url + "?return=json", headers=headers, json=payload, timeout=30)
         return resp.status_code, resp.text[:300]

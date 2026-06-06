@@ -4,7 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
-<link rel="stylesheet" href="{{ url_for('static', filename='help.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='help.css') }}?v=9">
 {% endblock %}
 
 {% block content %}
@@ -18,99 +18,176 @@
             </div>
             <section class="faq-section">
                 <h2>Frequently Asked Questions</h2>
-                <div class="faq-grid">
-                    <div class="faq-card">
-                        <h3>What is Inside Imaging?</h3>
-                        <p>Inside Imaging uses AI to transform complex radiology reports into plain language summaries.
-                            We highlight key findings, provide definitions for medical terms, and present information in
-                            a way that patients and families can understand.</p>
+                <div class="faq-accordion">
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What is Inside Imaging?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Inside Imaging uses AI to transform complex radiology reports into plain language summaries. We highlight key findings, provide definitions for medical terms, and present information in a way that patients and families can understand.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>How do I get my report translated?</h3>
-                        <p>Go to the Dashboard, upload your radiology report (PDF or text), select your preferred
-                            language, and click "Upload & Convert". The AI will process your report and generate a
-                            simplified summary with visual highlights.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>How do I get my report translated?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Go to the Dashboard, upload your radiology report (PDF or text), select your preferred language, and click "Upload &amp; Convert". The AI will process your report and generate a simplified summary with visual highlights.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>What languages are supported?</h3>
-                        <p>We currently support English and Kiswahili, with more languages coming soon. The AI
-                            translates medical terminology into simple, everyday language in your chosen language.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What file formats can I upload?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>You can upload PDF files, Word documents (.docx), plain text files (.txt), and images (PNG, JPG, JPEG, TIF, TIFF, WEBP, BMP, HEIF). The system automatically extracts the text from your file for processing.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>How does the highlighting work?</h3>
-                        <p>Important findings are color-coded: red highlights indicate areas that need attention, while
-                            green highlights show normal or reassuring findings. Hover over medical terms to see simple
-                            definitions.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What types of imaging reports can you process?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>We can process reports from X-rays, CT scans, MRI scans, ultrasounds, PET scans, and other radiology imaging studies. The report should contain text describing the findings.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>How long does processing take?</h3>
-                        <p>Most reports are processed instantly using AI. Complex reports may take a few seconds. You'll
-                            see your results immediately on the screen and can download a PDF copy.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What languages are supported?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>We currently support English and Kiswahili output, with more languages coming soon. Reports must be written in English. Support for source reports in other languages is planned for future updates.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>Is my medical information private?</h3>
-                        <p>Yes, absolutely. All personal information is removed before AI processing. We encrypt your
-                            data, never store your full reports permanently, and comply with healthcare privacy
-                            standards.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>How does the highlighting work?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Important findings are color-coded: red highlights indicate areas that need attention, while green highlights show normal or reassuring findings. Hover over highlighted medical terms to see plain-language definitions.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>What file formats can I upload?</h3>
-                        <p>You can upload PDF files, text files (.txt), and image formats (PNG, JPG, JPEG, TIF, TIFF,
-                            WEBP, BMP). The system will extract the text from your radiology report for processing.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What is the sensitive report warning?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Some reports may contain findings that could be distressing — such as mentions of serious illness or critical results. When our system detects this, it shows a brief warning screen before displaying your results, giving you the choice to proceed when you're ready. You can acknowledge and continue at any time.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>Can I save my reports for later?</h3>
-                        <p>Yes! Create a free account to save your translated reports permanently. Without an account,
-                            your reports are available during your current session only.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>How long does processing take?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Most reports are processed instantly. Complex or lengthy reports may take a few seconds. Results appear on screen immediately and can be downloaded as a PDF.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>What if the AI misinterprets something?</h3>
-                        <p>Our AI is trained on medical terminology, but it's not a substitute for professional medical
-                            advice. Always consult your healthcare provider if you have questions or concerns about your
-                            results.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>How accurate is the translation?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Our AI uses advanced language models trained on medical literature to ensure accuracy. However, it is not a substitute for professional medical advice — always use the translation as a guide and discuss any questions with your healthcare provider.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>Can I share my translated report with my doctor?</h3>
-                        <p>Absolutely. You can download a PDF copy of your translated report and share it with your
-                            healthcare team. The PDF includes both the simplified explanation and key findings.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Is my medical information private?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Yes. Personal identifiers are removed before AI processing, data is encrypted in transit and at rest, and we follow HIPAA-aligned privacy practices. Full reports are not stored permanently beyond your session unless you save them to your account.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>How accurate is the translation?</h3>
-                        <p>Our AI uses advanced language models trained on medical literature to ensure accuracy.
-                            However, we recommend using the translation as a guide and discussing any questions with
-                            your healthcare provider.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What is the DICOM viewer?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>DICOM is the standard file format used by medical imaging equipment (CT scanners, MRI machines, etc.). The DICOM section lets you upload and view these image files directly in your browser, alongside your translated report. You can find it under the DICOM tab in the navigation.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>What types of imaging reports can you process?</h3>
-                        <p>We can process reports from X-rays, CT scans, MRI scans, ultrasounds, PET scans, and other
-                            radiology imaging studies. The format should contain text describing the findings.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>How do I sign in? Can I use Google?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Yes — you can sign in with your Google account for a faster login experience, or create a standard account with an email and password. Both methods give you full access to the platform.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>Do you offer bulk processing for healthcare providers?</h3>
-                        <p>We're currently in a pilot phase with select healthcare partners. Contact our support team if
-                            you're interested in institutional access or bulk processing capabilities.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What is two-factor authentication (2FA) and how do I set it up?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Two-factor authentication adds a second layer of security to your account. Once enabled, you'll need to enter a time-based code from an authenticator app (such as Google Authenticator or Authy) each time you log in. To set it up, go to your Profile page and follow the 2FA setup instructions.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>What if my report is in a different language?</h3>
-                        <p>Currently, we process reports written in English and translate them to English or Kiswahili.
-                            Support for reports in other source languages is planned for future updates.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Why was I logged out automatically?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>For your security, sessions automatically expire after a period of inactivity. This is especially important on shared or public devices. Simply log back in to continue where you left off.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>Can I delete my reports and account data?</h3>
-                        <p>Yes. You can delete individual reports from your dashboard or contact support to completely
-                            remove your account and all associated data from our system.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Can I save my reports for later?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Yes. Create a free account to save translated reports permanently to your Dashboard. Without an account, reports are only available for the duration of your current session.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>Is there a mobile app available?</h3>
-                        <p>Our website is mobile-responsive and works on smartphones and tablets. A dedicated mobile app
-                            is being considered for future development based on user feedback.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Can I share my translated report with my doctor?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Yes. Download a PDF copy of your translated report and share it with your healthcare team. The PDF includes the simplified explanation and key findings.</p></div>
                     </div>
-                    <div class="faq-card">
-                        <h3>What should I do if the upload fails?</h3>
-                        <p>Make sure your file is in a supported format and contains readable text. If problems persist,
-                            try converting your PDF to text, check your internet connection, or contact support for
-                            assistance.</p>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Can I delete my reports and account data?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Yes. You can delete individual reports from your Dashboard. To fully remove your account and all associated data, contact our support team and we will action it promptly.</p></div>
                     </div>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>How do I submit feedback?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>After viewing a translated report, you'll see an option to leave feedback on the result. We read all feedback and use it to improve the platform. You can also use the Contact Support form on this page for anything more specific.</p></div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Do you offer institutional or bulk access for healthcare providers?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>We are currently in a pilot phase with select healthcare partners. If you represent a clinic, hospital, or health system interested in institutional access, please reach out via the Contact Support form below and we will get back to you.</p></div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>What should I do if the upload fails?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>Check that your file is in a supported format and contains readable text (scanned images without OCR text may not process correctly). If the problem persists, try a different file format, check your internet connection, or contact support.</p></div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-trigger" aria-expanded="false">
+                            <span>Is there a mobile app available?</span>
+                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-body" hidden><p>The website is fully mobile-responsive and works well on smartphones and tablets. A dedicated native app is being considered based on user demand.</p></div>
+                    </div>
+
                 </div>
             </section>
             <section class="contact-support">
@@ -147,41 +224,57 @@
 {% block extra_js %}
 <!-- Theme logic for the slider -->
     <script>
-        function searchHelp() {
-            var input = document.getElementById('help-search');
-            var filter = input.value.toLowerCase();
-            var cards = document.querySelectorAll('.faq-card');
-            var found = false;
-
-            cards.forEach(function (card) {
-                var title = card.querySelector('h3').textContent.toLowerCase();
-                var content = card.querySelector('p').textContent.toLowerCase();
-                if (title.includes(filter) || content.includes(filter)) {
-                    card.style.display = '';
-                    found = true;
-                } else {
-                    card.style.display = 'none';
-                }
+        document.addEventListener('DOMContentLoaded', function () {
+            // Accordion toggle
+            document.querySelectorAll('.faq-trigger').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var body = btn.nextElementSibling;
+                    var isOpen = btn.getAttribute('aria-expanded') === 'true';
+                    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+                    if (isOpen) {
+                        body.hidden = true;
+                    } else {
+                        body.hidden = false;
+                    }
+                });
             });
 
-            if (!found && filter) {
-                alert('No matching help topics found. Try different keywords.');
-            }
-        }
+            // Search — filter items, auto-expand matches
+            function searchHelp() {
+                var filter = document.getElementById('help-search').value.toLowerCase().trim();
+                var items = document.querySelectorAll('.faq-item');
+                var found = false;
 
-        document.addEventListener('DOMContentLoaded', function () {
-            var searchBtn = document.getElementById('search-btn');
-            if (searchBtn) {
-                searchBtn.addEventListener('click', searchHelp);
+                items.forEach(function (item) {
+                    var trigger = item.querySelector('.faq-trigger');
+                    var body = item.querySelector('.faq-body');
+                    var text = item.textContent.toLowerCase();
+                    var match = !filter || text.includes(filter);
+                    item.style.display = match ? '' : 'none';
+                    if (match && filter) {
+                        trigger.setAttribute('aria-expanded', 'true');
+                        body.hidden = false;
+                        found = true;
+                    }
+                    if (!filter) {
+                        trigger.setAttribute('aria-expanded', 'false');
+                        body.hidden = true;
+                    }
+                });
+
+                if (!found && filter) {
+                    alert('No matching help topics found. Try different keywords.');
+                }
             }
+
+            var searchBtn = document.getElementById('search-btn');
+            if (searchBtn) searchBtn.addEventListener('click', searchHelp);
 
             var searchInput = document.getElementById('help-search');
             if (searchInput) {
+                searchInput.addEventListener('input', searchHelp);
                 searchInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        searchHelp();
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); searchHelp(); }
                 });
             }
         });

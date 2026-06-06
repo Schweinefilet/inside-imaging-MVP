@@ -248,13 +248,21 @@ _CSP = os.getenv("CONTENT_SECURITY_POLICY", _CSP_DEFAULT)
 @app.after_request
 def _security_headers(response):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
-    response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     response.headers.setdefault("Permissions-Policy", "geolocation=(), camera=(), microphone=()")
     response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
     if _IS_PRODUCTION:
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-    response.headers.setdefault("Content-Security-Policy", _CSP)
+    # PDFs served to the magazine iframe need to allow same-origin framing.
+    # All other responses stay locked down with frame-ancestors 'none'.
+    if response.mimetype == 'application/pdf':
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Content-Security-Policy"] = _CSP.replace(
+            "frame-ancestors 'none'", "frame-ancestors 'self'"
+        )
+    else:
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Content-Security-Policy", _CSP)
     return response
 
 

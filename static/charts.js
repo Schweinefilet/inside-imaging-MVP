@@ -21,11 +21,22 @@
     globalTooltip.style.display = 'none';
   }
 
+  function setupCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = parseInt(canvas.getAttribute('width'))  || canvas.offsetWidth;
+    const cssH = parseInt(canvas.getAttribute('height')) || canvas.offsetHeight;
+    canvas.width  = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.width  = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return { ctx, width: cssW, height: cssH };
+  }
+
   // Simple line chart for time-series data with dates
   function createLineChart(canvas, data, label) {
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const { ctx, width, height } = setupCanvas(canvas);
     const padding = 40;
     const chartWidth = width - 2 * padding;
     const chartHeight = height - 2 * padding;
@@ -103,9 +114,7 @@
 
   // Simple horizontal bar chart
   function createBarChart(canvas, data, colors) {
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const { ctx, width, height } = setupCanvas(canvas);
     const padding = 45;
     const chartWidth = width - padding - 70;
     const chartHeight = height - 40;
@@ -202,9 +211,7 @@
 
   // Simple pie chart with custom tooltip
   function createPieChart(canvas, data, colors) {
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const { ctx, width, height } = setupCanvas(canvas);
     const centerX = width / 2;
     const centerY = height / 2;
     const radius = Math.min(width, height) / 2 - 15;
@@ -227,10 +234,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // Add stroke
-      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#0b0c0f';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
 
       currentAngle += sliceAngle;
     });
@@ -341,7 +344,7 @@
     // Pie chart for gender mix
     const genderCanvas = document.getElementById('pie-chart-gender');
     if (genderCanvas && window.statsData && window.statsData.genderData) {
-      const colors = ['#ec4899', '#3b82f6', '#8b5cf6'];
+      const colors = ['#FFABDA', '#62BAFF', '#D9A5F2'];
       createPieChart(genderCanvas, window.statsData.genderData, colors);
     }
 
@@ -362,7 +365,14 @@
     // Pie chart for findings
     const findingsCanvas = document.getElementById('pie-chart-findings');
     if (findingsCanvas && window.statsData && window.statsData.findingsData) {
-      const colors = ['#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+      const n = window.statsData.findingsData.length || 1;
+      const colors = Array.from({ length: n }, function(_, i) {
+        const t = n === 1 ? 0 : i / (n - 1);
+        const r = Math.round(59  + (220 - 59)  * t);
+        const g = Math.round(130 + (235 - 130) * t);
+        const b = Math.round(246 + (255 - 246) * t);
+        return 'rgb(' + r + ',' + g + ',' + b + ')';
+      });
       createPieChart(findingsCanvas, window.statsData.findingsData, colors);
     }
   });

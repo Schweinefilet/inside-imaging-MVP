@@ -243,9 +243,22 @@ def init_db() -> None:
         ("return_path", "TEXT DEFAULT 'webhook'"),
         ("hospital_branding", "TEXT DEFAULT ''"),
         ("ip_allowlist", "TEXT DEFAULT ''"),
+        ("hl7_sending_facility", "TEXT DEFAULT ''"),
     ):
         if col not in tenant_cols:
             cur.execute(f"ALTER TABLE tenants ADD COLUMN {col} {ddl}")
+    if "hl7_sending_facility" in tenant_cols:
+        cur.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_tenants_hl7_facility"
+            " ON tenants(hl7_sending_facility) WHERE hl7_sending_facility != ''"
+        )
+    # Remove hl7_api_key if it was added by an earlier migration — raw keys must
+    # not be stored in the DB (security model: integration_api_keys stores hashes only).
+    if "hl7_api_key" in tenant_cols:
+        cur.execute("SELECT sqlite_version()")
+        _ver = tuple(int(x) for x in (cur.fetchone()[0] or "0.0.0").split("."))
+        if _ver >= (3, 35, 0):
+            cur.execute("ALTER TABLE tenants DROP COLUMN hl7_api_key")
 
     # --- Integration: API keys + reports --------------------------------
     cur.execute(
@@ -277,12 +290,17 @@ def init_db() -> None:
             inbound_storage_key TEXT,
             outbound_pdf_key TEXT,
             language TEXT DEFAULT 'English',
+            flagged INTEGER DEFAULT 0,
             error TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             processed_at TIMESTAMP
         )
         """
     )
+    cur.execute("PRAGMA table_info(integration_reports)")
+    ireport_cols = [row[1] for row in cur.fetchall()]
+    if "flagged" not in ireport_cols:
+        cur.execute("ALTER TABLE integration_reports ADD COLUMN flagged INTEGER DEFAULT 0")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ireports_tenant_time ON integration_reports(tenant_id, created_at)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ireports_accession ON integration_reports(accession_number)")
 
@@ -381,6 +399,14 @@ def init_db() -> None:
     inst_cols = [row[1] for row in cur.fetchall()]
     if "storage_backend" not in inst_cols:
         cur.execute("ALTER TABLE dicom_instances ADD COLUMN storage_backend TEXT DEFAULT 's3'")
+
+    # Rename patient_id → patient_id_truncated in dicom_studies (runs once; SQLite 3.25+).
+    cur.execute("PRAGMA table_info(dicom_studies)")
+    study_col_names = [row[1] for row in cur.fetchall()]
+    if "patient_id" in study_col_names and "patient_id_truncated" not in study_col_names:
+        cur.execute("ALTER TABLE dicom_studies RENAME COLUMN patient_id TO patient_id_truncated")
+    elif "patient_id_truncated" not in study_col_names:
+        cur.execute("ALTER TABLE dicom_studies ADD COLUMN patient_id_truncated TEXT DEFAULT ''")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_studies_tenant ON dicom_studies(tenant_id, username)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_series_tenant ON dicom_series(tenant_id)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_instances_tenant ON dicom_instances(tenant_id)")
@@ -442,7 +468,8 @@ def init_db() -> None:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             reviewed_at TIMESTAMP,
             reviewed_by TEXT,
-            admin_notes TEXT
+            admin_notes TEXT,
+            expires_at TIMESTAMP
         )
         """
     )
@@ -464,6 +491,13 @@ def init_db() -> None:
     cur.execute(
         "CREATE INDEX IF NOT EXISTS idx_feedback_user_time_status "
         "ON feedback(username, created_at, status)"
+    )
+    if "expires_at" not in fb_cols:
+        cur.execute("ALTER TABLE feedback ADD COLUMN expires_at TIMESTAMP")
+    _retention_years_fb = int(os.environ.get("DATA_RETENTION_YEARS", "6"))
+    cur.execute(
+        f"UPDATE feedback SET expires_at = datetime(created_at, '+{_retention_years_fb} years')"
+        " WHERE expires_at IS NULL"
     )
 
     conn.commit()

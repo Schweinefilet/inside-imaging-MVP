@@ -334,10 +334,17 @@
       createLineChart(lineCanvas, timeSeriesData, 'Reports');
     }
 
-    // Pie chart for age distribution
+    // Pie chart for age distribution — white (youngest) → mint (oldest)
     const ageCanvas = document.getElementById('pie-chart-age');
     if (ageCanvas && window.statsData && window.statsData.ageData) {
-      const colors = ['#22c55e', '#10b981', '#059669', '#047857', '#065f46'];
+      const n = window.statsData.ageData.length || 1;
+      const colors = Array.from({ length: n }, function(_, i) {
+        const t = n === 1 ? 1 : i / (n - 1);
+        const r = Math.round(193 + (6   - 193) * t);
+        const g = Math.round(215 + (95  - 215) * t);
+        const b = Math.round(209 + (70  - 209) * t);
+        return 'rgb(' + r + ',' + g + ',' + b + ')';
+      });
       createPieChart(ageCanvas, window.statsData.ageData, colors);
     }
 

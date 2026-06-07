@@ -1,0 +1,643 @@
+{% extends "base.html" %}
+
+{% block title %}Report Feedback · Inside Imaging{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+<style>
+    .page-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-back:hover { color: var(--text); }
+
+    .report-layout {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 900px) {
+        .report-layout { grid-template-columns: 1fr; }
+    }
+
+    .report-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 1.5rem;
+    }
+
+    .report-card h2 {
+        font-size: 1.15rem;
+        margin: 0 0 1rem 0;
+    }
+
+    .meta-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        font-size: 0.88rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .meta-row span { color: var(--muted); }
+    .meta-row strong { color: var(--text); margin-left: 0.25rem; }
+
+    .tag-chip {
+        display: inline-block;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.2rem 0.55rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .tag-chip--modality {
+        background: color-mix(in srgb, var(--mint) 12%, var(--bg));
+        border-color: var(--mint);
+        color: var(--mint);
+    }
+
+    .tag-chip--region {
+        background: color-mix(in srgb, #60a5fa 10%, var(--bg));
+        border-color: #60a5fa;
+        color: #60a5fa;
+    }
+
+    .tag-chip--disease {
+        background: var(--bg);
+        border-color: var(--border);
+        color: var(--muted);
+    }
+
+    /* Strip the standalone-card styles that main.css applies to .report section,
+       since here sections live inside an already-styled .report-card. */
+    .report-card .report section {
+        background: none;
+        border: none;
+        border-radius: 0;
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 0;
+        margin: 0;
+    }
+    .report-card .report section:last-child { border-bottom: none; }
+    .report-card .important-findings {
+        background: none;
+        border-left: 3px solid var(--mint);
+        padding-left: 0.75rem;
+    }
+    .report-card .report h3 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--mint);
+        margin: 0 0 0.4rem;
+    }
+    .report-card .report p,
+    .report-card .report .simple-output { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text); }
+
+    .download-pdf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 1rem;
+        padding: 0.45rem 1rem;
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.12s;
+    }
+
+    .download-pdf-btn:hover { border-color: var(--mint); color: var(--mint); }
+
+    .feedback-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .feedback-card h2 {
+        font-size: 1.15rem;
+        margin: 0 0 1.25rem 0;
+    }
+
+    .form-field { margin-bottom: 0.95rem; }
+
+    .form-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    .label-hint {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 0.8rem;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.9rem;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-field textarea { resize: vertical; }
+
+    .submit-btn {
+        display: block;
+        width: 100%;
+        background: var(--mint);
+        color: var(--bg);
+        border: 1px solid transparent;
+        padding: 0.7rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+        box-sizing: border-box;
+    }
+
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .form-error {
+        padding: 0.6rem 0.75rem;
+        background: color-mix(in srgb, #ef4444 10%, var(--panel));
+        border: 1px solid #ef4444;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        color: #ef4444;
+        margin-bottom: 0.85rem;
+    }
+
+    .inline-confirm {
+        padding: 1.25rem 1.3rem;
+        background: color-mix(in srgb, var(--mint) 10%, var(--panel));
+        border: 1px solid var(--mint);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .inline-confirm strong { color: var(--mint); font-size: 1.05rem; }
+
+    .confirm-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .confirm-actions a,
+    .confirm-actions button {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1.1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1;
+        margin: 0;
+        cursor: pointer;
+        text-decoration: none;
+        -webkit-appearance: none;
+        appearance: none;
+        white-space: nowrap;
+    }
+
+    .confirm-actions .btn-outline {
+        background: none;
+        border: 1px solid var(--mint);
+        color: var(--mint);
+    }
+
+    .confirm-actions .btn-outline:hover { background: var(--mint); color: var(--bg); }
+
+    .confirm-actions .btn-ghost {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    .confirm-actions .btn-ghost:hover { border-color: var(--text); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <a class="page-back" href="{{ url_for('radiologist_feedback') }}">← Back to Portal</a>
+
+    <h1 style="margin-bottom: 0.3rem;">Report Feedback</h1>
+    <p class="tagline">{{ record.patient.study or 'Report' }} · {{ record.created_at }}</p>
+
+    <div class="report-layout" style="margin-top: 1.75rem;">
+
+        {# ── Left: report summary + AI output ── #}
+        <div>
+            <div class="report-card">
+                <h2>Report Summary</h2>
+
+                <div class="meta-row">
+                    <div><span>Language</span><strong>{{ record.language or 'English' }}</strong></div>
+                    <div><span>Date</span><strong>{{ record.patient.date or record.created_at }}</strong></div>
+                    {% if record.patient.hospital %}
+                    <div><span>Hospital</span><strong>{{ record.patient.hospital }}</strong></div>
+                    {% endif %}
+                </div>
+
+                {% if report_tags %}
+                <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem;">
+                    {% for tag in report_tags %}
+                    <span class="tag-chip tag-chip--{{ tag.kind }}">{{ tag.label }}</span>
+                    {% endfor %}
+                </div>
+                {% elif record.patient.study %}
+                <div style="margin-bottom:1rem;">
+                    <span class="tag-chip">{{ record.patient.study }}</span>
+                </div>
+                {% endif %}
+
+                <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem;">
+                    <a href="{{ url_for('report_detail', report_id=record.id) }}"
+                       style="font-size: 0.85rem; color: var(--mint); text-decoration: none; font-weight: 600;">
+                        View full report →
+                    </a>
+                    <button id="pdf-btn" class="download-pdf-btn" type="button">⬇ Download PDF</button>
+                </div>
+
+                <div class="report" style="margin-top: 0.5rem;">
+                    {% if structured.reason %}
+                    <section>
+                        <h3>Reason for the Scan</h3>
+                        <p class="simple-output">{{ structured.reason|safe }}</p>
+                    </section>
+                    {% endif %}
+                    {% if structured.technique %}
+                    <section>
+                        <h3>Procedure Details</h3>
+                        <p class="simple-output">{{ structured.technique|safe }}</p>
+                    </section>
+                    {% endif %}
+                    {% if structured.findings %}
+                    <section class="important-findings">
+                        <h3>Important Findings</h3>
+                        <div class="simple-output">{{ structured.findings|safe }}</div>
+                    </section>
+                    {% endif %}
+                    {% if structured.conclusion %}
+                    <section>
+                        <h3>Conclusion</h3>
+                        <div class="simple-output">{{ structured.conclusion|safe }}</div>
+                    </section>
+                    {% endif %}
+                    {% if structured.concern %}
+                    <section class="warn">
+                        <h3>Note of Concern</h3>
+                        <p class="simple-output">{{ structured.concern|safe }}</p>
+                    </section>
+                    {% endif %}
+                    {% if not structured.findings and not structured.conclusion %}
+                    <p style="color:var(--muted); font-size:0.88rem;">(No simplified output stored for this report.)</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── Right: feedback form ── #}
+        <div>
+            <div class="feedback-card">
+                <h2>Submit Feedback</h2>
+
+                {# ── Quick approval ── #}
+                <div id="good-area" style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);">
+                    <p style="font-size:0.88rem; color:var(--muted); margin:0 0 0.75rem;">
+                        If the AI output is accurate and needs no changes:
+                    </p>
+                    <button id="mark-good-btn" type="button"
+                            style="display:inline-flex; align-items:center; gap:0.5rem;
+                                   padding:0.55rem 1.25rem; background:none;
+                                   border:1px solid #22c55e; border-radius:8px;
+                                   color:#22c55e; font-weight:600; font-size:0.9rem;
+                                   cursor:pointer; line-height:1; margin:0;
+                                   transition:background 0.12s, color 0.12s;">
+                        ✓ Mark as Good — No Changes Needed
+                    </button>
+                    <div id="good-err" style="display:none; margin-top:0.5rem; font-size:0.85rem; color:#ef4444;"></div>
+                </div>
+
+                {% if raw_text %}
+                <details style="margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 1.25rem;">
+                    <summary style="cursor:pointer; font-size:0.85rem; font-weight:600;
+                                    color:var(--muted); user-select:none; list-style:none;
+                                    display:flex; align-items:center; gap:0.4rem;">
+                        <span style="font-size:0.7rem;">▶</span>
+                        Original extracted text
+                    </summary>
+                    <pre style="margin: 0.75rem 0 0; padding: 0.9rem 1rem;
+                                background: var(--bg); border: 1px solid var(--border);
+                                border-radius: 8px; font-size: 0.8rem; line-height: 1.6;
+                                color: var(--text); white-space: pre-wrap; word-break: break-word;
+                                max-height: 340px; overflow-y: auto;">{{ raw_text }}</pre>
+                </details>
+                {% endif %}
+
+                <div id="form-area">
+                    <div class="form-error" id="form-err" style="display:none;"></div>
+
+                    <form id="feedback-form" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="report_id" value="{{ record.id }}">
+                        <input type="hidden" name="modality" value="{{ record.patient.study | e }}">
+                        <input type="hidden" name="ai_output" value="{{ ai_output | e }}">
+                        <input type="hidden" name="original_text" value="{{ ai_output | e }}">
+                        <input type="hidden" name="raw_report_text" value="{{ raw_text | e }}">
+                        <input type="hidden" name="next" value="radiologist_feedback">
+
+                        <div class="form-field">
+                            <label for="fb-type">Feedback Type</label>
+                            <select name="feedback_type" id="fb-type" required>
+                                <option value="clinical_accuracy">Clinical Accuracy</option>
+                                <option value="translation_error">Translation Error</option>
+                                <option value="format_issue">Format / Structure Issue</option>
+                                <option value="missing_finding">Missing Finding</option>
+                                <option value="general">General</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="fb-subject">Subject</label>
+                            <input type="text" name="subject" id="fb-subject"
+                                   value="Report #{{ record.id }}: {{ record.patient.study }}"
+                                   required maxlength="200">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="fb-corrected">
+                                Your correction
+                                <span class="label-hint">— edit to correct the AI output</span>
+                            </label>
+                            <textarea name="corrected_text" id="fb-corrected"
+                                      rows="26">{{ ai_output | e }}</textarea>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="fb-notes">
+                                Notes <span class="label-hint">(optional)</span>
+                            </label>
+                            <textarea name="description" id="fb-notes" rows="3"
+                                      placeholder="What was wrong and why you made this change..."></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Submit Feedback</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── PDF download ─────────────────────────────────────────────────────────────
+(function () {
+    var btn = document.getElementById('pdf-btn');
+    if (!btn) return;
+    var structured = {{ structured|tojson }};
+    var patient    = {{ record.patient|tojson }};
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        btn.textContent = 'Generating…';
+        fetch('{{ url_for("download_pdf") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+            body: JSON.stringify({ structured: structured, patient: patient }),
+        })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (e) { throw new Error(e.detail || 'PDF failed'); });
+            return r.blob();
+        })
+        .then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'inside-imaging-report.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        })
+        .catch(function (err) { alert('Could not generate PDF: ' + err.message); })
+        .finally(function () { btn.disabled = false; btn.textContent = '⬇ Download PDF'; });
+    });
+}());
+
+// ── Feedback form + Mark as Good ─────────────────────────────────────────────
+(function () {
+    'use strict';
+
+    var SUBMIT_URL  = '{{ url_for("submit_feedback") }}';
+    var CSRF_TOKEN  = '{{ csrf_token() }}';
+
+    var areaEl     = document.getElementById('form-area');
+    var formCache  = areaEl ? areaEl.innerHTML : '';
+    var goodArea   = document.getElementById('good-area');
+    var goodCache  = goodArea ? goodArea.innerHTML : '';
+
+    function esc(s) {
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function callUndo(feedbackId, onSuccess, onError) {
+        fetch('/feedback/undo/' + feedbackId, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+        })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+        .then(function (r) {
+            if (r.ok && r.body.ok) { onSuccess(); }
+            else { onError((r.body && r.body.error) || 'Cannot undo.'); }
+        })
+        .catch(function () { onError('Network error.'); });
+    }
+
+    // ── Main feedback form ────────────────────────────────────────────────────
+    function wireForm() {
+        var f   = document.getElementById('feedback-form');
+        var err = document.getElementById('form-err');
+        if (!f) return;
+        f.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var btn = f.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Submitting…';
+            err.style.display = 'none';
+
+            fetch(SUBMIT_URL, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(f),
+            })
+            .then(function (res) { return res.json().then(function (j) { return { ok: res.ok, body: j }; }); })
+            .then(function (r) {
+                if (r.ok) {
+                    var fbId = r.body.feedback_id;
+                    areaEl.innerHTML =
+                        '<div class="inline-confirm">' +
+                            '<strong>Feedback submitted ✓</strong><br>' +
+                            '<span style="color:var(--muted);font-size:0.9rem;">Subject: ' + esc(r.body.subject || '') + '</span>' +
+                            '<div class="confirm-actions">' +
+                                '<button class="btn-outline" onclick="submitAnother()">Submit another correction</button>' +
+                                '<a class="btn-ghost" href="{{ url_for("radiologist_feedback") }}">Back to Portal</a>' +
+                                (fbId ? '<button class="btn-ghost" id="undo-fb-btn" onclick="undoFb(' + fbId + ')">Undo</button>' : '') +
+                            '</div>' +
+                        '</div>';
+                } else {
+                    err.textContent = (r.body && r.body.error) || 'Submission failed. Please try again.';
+                    err.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Feedback';
+                }
+            })
+            .catch(function () {
+                err.textContent = 'Network error. Please check your connection and try again.';
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Submit Feedback';
+            });
+        });
+    }
+
+    window.submitAnother = function () {
+        if (areaEl) { areaEl.innerHTML = formCache; wireForm(); }
+    };
+
+    window.undoFb = function (feedbackId) {
+        var btn = document.getElementById('undo-fb-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Undoing…'; }
+        callUndo(feedbackId,
+            function () { window.submitAnother(); },
+            function (errMsg) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Cannot undo'; }
+                alert(errMsg);
+            }
+        );
+    };
+
+    wireForm();
+
+    // ── Mark as Good button ───────────────────────────────────────────────────
+    function wireGoodBtn() {
+        var goodBtn = document.getElementById('mark-good-btn');
+        var goodErr = document.getElementById('good-err');
+        if (!goodBtn) return;
+
+        goodBtn.addEventListener('mouseenter', function () {
+            this.style.background = '#22c55e'; this.style.color = '#000';
+        });
+        goodBtn.addEventListener('mouseleave', function () {
+            this.style.background = 'none'; this.style.color = '#22c55e';
+        });
+
+        goodBtn.addEventListener('click', function () {
+            goodBtn.disabled = true;
+            goodBtn.textContent = 'Submitting…';
+            goodErr.style.display = 'none';
+
+            var fd = new FormData();
+            fd.append('csrf_token', CSRF_TOKEN);
+            fd.append('feedback_type', 'no_changes');
+            fd.append('subject', 'Report #{{ record.id }}: No changes needed — {{ record.patient.study or "Study" }}');
+            fd.append('description', 'AI output reviewed by radiologist. No corrections required.');
+            fd.append('modality', '{{ record.patient.study | e }}');
+            fd.append('report_id', '{{ record.id }}');
+            var _rrEl = document.querySelector('input[name="raw_report_text"]');
+            fd.append('raw_report_text', _rrEl ? _rrEl.value : '');
+            fd.append('next', 'radiologist_feedback');
+
+            fetch(SUBMIT_URL, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd,
+            })
+            .then(function (res) { return res.json().then(function (j) { return { ok: res.ok, body: j }; }); })
+            .then(function (r) {
+                if (r.ok) {
+                    var fbId = r.body.feedback_id;
+                    goodArea.innerHTML =
+                        '<div style="padding:0.9rem 1rem; background:color-mix(in srgb,#22c55e 10%,var(--panel));' +
+                        'border:1px solid #22c55e; border-radius:8px; font-size:0.9rem;">' +
+                        '<strong style="color:#22c55e;">✓ Marked as good</strong> — no changes needed.<br>' +
+                        '<span style="font-size:0.85rem; color:var(--muted);">Your review has been recorded.</span>' +
+                        (fbId ? '<br><button id="undo-good-btn" onclick="undoGood(' + fbId + ')" ' +
+                            'style="margin-top:0.6rem; background:none; border:1px solid var(--border); ' +
+                            'color:var(--muted); padding:0.3rem 0.75rem; border-radius:6px; ' +
+                            'font-size:0.8rem; font-weight:600; cursor:pointer;">Undo</button>' : '') +
+                        '</div>';
+                } else {
+                    goodErr.textContent = (r.body && r.body.error) || 'Submission failed.';
+                    goodErr.style.display = 'block';
+                    goodBtn.disabled = false;
+                    goodBtn.textContent = '✓ Mark as Good — No Changes Needed';
+                }
+            })
+            .catch(function () {
+                goodErr.textContent = 'Network error. Please try again.';
+                goodErr.style.display = 'block';
+                goodBtn.disabled = false;
+                goodBtn.textContent = '✓ Mark as Good — No Changes Needed';
+            });
+        });
+    }
+
+    window.undoGood = function (feedbackId) {
+        var btn = document.getElementById('undo-good-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Undoing…'; }
+        callUndo(feedbackId,
+            function () {
+                if (goodArea) { goodArea.innerHTML = goodCache; wireGoodBtn(); }
+            },
+            function (errMsg) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Cannot undo'; }
+                alert(errMsg);
+            }
+        );
+    };
+
+    wireGoodBtn();
+}());
+</script>
+{% endblock %}

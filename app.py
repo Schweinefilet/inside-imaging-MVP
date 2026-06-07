@@ -199,6 +199,14 @@ app.register_blueprint(integration_bp)
 _INACTIVITY_TIMEOUT_SECONDS = int(os.getenv("SESSION_INACTIVITY_SECONDS", "1800"))  # 30 min
 
 
+@app.context_processor
+def _inject_roles():
+    username = session.get("username")
+    is_admin = bool(username and db.has_any_role(username, ["admin"]))
+    is_radiologist = bool(username and db.has_any_role(username, ["admin", "radiologist"]))
+    return {"is_admin": is_admin, "is_radiologist": is_radiologist}
+
+
 @app.before_request
 def _check_inactivity_timeout():
     if "username" not in session:
@@ -700,11 +708,15 @@ def _build_patient_block(structured, full_patient_name):
     }
 
 
-def _persist_recent_report(patient, structured, report_stats, lang, context):
+def _persist_recent_report(patient, structured, report_stats, lang, context,
+                           model_used="", raw_text="", is_sensitive=False):
     """Persist analytics + prepend the new report to the session's recent list."""
     try:
         username = session.get("username", "")
-        report_id = db.store_report_event(patient, structured, report_stats, lang, username, context)
+        report_id = db.store_report_event(
+            patient, structured, report_stats, lang, username, context,
+            model_used, raw_text, is_sensitive,
+        )
     except Exception:
         logging.exception("Failed to persist report analytics.")
         return
@@ -785,7 +797,10 @@ def upload():
     session["language"] = lang
     session["context"] = context
 
-    _persist_recent_report(patient, structured, report_stats, lang, context)
+    _persist_recent_report(
+        patient, structured, report_stats, lang, context,
+        model_used=_OPENAI_MODEL, raw_text=extracted, is_sensitive=is_flagged,
+    )
 
     if context:
         structured["reason"] = f"<strong>Patient context:</strong> {context}<br><br>" + (structured.get("reason") or "")
@@ -795,7 +810,7 @@ def upload():
         S=structured, structured=structured, patient=patient,
         extracted=extracted, study={"organ": patient.get("study") or "Unknown"},
         language=lang, report_stats=report_stats, disease_tags=disease_tags,
-        flagged=is_flagged,
+        flagged=is_flagged, model_used=_OPENAI_MODEL,
     )
 
 
@@ -856,6 +871,7 @@ def report_detail(report_id: int):
         language=language,
         report_stats=report_stats,
         disease_tags=disease_tags,
+        model_used=record.get("model_used", ""),
     )
 
 
@@ -1052,47 +1068,156 @@ def profile():
     # Get user's feedback submissions
     user_feedback = db.get_user_feedback(username)
     
-    is_admin = db.has_any_role(username, ["admin", "radiologist"])
+    is_admin = db.has_any_role(username, ["admin"])
+    is_radiologist = db.has_any_role(username, ["radiologist"])
     mfa_enabled = db.is_totp_enabled(username)
-    return render_template("profile.html", feedback_list=user_feedback, is_admin=is_admin, mfa_enabled=mfa_enabled)
+    specialty = db.get_user_specialty(username)
+    return render_template("profile.html", feedback_list=user_feedback, is_admin=is_admin,
+                           is_radiologist=is_radiologist, mfa_enabled=mfa_enabled, specialty=specialty)
 
+
+_VALID_FEEDBACK_TYPES = frozenset({
+    "clinical_accuracy", "translation_error", "format_issue",
+    "missing_finding", "general", "feature_request", "ui_bug",
+    "no_changes",
+})
 
 @app.route("/submit-feedback", methods=["POST"])
 def submit_feedback():
-    """Handle feedback submission from radiologists/users"""
+    """Handle feedback submission from radiologists/users.
+
+    Returns JSON when called with X-Requested-With: XMLHttpRequest (AJAX),
+    otherwise flashes and redirects (legacy form behaviour).
+    """
+    is_xhr = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
     username = session.get("username")
     if not username:
+        if is_xhr:
+            return jsonify({"error": "Not logged in."}), 401
         flash("Please log in to submit feedback.", "error")
         return redirect(url_for("login"))
-    
+
+    feedback_type = request.form.get("feedback_type", "").strip().lower()
+    if feedback_type not in _VALID_FEEDBACK_TYPES:
+        return jsonify({
+            "error": "Invalid feedback_type.",
+            "accepted": sorted(_VALID_FEEDBACK_TYPES),
+        }), 400
+
+    next_page = request.form.get("next", "profile")
+    _safe_next = next_page if next_page in ("profile", "radiologist_feedback") else "profile"
+
     try:
-        feedback_type = request.form.get("feedback_type", "").strip()
         subject = request.form.get("subject", "").strip()
         original_text = request.form.get("original_text", "").strip()
         corrected_text = request.form.get("corrected_text", "").strip()
         description = request.form.get("description", "").strip()
-        
-        if not feedback_type or not subject:
-            flash("Please provide feedback type and subject.", "error")
-            return redirect(url_for("profile"))
-        
+        ai_output = request.form.get("ai_output", "").strip()
+        modality = request.form.get("modality", "").strip()
+        raw_report_text = request.form.get("raw_report_text", "").strip()
+        _rid_raw = request.form.get("report_id", "").strip()
+        report_id = int(_rid_raw) if _rid_raw.isdigit() else None
+
+        if not subject:
+            if is_xhr:
+                return jsonify({"error": "Subject is required."}), 400
+            flash("Please provide a subject.", "error")
+            return redirect(url_for(_safe_next))
+
         feedback_id = db.submit_feedback(
             username=username,
             feedback_type=feedback_type,
             subject=subject,
             original=original_text,
             corrected=corrected_text,
-            description=description
+            description=description,
+            ai_output=ai_output,
+            modality=modality,
+            report_id=report_id,
+            raw_report_text=raw_report_text,
         )
-        
-        logging.info("Feedback #%d submitted (type=%s, subject_len=%d)", feedback_id, feedback_type, len(subject or ""))
+
+        logging.info(
+            "Feedback #%d submitted (type=%s, subject_len=%d, has_ai_output=%s)",
+            feedback_id, feedback_type, len(subject), bool(ai_output),
+        )
+
+        if is_xhr:
+            return jsonify({"ok": True, "feedback_id": feedback_id, "subject": subject})
+
         flash("Thank you! Your feedback has been submitted successfully.", "success")
 
     except Exception:
         logging.exception("Failed to submit feedback")
+        if is_xhr:
+            return jsonify({"error": "Server error. Please try again."}), 500
         flash("Sorry, there was an error submitting your feedback. Please try again.", "error")
-    
-    return redirect(url_for("profile"))
+
+    return redirect(url_for(_safe_next))
+
+
+@app.route("/feedback/edit/<int:feedback_id>", methods=["GET"])
+def edit_feedback(feedback_id: int):
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    fb = db.get_feedback_by_id(feedback_id)
+    if not fb or fb["username"] != username:
+        flash("Feedback not found.", "error")
+        return redirect(url_for("radiologist_feedback"))
+    if fb["status"] != "pending":
+        flash("This submission has already been reviewed and can no longer be edited.", "error")
+        return redirect(url_for("radiologist_feedback"))
+    return render_template("edit_feedback.html", fb=fb)
+
+
+@app.route("/feedback/update/<int:feedback_id>", methods=["POST"])
+def update_feedback_route(feedback_id: int):
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+
+    feedback_type = request.form.get("feedback_type", "").strip().lower()
+    if feedback_type not in _VALID_FEEDBACK_TYPES:
+        flash("Invalid feedback type.", "error")
+        return redirect(url_for("edit_feedback", feedback_id=feedback_id))
+
+    subject = request.form.get("subject", "").strip()
+    if not subject:
+        flash("Subject is required.", "error")
+        return redirect(url_for("edit_feedback", feedback_id=feedback_id))
+
+    updated = db.update_feedback(
+        feedback_id=feedback_id,
+        username=username,
+        feedback_type=feedback_type,
+        subject=subject,
+        original=request.form.get("original_text", "").strip(),
+        corrected=request.form.get("corrected_text", "").strip(),
+        description=request.form.get("description", "").strip(),
+    )
+    if updated:
+        flash("Feedback updated.", "success")
+    else:
+        flash("Could not update — this submission may already be reviewed.", "error")
+    return redirect(url_for("radiologist_feedback"))
+
+
+@app.route("/feedback/undo/<int:feedback_id>", methods=["POST"])
+def undo_feedback(feedback_id: int):
+    """Delete a pending feedback record submitted by the current user (undo within the grace window)."""
+    username = session.get("username")
+    if not username:
+        return jsonify({"error": "Not logged in."}), 401
+    try:
+        deleted = db.delete_feedback(feedback_id, username)
+        if deleted:
+            return jsonify({"ok": True})
+        return jsonify({"error": "Cannot undo — this submission may already be reviewed."}), 400
+    except Exception:
+        logging.exception("Failed to undo feedback %d", feedback_id)
+        return jsonify({"error": "Server error."}), 500
 
 
 @app.route("/feedback-admin")
@@ -1131,7 +1256,7 @@ def review_feedback(feedback_id):
         status = request.form.get("status", "").strip()
         admin_notes = request.form.get("admin_notes", "").strip()
         
-        if status not in ["approved", "rejected", "implemented"]:
+        if status not in ["approved", "rejected", "implemented", "pending"]:
             flash("Invalid status.", "error")
             return redirect(url_for("feedback_admin"))
         
@@ -1150,6 +1275,168 @@ def review_feedback(feedback_id):
         flash("Sorry, there was an error processing your request.", "error")
     
     return redirect(url_for("feedback_admin"))
+
+
+@app.route("/radiologist-feedback/report/<int:report_id>")
+def radiologist_feedback_report(report_id: int):
+    """Full-page feedback form for a specific report."""
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    if not db.has_any_role(username, ["admin", "radiologist"]):
+        flash("Access denied.", "error")
+        return redirect(url_for("profile"))
+
+    record = db.get_report_detail(report_id)
+    if not record:
+        abort(404)
+
+    _tag_re = re.compile(r"<[^>]+>")
+    structured = record.get("structured", {})
+
+    def _plain(key: str) -> str:
+        return _tag_re.sub(" ", structured.get(key, "") or "").strip()
+
+    section_labels = [
+        ("REASON FOR THE SCAN",  _plain("reason")),
+        ("PROCEDURE DETAILS",    _plain("technique")),
+        ("IMPORTANT FINDINGS",   _plain("findings")),
+        ("CONCLUSION",           _plain("conclusion")),
+        ("NOTE OF CONCERN",      _plain("concern")),
+    ]
+    ai_output = "\n\n".join(
+        f"{label}:\n{text}" for label, text in section_labels if text
+    )
+
+    raw_text = record.get("raw_text", "")
+
+    # Build display tags: modality + region from study name, plus disease tags
+    _study = (record.get("patient", {}).get("study", "") or "").strip()
+    _sl = _study.lower()
+
+    _MODALITIES = [
+        ("MRI", ["mri"]),
+        ("CT", ["ct scan", "computed tomography", " ct "]),
+        ("X-ray", ["x-ray", "radiograph", "plain film"]),
+        ("Ultrasound", ["ultrasound", "usg", "sonogram"]),
+        ("PET/CT", ["pet"]),
+        ("Mammogram", ["mammogram"]),
+    ]
+    _REGIONS = [
+        "Head", "Brain", "Chest", "Abdomen", "Pelvis",
+        "Abdomen/Pelvis", "Chest/Abdomen/Pelvis",
+        "Lumbar Spine", "Cervical Spine", "Thoracic Spine", "Spine",
+        "Knee", "Shoulder", "Foot", "KUB", "Urogram",
+    ]
+
+    modality_tag = next(
+        (label for label, kws in _MODALITIES if any(kw in _sl for kw in kws)), ""
+    )
+    # Also scan raw text if study name didn't yield a modality
+    if not modality_tag and raw_text:
+        _rt = raw_text.lower()
+        modality_tag = next(
+            (label for label, kws in _MODALITIES if any(kw in _rt for kw in kws)), ""
+        )
+
+    region_tag = next((r for r in _REGIONS if r.lower() in _sl), "")
+
+    report_tags = []
+    if modality_tag:
+        report_tags.append({"label": modality_tag, "kind": "modality"})
+    if region_tag:
+        report_tags.append({"label": region_tag, "kind": "region"})
+    for dt in (record.get("disease_tags") or []):
+        if dt:
+            report_tags.append({"label": dt, "kind": "disease"})
+
+    return render_template(
+        "radiologist_feedback_report.html",
+        record=record,
+        structured=structured,
+        ai_output=ai_output,
+        raw_text=raw_text,
+        report_tags=report_tags,
+    )
+
+
+@app.route("/radiologist-feedback")
+def radiologist_feedback():
+    """Dedicated feedback portal for radiologists."""
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+
+    if not db.has_any_role(username, ["admin", "radiologist"]):
+        flash("Access denied. Radiologist privileges required.", "error")
+        return redirect(url_for("profile"))
+
+    # Item 4: read session filter; default to specialty-derived modality if unset
+    specialty = db.get_user_specialty(username)
+    default_modality = db.SPECIALTY_DEFAULT_MODALITY.get(specialty, "All")
+    modality_filter = session.get("rad_modality_filter", default_modality)
+
+    recent_reports = db.get_recent_reports(limit=50)
+
+    # Extract canonical modality for each report card (item 4 data-modality)
+    from src.db.feedback import _extract_modality as _em
+    _tag_re = re.compile(r"<[^>]+>")
+    for r in recent_reports:
+        findings_plain = _tag_re.sub(" ", r.get("findings", "")).strip()
+        conclusion_plain = _tag_re.sub(" ", r.get("conclusion", "")).strip()
+        parts = [p for p in (findings_plain, conclusion_plain) if p]
+        r["ai_output"] = "\n\n".join(parts)
+        r["modality"] = _em(r.get("study", "")) or "Other"
+
+    my_feedback = db.get_user_feedback(username)
+    reviewed_ids = db.get_reviewed_report_ids(username)
+    return render_template(
+        "radiologist_feedback.html",
+        recent_reports=recent_reports,
+        my_feedback=my_feedback,
+        reviewed_ids=reviewed_ids,
+        modality_filter=modality_filter,
+    )
+
+
+@app.route("/radiologist-feedback/set-filter", methods=["POST"])
+def rad_set_filter():
+    """Persist the radiologist portal modality filter in the session (AJAX)."""
+    username = session.get("username")
+    if not username or not db.has_any_role(username, ["admin", "radiologist"]):
+        return jsonify({"error": "Unauthorized"}), 403
+    value = request.json.get("modality", "All") if request.is_json else "All"
+    session["rad_modality_filter"] = value
+    return jsonify({"ok": True})
+
+
+@app.route("/radiologist-feedback/set-specialty", methods=["POST"])
+def rad_set_specialty():
+    """Set the radiologist's specialty from the profile form."""
+    username = session.get("username")
+    if not username or not db.has_any_role(username, ["admin", "radiologist"]):
+        flash("Access denied.", "error")
+        return redirect(url_for("profile"))
+    specialty = request.form.get("specialty", "").strip()
+    try:
+        db.set_user_specialty(username, specialty)
+        flash("Specialty updated.", "success")
+    except ValueError:
+        flash("Invalid specialty value.", "error")
+    return redirect(url_for("profile"))
+
+
+@app.route("/feedback-metrics")
+def feedback_metrics():
+    """Quality metrics table for radiologist feedback. Accessible to admin and radiologist."""
+    username = session.get("username")
+    if not username:
+        return redirect(url_for("login"))
+    if not db.has_any_role(username, ["admin", "radiologist"]):
+        flash("Access denied.", "error")
+        return redirect(url_for("profile"))
+    metrics = db.get_feedback_metrics()
+    return render_template("feedback_metrics.html", metrics=metrics)
 
 
 @app.route("/contact-support", methods=["POST"])
@@ -1390,6 +1677,52 @@ def mfa_disable():
     db.disable_totp(username)
     flash("Two-factor authentication disabled.", "success")
     return redirect(url_for("profile"))
+
+
+# --- Admin panel ----------------------------------------------------------
+
+def _admin_hub_stats():
+    """Lightweight stats for the admin hub — avoids loading the full get_stats()."""
+    from src.db.connection import fetch_one
+    total_reports   = (fetch_one("SELECT COUNT(*) FROM patients") or (0,))[0]
+    total_users     = (fetch_one("SELECT COUNT(*) FROM users") or (0,))[0]
+    total_feedback  = (fetch_one("SELECT COUNT(*) FROM feedback") or (0,))[0]
+    pending_feedback = (fetch_one("SELECT COUNT(*) FROM feedback WHERE status = 'pending'") or (0,))[0]
+    return {
+        "total_reports": total_reports,
+        "total_users": total_users,
+        "total_feedback": total_feedback,
+        "pending_feedback": pending_feedback,
+    }
+
+
+@app.route("/admin")
+@require_role("admin")
+def admin_hub():
+    stats = _admin_hub_stats()
+    return render_template("admin.html", stats=stats)
+
+
+@app.route("/admin/reports")
+@require_role("admin")
+def admin_reports():
+    reports = db.get_all_reports_admin(limit=200)
+    return render_template("admin_reports.html", reports=reports)
+
+
+@app.route("/admin/reports/<int:report_id>/delete", methods=["POST"])
+@require_role("admin")
+def admin_delete_report(report_id: int):
+    username = session.get("username", "")
+    deleted = db.delete_patient_record(report_id)
+    if deleted:
+        _audit("delete_report", resource_type="patient", resource_uid=str(report_id),
+               details=f"Admin deleted report id={report_id}")
+        logging.info("Admin %s deleted report id=%d", username, report_id)
+        flash(f"Report #{report_id} deleted.", "success")
+    else:
+        flash(f"Report #{report_id} not found.", "error")
+    return redirect(url_for("admin_reports"))
 
 
 # --- Data retention admin endpoint ---------------------------------------

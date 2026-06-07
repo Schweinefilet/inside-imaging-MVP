@@ -14,7 +14,6 @@
                 personalized assistance.</p>
             <div class="search-bar">
                 <input type="text" id="help-search" placeholder="Search for help topics...">
-                <button class="search-btn" id="search-btn">Search</button>
             </div>
             <section class="faq-section">
                 <h2>Frequently Asked Questions</h2>
@@ -266,9 +265,6 @@
                     alert('No matching help topics found. Try different keywords.');
                 }
             }
-
-            var searchBtn = document.getElementById('search-btn');
-            if (searchBtn) searchBtn.addEventListener('click', searchHelp);
 
             var searchInput = document.getElementById('help-search');
             if (searchInput) {

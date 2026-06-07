@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 from src.translate.kiswahili import _is_kiswahili
 
@@ -16,7 +16,12 @@ REFERENCE_STYLE = (
 )
 
 
-def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -> List[dict]:
+def _compose_prompt(
+    meta: Dict[str, str],
+    secs: Dict[str, str],
+    language: str,
+    few_shot_examples: Optional[List[Dict[str, Any]]] = None,
+) -> List[dict]:
     """Build a Responses API input payload requesting strict JSON with required keys."""
     study = (meta.get("study") or "").strip()
     hospital = (meta.get("hospital") or "").strip()
@@ -112,6 +117,19 @@ def _compose_prompt(meta: Dict[str, str], secs: Dict[str, str], language: str) -
         "COMPLETE ALL FIELDS: Ensure conclusion and concern are NOT empty strings.\n"
         "TOTAL BUDGET: Keep the entire JSON under 1200 characters, but prioritize completeness over brevity."
     )
+
+    if few_shot_examples:
+        block = (
+            "\n\nRADIOLOGIST-CORRECTED EXAMPLES\n"
+            "A radiologist reviewed previous AI outputs and made these corrections. "
+            "Use them to calibrate tone, terminology, and accuracy — do not copy them verbatim.\n"
+        )
+        for i, ex in enumerate(few_shot_examples, 1):
+            block += f"\nExample {i}:"
+            if ex.get("ai_output"):
+                block += f"\n  AI output:              {ex['ai_output'][:400]}"
+            block += f"\n  Radiologist correction: {ex['corrected_text'][:400]}\n"
+        developer += block
 
     if _is_kiswahili(language):
         developer += (

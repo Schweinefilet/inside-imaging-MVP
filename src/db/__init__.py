@@ -59,6 +59,8 @@ from src.db.tenants import (
     create_tenant,
     update_tenant_integration,
     get_tenant_integration,
+    get_tenant_by_sending_facility,
+    list_tenants,
 )
 from src.db.audit import (
     log_audit_event,
@@ -77,6 +79,8 @@ from src.db.integration import (
     create_api_key,
     lookup_api_key,
     revoke_api_key,
+    revoke_api_key_by_label,
+    revoke_api_key_by_hash,
     insert_integration_report,
     update_integration_report,
     get_integration_report,
@@ -121,6 +125,7 @@ __all__ = [
     # tenants
     "get_user_tenant", "get_tenant", "create_tenant",
     "update_tenant_integration", "get_tenant_integration",
+    "get_tenant_by_sending_facility", "list_tenants",
     # audit
     "log_audit_event", "get_audit_log",
     # dicom
@@ -129,6 +134,7 @@ __all__ = [
     "get_dicom_instances", "get_dicom_instance_by_uid",
     # integration
     "create_api_key", "lookup_api_key", "revoke_api_key",
+    "revoke_api_key_by_label", "revoke_api_key_by_hash",
     "insert_integration_report", "update_integration_report", "get_integration_report",
     # feedback
     "submit_feedback", "delete_feedback", "get_feedback_by_id", "update_feedback",

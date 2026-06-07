@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -53,13 +54,14 @@ def submit_feedback(
     report_id: Optional[int] = None,
     raw_report_text: str = "",
 ) -> int:
+    _retention_years = int(os.environ.get("DATA_RETENTION_YEARS", "6"))
     return execute(
-        """
+        f"""
         INSERT INTO feedback (
             username, feedback_type, subject, original_text,
             corrected_text, description, status, ai_output, modality,
-            report_id, raw_report_text
-        ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+            report_id, raw_report_text, expires_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, datetime('now', '+{_retention_years} years'))
         """,
         (username, feedback_type, subject, original, corrected, description,
          ai_output, modality, report_id, raw_report_text),

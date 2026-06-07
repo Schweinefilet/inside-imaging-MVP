@@ -32,10 +32,20 @@
     footer { margin-top: 22px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #6b7280; }
     .disclaimer { background: #f9fafb; padding: 8px 12px; border-radius: 3px; margin-top: 8px; font-size: 8.5pt; line-height: 1.4; color: #4b5563; }
     .footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+    .sensitivity-banner { background: #fef2f2; border: 2px solid #dc2626; color: #991b1b; padding: 12px 16px; border-radius: 4px; margin-bottom: 18px; font-size: 10pt; font-weight: 600; line-height: 1.5; }
+    .sensitivity-banner strong { display: block; font-size: 11pt; margin-bottom: 4px; }
   </style>
 </head>
 <body>
   <div class="ribbon">PATIENT'S COPY — Plain-Language Summary</div>
+
+  {% if flagged %}
+  <div class="sensitivity-banner">
+    <strong>Important Notice</strong>
+    This report contains findings that should be discussed with your doctor before reading.
+    Please contact your referring physician to review these results together.
+  </div>
+  {% endif %}
 
   <header>
     <div class="brand-row">

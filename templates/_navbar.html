@@ -2,8 +2,8 @@
 {% set ep = request.endpoint or '' %}
 <div class="header-shell">
   <a class="navbar-brand" href="{{ url_for('dashboard') }}" aria-label="Inside Imaging — home">
-    <img src="{{ url_for('static', filename='logo.svg') }}" alt="" class="logo">
-    <span class="navbar-brand-name">Inside Imaging</span>
+    <img src="{{ url_for('static', filename='logo_converted.png') }}" alt="" class="logo logo-light-scheme">
+    <img src="{{ url_for('static', filename='logo_dark.png') }}" alt="" class="logo logo-dark-scheme">
   </a>
 
   <nav class="navbar" aria-label="Primary">
@@ -56,6 +56,14 @@
         </button>
         <div class="user-menu-dropdown" role="menu" hidden>
           <a href="{{ url_for('profile') }}" role="menuitem">Profile</a>
+          {% if is_radiologist %}
+          <a href="{{ url_for('radiologist_feedback') }}" role="menuitem"
+             class="{{ 'active' if ep == 'radiologist_feedback' }}">Radiologist Portal</a>
+          {% endif %}
+          {% if is_admin %}
+          <a href="{{ url_for('admin_hub') }}" role="menuitem"
+             class="{{ 'active' if ep in ('admin_hub', 'admin_reports', 'admin_delete_report') }}">Admin Panel</a>
+          {% endif %}
           <a href="{{ url_for('logout') }}"  role="menuitem">Log Out</a>
         </div>
       </div>
@@ -101,6 +109,12 @@
             <span class="tenant-pill">{{ tenant_name }}</span>
           {% endif %}
           <a href="{{ url_for('profile') }}" class="btn btn-ghost">Profile</a>
+          {% if is_radiologist %}
+          <a href="{{ url_for('radiologist_feedback') }}" class="btn btn-ghost">Radiologist Portal</a>
+          {% endif %}
+          {% if is_admin %}
+          <a href="{{ url_for('admin_hub') }}" class="btn btn-ghost">Admin Panel</a>
+          {% endif %}
           <a href="{{ url_for('logout') }}"  class="btn btn-ghost">Log Out</a>
         {% else %}
           <a href="{{ url_for('login') }}"  class="btn btn-ghost login-button">Log In</a>

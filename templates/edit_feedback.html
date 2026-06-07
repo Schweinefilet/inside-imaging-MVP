@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Feedback · Inside Imaging{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+<style>
+    .page-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+    .page-back:hover { color: var(--text); }
+
+    .edit-card {
+        max-width: 680px;
+        margin: 0 auto;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.75rem 2rem;
+    }
+
+    .edit-card h1 {
+        font-size: 1.25rem;
+        margin: 0 0 0.35rem 0;
+    }
+
+    .edit-meta {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .form-field { margin-bottom: 0.95rem; }
+
+    .form-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    .label-hint {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 0.8rem;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.9rem;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-field textarea { resize: vertical; }
+
+    .clinical-fields { display: none; }
+
+    .btn-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        background: var(--mint);
+        color: var(--bg);
+        border: 1px solid transparent;
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+        line-height: 1;
+        margin: 0;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.6rem 1.1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+        text-decoration: none;
+        line-height: 1;
+        margin: 0;
+    }
+    .btn-ghost:hover { border-color: var(--text); }
+
+    .btn-danger {
+        display: inline-flex;
+        align-items: center;
+        background: none;
+        border: 1px solid #ef4444;
+        color: #ef4444;
+        padding: 0.6rem 1.1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+        line-height: 1;
+        margin: 0 0 0 auto;
+    }
+    .btn-danger:hover { background: #ef4444; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <a class="page-back" href="{{ url_for('radiologist_feedback') }}">← Back to Portal</a>
+
+    <div class="edit-card">
+        <h1>Edit Feedback</h1>
+        <p class="edit-meta">
+            Submitted {{ fb.created_at }}
+            {% if fb.report_id %} · Report #{{ fb.report_id }}{% endif %}
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div style="padding:0.6rem 0.75rem; margin-bottom:0.85rem; border-radius:8px;
+                    background:color-mix(in srgb,{% if cat=='error' %}#ef4444{% else %}var(--mint){% endif %} 10%,var(--panel));
+                    border:1px solid {% if cat=='error' %}#ef4444{% else %}var(--mint){% endif %};
+                    font-size:0.88rem; color:{% if cat=='error' %}#ef4444{% else %}var(--mint){% endif %};">
+            {{ msg }}
+        </div>
+        {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('update_feedback_route', feedback_id=fb.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-field">
+                <label for="fb-type">Feedback Type</label>
+                <select name="feedback_type" id="fb-type" required>
+                    <option value="general"           {% if fb.feedback_type == 'general'           %}selected{% endif %}>General</option>
+                    <option value="feature_request"   {% if fb.feedback_type == 'feature_request'   %}selected{% endif %}>Feature Request</option>
+                    <option value="ui_bug"            {% if fb.feedback_type == 'ui_bug'            %}selected{% endif %}>UI Bug</option>
+                    <option value="clinical_accuracy" {% if fb.feedback_type == 'clinical_accuracy' %}selected{% endif %}>Clinical Accuracy</option>
+                    <option value="translation_error" {% if fb.feedback_type == 'translation_error' %}selected{% endif %}>Translation Error</option>
+                    <option value="format_issue"      {% if fb.feedback_type == 'format_issue'      %}selected{% endif %}>Format / Structure Issue</option>
+                    <option value="missing_finding"   {% if fb.feedback_type == 'missing_finding'   %}selected{% endif %}>Missing Finding</option>
+                    <option value="no_changes"        {% if fb.feedback_type == 'no_changes'        %}selected{% endif %}>No Changes Needed</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="fb-subject">Subject</label>
+                <input type="text" name="subject" id="fb-subject"
+                       value="{{ fb.subject | e }}" required maxlength="200">
+            </div>
+
+            <div class="clinical-fields" id="clinical-fields">
+                <div class="form-field">
+                    <label for="fb-original">Original text <span class="label-hint">(optional)</span></label>
+                    <textarea name="original_text" id="fb-original" rows="3">{{ fb.original_text | e }}</textarea>
+                </div>
+                <div class="form-field">
+                    <label for="fb-corrected">Corrected text <span class="label-hint">(optional)</span></label>
+                    <textarea name="corrected_text" id="fb-corrected" rows="6">{{ fb.corrected_text | e }}</textarea>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label for="fb-desc">
+                    Details <span class="label-hint" id="desc-hint">(required)</span>
+                </label>
+                <textarea name="description" id="fb-desc" rows="5">{{ fb.description | e }}</textarea>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="btn-primary">Save Changes</button>
+                <a href="{{ url_for('radiologist_feedback') }}" class="btn-ghost">Cancel</a>
+                <button type="button" class="btn-danger" id="delete-btn"
+                        onclick="confirmDelete({{ fb.id }})">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var CLINICAL = new Set(['clinical_accuracy', 'translation_error', 'format_issue', 'missing_finding']);
+    var typeEl   = document.getElementById('fb-type');
+    var fields   = document.getElementById('clinical-fields');
+    var hint     = document.getElementById('desc-hint');
+    var descEl   = document.getElementById('fb-desc');
+
+    function applyType(val) {
+        var isClinical = CLINICAL.has(val);
+        fields.style.display = isClinical ? 'block' : 'none';
+        hint.textContent = isClinical ? '(optional)' : '(required)';
+        if (isClinical) descEl.removeAttribute('required');
+        else descEl.setAttribute('required', '');
+    }
+
+    if (typeEl) {
+        applyType(typeEl.value);
+        typeEl.addEventListener('change', function () { applyType(this.value); });
+    }
+}());
+
+window.confirmDelete = function (feedbackId) {
+    if (!confirm('Delete this submission? This cannot be undone.')) return;
+    var btn = document.getElementById('delete-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting…';
+    fetch('/feedback/undo/' + feedbackId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name="csrf_token"]').value,
+        },
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (data.ok) {
+            window.location.href = '{{ url_for("radiologist_feedback") }}';
+        } else {
+            alert(data.error || 'Could not delete.');
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+        }
+    })
+    .catch(function () {
+        alert('Network error.');
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+    });
+};
+</script>
+{% endblock %}

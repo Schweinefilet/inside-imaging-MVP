@@ -11,7 +11,7 @@ from typing import Optional
 from src import config
 
 
-DB_PATH = Path("data/patient_data.db")
+DB_PATH = Path(os.environ.get("DB_PATH", "data/patient_data.db"))
 
 _DB_ENCRYPTION_KEY = (os.environ.get("DB_ENCRYPTION_KEY") or "").strip()
 
@@ -31,6 +31,7 @@ def _get_sqlcipher():
 
 def get_connection() -> sqlite3.Connection:
     """Return a new database connection (foreign keys enabled, Row factory)."""
+    import logging as _log
     if _DB_ENCRYPTION_KEY:
         sc = _get_sqlcipher()
         conn = sc.connect(str(DB_PATH))
@@ -45,12 +46,28 @@ def get_connection() -> sqlite3.Connection:
                     "Run: python scripts/encrypt_db.py   to migrate the existing database."
                 ) from exc
             raise
-        conn.row_factory = sqlite3.Row
+        conn.row_factory = sc.Row  # must match the driver — sqlite3.Row rejects sqlcipher3 cursors
     else:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
+
+    try:
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+    except sqlite3.DatabaseError:
+        # File exists but is not a valid SQLite database (e.g. git line-ending
+        # corruption or a leftover placeholder).  Delete it and open a fresh one.
+        conn.close()
+        _log.warning("Corrupt DB file at %s — deleting and starting fresh", DB_PATH)
+        try:
+            DB_PATH.unlink()
+        except OSError:
+            pass
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+
     return conn
 
 
@@ -116,7 +133,9 @@ def _format_timestamp(raw: Optional[str]) -> str:
 
 def init_db() -> None:
     """Create / migrate all tables idempotently."""
+    import logging as _logging
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _logging.info("DB_PATH = %s (exists: %s)", DB_PATH.resolve(), DB_PATH.exists())
     conn = get_connection()
     cur = conn.cursor()
 
@@ -154,6 +173,8 @@ def init_db() -> None:
         ("username", "TEXT"),
         ("context", "TEXT"),
         ("expires_at", "TIMESTAMP"),
+        ("raw_text", "TEXT"),
+        ("is_sensitive", "INTEGER DEFAULT 0"),
     ):
         if col not in cols:
             cur.execute(f"ALTER TABLE patients ADD COLUMN {col} {ddl}")
@@ -163,6 +184,10 @@ def init_db() -> None:
         f"UPDATE patients SET expires_at = datetime(created_at, '+{_retention_years} years') "
         "WHERE expires_at IS NULL"
     )
+    cur.execute("PRAGMA table_info(patients)")
+    pat_cols = [row[1] for row in cur.fetchall()]
+    if "model_used" not in pat_cols:
+        cur.execute("ALTER TABLE patients ADD COLUMN model_used TEXT")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_created_at ON patients(created_at)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_language ON patients(language)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_patients_sex ON patients(sex)")
@@ -403,6 +428,8 @@ def init_db() -> None:
         cur.execute("ALTER TABLE users ADD COLUMN totp_secret TEXT")
     if "totp_enabled" not in user_cols_v2:
         cur.execute("ALTER TABLE users ADD COLUMN totp_enabled INTEGER DEFAULT 0")
+    if "specialty" not in user_cols_v2:
+        cur.execute("ALTER TABLE users ADD COLUMN specialty TEXT")
 
     # --- Roles -----------------------------------------------------------
     cur.execute(
@@ -447,8 +474,25 @@ def init_db() -> None:
         """
     )
     cur.execute("PRAGMA table_info(feedback)")
-    feedback_cols = [row[1] for row in cur.fetchall()]
-    if "expires_at" not in feedback_cols:
+    fb_cols = [row[1] for row in cur.fetchall()]
+    for col, ddl in (
+        ("embedding", "BLOB"),
+        ("modality", "TEXT"),
+        ("ai_output", "TEXT"),
+        ("report_id", "INTEGER"),
+        ("raw_report_text", "TEXT"),
+    ):
+        if col not in fb_cols:
+            cur.execute(f"ALTER TABLE feedback ADD COLUMN {col} {ddl}")
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_feedback_status_reviewed "
+        "ON feedback(status, subject, reviewed_at)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_feedback_user_time_status "
+        "ON feedback(username, created_at, status)"
+    )
+    if "expires_at" not in fb_cols:
         cur.execute("ALTER TABLE feedback ADD COLUMN expires_at TIMESTAMP")
     _retention_years_fb = int(os.environ.get("DATA_RETENTION_YEARS", "6"))
     cur.execute(

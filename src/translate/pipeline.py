@@ -246,7 +246,17 @@ def build_structured(
         logger.exception("sections_from_text failed")
         secs = {"reason": "", "technique": "", "findings": cleaned, "impression": ""}
 
-    raw = _gpt_with_retry(_compose_prompt(meta, secs, language))
+    few_shot: List[dict] = []
+    try:
+        from src.db.feedback import get_few_shot_examples
+        modality = meta.get("study", "")
+        few_shot = get_few_shot_examples(cleaned, modality, limit=3)
+        if few_shot:
+            logger.info("Injecting %d few-shot example(s) from radiologist feedback", len(few_shot))
+    except Exception:
+        logger.exception("Few-shot retrieval failed; continuing without examples")
+
+    raw = _gpt_with_retry(_compose_prompt(meta, secs, language, few_shot_examples=few_shot or None))
 
     # ── No LLM output: fall back entirely to local heuristics ───────────
     if not raw:

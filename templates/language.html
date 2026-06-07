@@ -78,19 +78,19 @@
       if (!frame || !loader) return;
       loader.classList.add('is-active');
 
-      // Use a longer timeout as fallback in case load event doesn't fire
+      // Fallback in case the load event never fires
       var timeoutId = setTimeout(function () {
         loader.classList.remove('is-active');
         loader.classList.add('is-hidden');
-      }, 60000); // 60 seconds timeout
+      }, 10000);
 
       var hide = function () {
         clearTimeout(timeoutId);
-        // Add a longer delay to ensure PDF is fully rendered and visible
+        // Short pause so the first pages are visibly rendered before we remove the overlay
         setTimeout(function () {
           loader.classList.remove('is-active');
           loader.classList.add('is-hidden');
-        }, 6000); // 6 second delay after iframe load
+        }, 500);
       };
 
       frame.addEventListener('load', hide, { once: true });

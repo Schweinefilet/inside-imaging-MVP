@@ -23,6 +23,9 @@ from src.db.patients import (
     get_report_brief,
     get_report_detail,
     get_user_reports,
+    get_recent_reports,
+    get_all_reports_admin,
+    delete_patient_record,
 )
 from src.db.stats import (
     get_stats,
@@ -39,11 +42,16 @@ from src.db.users import (
     remove_role,
     get_user_roles,
     has_any_role,
+    get_all_users,
     get_totp_secret,
     is_totp_enabled,
     set_totp_secret,
     enable_totp,
     disable_totp,
+    get_user_specialty,
+    set_user_specialty,
+    VALID_SPECIALTIES,
+    SPECIALTY_DEFAULT_MODALITY,
 )
 from src.db.tenants import (
     get_user_tenant,
@@ -79,9 +87,18 @@ from src.db.integration import (
 )
 from src.db.feedback import (
     submit_feedback,
+    delete_feedback,
+    get_feedback_by_id,
+    update_feedback,
     get_all_feedback,
     update_feedback_status,
     get_user_feedback,
+    get_few_shot_examples,
+    get_reviewed_report_ids,
+    get_feedback_metrics,
+)
+from src.db.embeddings import (
+    embed_approved_feedback,
 )
 from src.db.backup import backup_db
 
@@ -91,7 +108,8 @@ __all__ = [
     # patients / analytics
     "truncate_name", "normalize_study_name", "detect_disease_tags",
     "add_patient_record", "store_report_event",
-    "get_report_brief", "get_report_detail", "get_user_reports",
+    "get_report_brief", "get_report_detail", "get_user_reports", "get_recent_reports",
+    "get_all_reports_admin", "delete_patient_record",
     # stats
     "get_stats",
     # users
@@ -99,9 +117,11 @@ __all__ = [
     "get_user_by_google_id", "create_oauth_user",
     "is_account_locked", "record_failed_login", "record_successful_login",
     # roles
-    "assign_role", "remove_role", "get_user_roles", "has_any_role",
+    "assign_role", "remove_role", "get_user_roles", "has_any_role", "get_all_users",
     # mfa
     "get_totp_secret", "is_totp_enabled", "set_totp_secret", "enable_totp", "disable_totp",
+    # specialty
+    "get_user_specialty", "set_user_specialty", "VALID_SPECIALTIES", "SPECIALTY_DEFAULT_MODALITY",
     # tenants
     "get_user_tenant", "get_tenant", "create_tenant",
     "update_tenant_integration", "get_tenant_integration",
@@ -117,8 +137,10 @@ __all__ = [
     "revoke_api_key_by_label", "revoke_api_key_by_hash",
     "insert_integration_report", "update_integration_report", "get_integration_report",
     # feedback
-    "submit_feedback", "get_all_feedback",
-    "update_feedback_status", "get_user_feedback",
+    "submit_feedback", "delete_feedback", "get_feedback_by_id", "update_feedback",
+    "get_all_feedback", "update_feedback_status", "get_user_feedback",
+    "get_few_shot_examples", "embed_approved_feedback",
+    "get_reviewed_report_ids", "get_feedback_metrics",
     # backup
     "backup_db",
 ]

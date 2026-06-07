@@ -169,28 +169,55 @@ def parse_metadata(text: str) -> Dict[str, str]:
 
     # Study type detection - extract from Procedure Details section first
     study = ""
-    
+
+    # Words that indicate a section header, not a study name — reject any captured
+    # text that contains these so garbage like "and findings:" never becomes a study.
+    _STUDY_GARBAGE = re.compile(
+        r"\b(findings|impression|conclusion|recommendations?|history|indication|clinical|"
+        r"report|summary|result|diagnosis)\b",
+        re.IGNORECASE,
+    )
+
+    def _valid_study(s: str) -> str:
+        """Return s if it looks like a genuine study name, else ''."""
+        s = s.strip()
+        if not s or len(s) < 3:
+            return ""
+        if _STUDY_GARBAGE.search(s):
+            return ""
+        return s
+
     # Strategy 1: Look for "Procedure Details" or similar headers and extract the description
-    # This captures the full description like "CT (special x-ray) of your chest..."
     proc_match = re.search(
-        r"(?im)^(?:PROCEDURE\s+DETAILS?|EXAMINATION|STUDY|EXAM)(?:[:\s]*)\n+([^\n]{10,150})",
+        r"(?im)^(?:PROCEDURE\s+DETAILS?|EXAMINATION|EXAM)(?:[:\s]*)\n+([^\n]{10,150})",
         t
     )
     if proc_match:
-        study = proc_match.group(1).strip()
-    
+        study = _valid_study(proc_match.group(1))
+
     # Strategy 2: If header had content on same line (e.g., "EXAMINATION: CT Chest")
+    # Note: deliberately excludes bare "STUDY" to avoid matching section headings.
     if not study:
-        m = re.search(r"(?im)^(?:EXAMINATION|STUDY|PROCEDURE|EXAM)(?:\s+DETAILS)?[:\s]+([^\n]{3,100})", t)
+        m = re.search(r"(?im)^(?:EXAMINATION|PROCEDURE|EXAM)(?:\s+DETAILS)?[:\s]+([^\n]{3,100})", t)
         if m:
-            study = m.group(1).strip()
-    
+            study = _valid_study(m.group(1))
+
     # Strategy 3: Fallback to detecting modality keywords at start of line
     if not study:
         m = re.search(r"(?im)^(CT|MRI|X[- ]?RAY|ULTRASOUND|USG|MAMMOGRAM|PET|ANGIOGRAPHY|FLUOROSCOPY)[^\n]{0,80}", t)
         if m:
-            study = m.group(0).strip()
-    
+            study = _valid_study(m.group(0))
+
+    # Strategy 4: Scan anywhere in text for a modality keyword with a body region nearby
+    if not study:
+        m = re.search(
+            r"\b(CT|MRI|X[- ]?RAY|ULTRASOUND|MAMMOGRAM|PET)\b[^\n]{0,60}"
+            r"\b(lumbar|cervical|thoracic|spine|chest|abdomen|pelvis|brain|head|knee|shoulder)\b",
+            t, re.IGNORECASE
+        )
+        if m:
+            study = _valid_study(m.group(0))
+
     # Simplify verbose study descriptions to concise format (e.g., "MRI of lumbar spine")
     if study:
         study = _simplify_study_name(study)

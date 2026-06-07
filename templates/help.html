@@ -5,6 +5,16 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
 <link rel="stylesheet" href="{{ url_for('static', filename='help.css') }}?v=9">
+<style>
+    mark.search-hl {
+        background: color-mix(in oklab, var(--mint) 28%, transparent);
+        color: inherit;
+        border-radius: 3px;
+        padding: 0 2px;
+        font-style: inherit;
+        font-weight: inherit;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -221,58 +231,93 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Theme logic for the slider -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Accordion toggle
-            document.querySelectorAll('.faq-trigger').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var body = btn.nextElementSibling;
-                    var isOpen = btn.getAttribute('aria-expanded') === 'true';
-                    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-                    if (isOpen) {
-                        body.hidden = true;
-                    } else {
-                        body.hidden = false;
-                    }
-                });
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Accordion toggle
+    document.querySelectorAll('.faq-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var body = btn.nextElementSibling;
+            var isOpen = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+            body.hidden = isOpen;
+        });
+    });
 
-            // Search — filter items, auto-expand matches
-            function searchHelp() {
-                var filter = document.getElementById('help-search').value.toLowerCase().trim();
-                var items = document.querySelectorAll('.faq-item');
-                var found = false;
+    // Store original HTML for each item so we can restore after highlighting
+    var items = Array.from(document.querySelectorAll('.faq-item'));
+    var originals = new Map();
+    items.forEach(function (item) {
+        var span = item.querySelector('.faq-trigger span');
+        var body = item.querySelector('.faq-body');
+        originals.set(item, {
+            question: span ? span.innerHTML : '',
+            answer:   body ? body.innerHTML : '',
+        });
+    });
 
-                items.forEach(function (item) {
-                    var trigger = item.querySelector('.faq-trigger');
-                    var body = item.querySelector('.faq-body');
-                    var text = item.textContent.toLowerCase();
-                    var match = !filter || text.includes(filter);
-                    item.style.display = match ? '' : 'none';
-                    if (match && filter) {
-                        trigger.setAttribute('aria-expanded', 'true');
-                        body.hidden = false;
-                        found = true;
-                    }
-                    if (!filter) {
-                        trigger.setAttribute('aria-expanded', 'false');
-                        body.hidden = true;
-                    }
-                });
+    // No-results message element
+    var noResults = document.createElement('p');
+    noResults.id = 'faq-no-results';
+    noResults.style.cssText = 'color:var(--muted);font-size:0.95rem;margin:1.5rem 0;display:none;';
+    noResults.textContent = 'No matching topics found. Try different keywords.';
+    var accordion = document.querySelector('.faq-accordion');
+    if (accordion) accordion.parentNode.insertBefore(noResults, accordion.nextSibling);
 
-                if (!found && filter) {
-                    alert('No matching help topics found. Try different keywords.');
+    function escapeRe(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Highlight all occurrences of query within html string, skipping inside tags
+    function highlight(html, re) {
+        return html.replace(/>([^<]*)</g, function (_, text) {
+            return '>' + text.replace(re, '<mark class="search-hl">$&</mark>') + '<';
+        });
+    }
+
+    function searchHelp() {
+        var raw = document.getElementById('help-search').value.trim();
+        var filter = raw.toLowerCase();
+        var re = raw ? new RegExp(escapeRe(raw), 'gi') : null;
+        var found = 0;
+
+        items.forEach(function (item) {
+            var trigger = item.querySelector('.faq-trigger');
+            var body    = item.querySelector('.faq-body');
+            var span    = item.querySelector('.faq-trigger span');
+            var orig    = originals.get(item);
+            var text    = item.textContent.toLowerCase();
+            var match   = !filter || text.includes(filter);
+
+            item.style.display = match ? '' : 'none';
+
+            if (match && re) {
+                // Highlight matched text in question and answer
+                if (span) span.innerHTML  = highlight(orig.question, re);
+                if (body) body.innerHTML  = highlight(orig.answer,   re);
+                trigger.setAttribute('aria-expanded', 'true');
+                body.hidden = false;
+                found++;
+            } else {
+                // Restore original content
+                if (span) span.innerHTML = orig.question;
+                if (body) body.innerHTML = orig.answer;
+                if (!filter) {
+                    trigger.setAttribute('aria-expanded', 'false');
+                    body.hidden = true;
                 }
             }
-
-            var searchInput = document.getElementById('help-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', searchHelp);
-                searchInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') { e.preventDefault(); searchHelp(); }
-                });
-            }
         });
-    </script>
+
+        noResults.style.display = (filter && found === 0) ? '' : 'none';
+    }
+
+    var searchInput = document.getElementById('help-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', searchHelp);
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); searchHelp(); }
+        });
+    }
+});
+</script>
 {% endblock %}

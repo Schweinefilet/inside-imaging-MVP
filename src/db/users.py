@@ -96,6 +96,23 @@ def has_any_role(username: str, roles: List[str]) -> bool:
     return row is not None
 
 
+def get_all_users() -> List[Dict[str, Any]]:
+    """Return all users with their roles and last login, ordered by username."""
+    from src.db.connection import _format_timestamp
+    rows = fetch_all(
+        "SELECT username, email, last_login_at FROM users ORDER BY username"
+    )
+    result = []
+    for row in rows:
+        result.append({
+            "username": row[0],
+            "email": row[1] or "",
+            "last_login_at": _format_timestamp(row[2]),
+            "roles": get_user_roles(str(row[0])),
+        })
+    return result
+
+
 # --- TOTP / MFA ----------------------------------------------------------
 
 def get_totp_secret(username: str) -> Optional[str]:

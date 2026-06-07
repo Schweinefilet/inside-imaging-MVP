@@ -151,6 +151,15 @@
             </div>
             <div class="nav-card-arrow">Open →</div>
         </a>
+
+        <a class="nav-card" href="{{ url_for('admin_users') }}">
+            <div class="nav-card-title">User Management</div>
+            <div class="nav-card-desc">
+                View all {{ stats.total_users }} registered account{{ 's' if stats.total_users != 1 else '' }}.
+                Assign or remove admin and radiologist roles.
+            </div>
+            <div class="nav-card-arrow">Open →</div>
+        </a>
     </div>
 </div>
 {% endblock %}

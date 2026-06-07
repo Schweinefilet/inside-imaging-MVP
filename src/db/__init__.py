@@ -42,6 +42,7 @@ from src.db.users import (
     remove_role,
     get_user_roles,
     has_any_role,
+    get_all_users,
     get_totp_secret,
     is_totp_enabled,
     set_totp_secret,
@@ -112,7 +113,7 @@ __all__ = [
     "get_user_by_google_id", "create_oauth_user",
     "is_account_locked", "record_failed_login", "record_successful_login",
     # roles
-    "assign_role", "remove_role", "get_user_roles", "has_any_role",
+    "assign_role", "remove_role", "get_user_roles", "has_any_role", "get_all_users",
     # mfa
     "get_totp_secret", "is_totp_enabled", "set_totp_secret", "enable_totp", "disable_totp",
     # specialty

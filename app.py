@@ -1750,6 +1750,37 @@ def retention_purge():
     return jsonify({"dry_run": False, "purged": expired_count})
 
 
+@app.route("/admin/users")
+@require_role("admin")
+def admin_users():
+    users = db.get_all_users()
+    return render_template("admin_users.html", users=users)
+
+
+@app.route("/admin/users/<username>/toggle-role", methods=["POST"])
+@require_role("admin")
+def admin_toggle_role(username: str):
+    actor = session.get("username", "")
+    role = request.json.get("role", "").strip().lower() if request.is_json else ""
+    if role not in ("admin", "radiologist"):
+        return jsonify({"error": "Invalid role."}), 400
+
+    # Prevent an admin from removing their own admin role
+    if username == actor and role == "admin":
+        return jsonify({"error": "You cannot remove your own admin role."}), 400
+
+    current_roles = db.get_user_roles(username)
+    if role in current_roles:
+        db.remove_role(username, role)
+        action = "removed"
+    else:
+        db.assign_role(username, role, assigned_by=actor)
+        action = "assigned"
+
+    logging.info("Admin %s %s role '%s' for user '%s'", actor, action, role, username)
+    return jsonify({"ok": True, "action": action, "roles": db.get_user_roles(username)})
+
+
 @app.route("/dicom/upload", methods=["POST"])
 def dicom_upload():
     if "username" not in session:

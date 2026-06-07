@@ -5,7 +5,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=8">
 <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}?v=8">
-<link rel="stylesheet" href="{{ url_for('static', filename='compare.css') }}?v=8">
+<link rel="stylesheet" href="{{ url_for('static', filename='compare.css') }}?v=9">
 <link rel="stylesheet" href="{{ url_for('static', filename='testimonials.css') }}?v=8">
 {% endblock %}
 
@@ -233,15 +233,17 @@
           <div class="insight-column">
             <h4>Age Distribution</h4>
             <ul class="insight-list">
+              {% set total_age = stats.age_ranges|length %}
               {% for label, count in stats.age_ranges.items() %}
               {% set percent = ((count / total_reports) * 100)|round(1) if total_reports else 0 %}
+              {% set age_mix = (15 + (loop.index0 / ((total_age - 1) if total_age > 1 else 1)) * 85)|round|int %}
               <li>
                 <div class="insight-row">
                   <span class="insight-name">{{ label }}</span>
                   <span class="insight-count">{{ count }}</span>
                 </div>
                 <div class="insight-bar" data-progress="{{ percent }}">
-                  <span class="insight-progress"></span>
+                  <span class="insight-progress" style="background: color-mix(in oklab, var(--mint) {{ age_mix }}%, white);"></span>
                 </div>
               </li>
               {% endfor %}

@@ -144,6 +144,21 @@
                     </div>
                     {% endif %}
 
+                    <!-- Revert button (non-pending items, admin only) -->
+                    {% if feedback.status != 'pending' %}
+                    <form method="POST" action="{{ url_for('review_feedback', feedback_id=feedback.id) }}"
+                        style="margin-top: 1rem;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="admin_notes" value="">
+                        <button type="submit" name="status" value="pending"
+                            style="background: none; border: 1px solid var(--border); color: var(--muted);
+                                   padding: 0.35rem 0.85rem; border-radius: 8px; font-size: 0.82rem;
+                                   font-weight: 600; cursor: pointer;">
+                            ↩ Revert to Pending
+                        </button>
+                    </form>
+                    {% endif %}
+
                     <!-- Review Form (only for pending items) -->
                     {% if feedback.status == 'pending' %}
                     <form method="POST" action="{{ url_for('review_feedback', feedback_id=feedback.id) }}"
@@ -184,8 +199,8 @@
             {% endif %}
 
             <div style="margin-top: 2rem; text-align: center;">
-                <a href="{{ url_for('profile') }}" style="color: var(--mint); text-decoration: none; font-weight: 600;">
-                    ← Back to Profile
+                <a href="{{ url_for('admin_hub') }}" style="color: var(--mint); text-decoration: none; font-weight: 600;">
+                    ← Back to Admin Panel
                 </a>
             </div>
         </div>

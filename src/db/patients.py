@@ -145,8 +145,9 @@ def add_patient_record(data: Dict[str, Any]) -> int:
         INSERT INTO patients (
             truncated_name, age, sex, date, hospital, study,
             reason, technique, findings, conclusion, concern, language,
-            word_count, disease_tags, username, context
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            word_count, disease_tags, username, context, model_used, raw_text,
+            is_sensitive
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             truncate_name(data.get("name", "")),
@@ -157,13 +158,17 @@ def add_patient_record(data: Dict[str, Any]) -> int:
             data.get("concern", ""), data.get("language", ""),
             word_count, disease_str,
             data.get("username", ""), data.get("context", ""),
+            data.get("model_used", ""), data.get("raw_text", ""),
+            1 if data.get("is_sensitive") else 0,
         ),
     )
 
 
 def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any],
                        report_stats: Dict[str, Any], language: str,
-                       username: str = "", context: str = "") -> int:
+                       username: str = "", context: str = "",
+                       model_used: str = "", raw_text: str = "",
+                       is_sensitive: bool = False) -> int:
     """Persist a summarized encounter for analytics without storing PHI."""
     text_blob = " ".join(filter(None, [
         structured.get("findings"),
@@ -184,7 +189,8 @@ def store_report_event(patient: Dict[str, Any], structured: Dict[str, Any],
         "language": language,
         "word_count": report_stats.get("words", 0),
         "disease_tags": disease_tags,
-        "username": username, "context": context,
+        "username": username, "context": context, "model_used": model_used,
+        "raw_text": raw_text, "is_sensitive": is_sensitive,
     }
     return add_patient_record(record)
 
@@ -214,7 +220,7 @@ def get_report_detail(report_id: int) -> Optional[Dict[str, Any]]:
         """
         SELECT id, truncated_name, age, sex, date, hospital, study,
                reason, technique, findings, conclusion, concern,
-               language, word_count, disease_tags, created_at, username
+               language, word_count, disease_tags, created_at, username, model_used, raw_text
         FROM patients WHERE id = ?
         """,
         (report_id,),
@@ -241,7 +247,80 @@ def get_report_detail(report_id: int) -> Optional[Dict[str, Any]]:
         "word_count": row[13] or 0,
         "disease_tags": _format_tags_display(_split_tags(row[14])),
         "created_at": _format_timestamp(row[15]),
+        "model_used": row[17] or "",
+        "raw_text": row[18] or "",
     }
+
+
+def delete_patient_record(report_id: int) -> bool:
+    """Hard-delete a single patient record. Returns True if a row was deleted."""
+    conn = __import__("src.db.connection", fromlist=["get_connection"]).get_connection()
+    try:
+        cur = conn.execute("DELETE FROM patients WHERE id = ?", (report_id,))
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
+def get_all_reports_admin(limit: int = 200) -> List[Dict[str, Any]]:
+    """All reports for the admin panel — includes username and model_used."""
+    rows = fetch_all(
+        """
+        SELECT id, study, language, created_at, disease_tags,
+               truncated_name, username, model_used
+        FROM patients
+        ORDER BY datetime(created_at) DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    return [
+        {
+            "id": r[0],
+            "study": r[1] or "Unknown Study",
+            "language": r[2] or "English",
+            "created_at": _format_timestamp(r[3]),
+            "disease_tags": _format_tags_display(_split_tags(r[4])),
+            "patient_name": r[5] or "Patient",
+            "username": r[6] or "—",
+            "model_used": r[7] or "",
+        }
+        for r in rows
+    ]
+
+
+def get_recent_reports(limit: int = 50) -> List[Dict[str, Any]]:
+    """All recent reports across all users, for radiologist review.
+
+    Sensitive reports sort first within each group; within each group order
+    is most-recent first (item 8).
+    """
+    rows = fetch_all(
+        """
+        SELECT id, study, language, created_at, disease_tags, truncated_name, username,
+               findings, conclusion, COALESCE(is_sensitive, 0)
+        FROM patients
+        ORDER BY COALESCE(is_sensitive, 0) DESC, datetime(created_at) DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    return [
+        {
+            "id": r[0],
+            "study": r[1] or "Unknown Study",
+            "language": r[2] or "English",
+            "created_at": _format_timestamp(r[3]),
+            "disease_tags": _format_tags_display(_split_tags(r[4])),
+            "patient_name": r[5] or "Patient",
+            "username": r[6] or "",
+            "findings": r[7] or "",
+            "conclusion": r[8] or "",
+            "is_sensitive": bool(r[9]),
+        }
+        for r in rows
+    ]
 
 
 def get_user_reports(username: str, limit: int = 10) -> List[Dict[str, Any]]:

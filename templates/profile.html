@@ -56,10 +56,41 @@
                     <div style="margin: 1rem 0;">
                         <p><strong>Username:</strong> {{ session.get('username') }}</p>
                         <p><strong>Member since:</strong> 2025</p>
-                        {% if is_admin %}
+                        {% if is_radiologist %}
+                        <p style="margin-top: 1rem;"><span class="admin-badge">RADIOLOGIST</span></p>
+                        {% elif is_admin %}
                         <p style="margin-top: 1rem;"><span class="admin-badge">ADMIN</span></p>
                         {% endif %}
                     </div>
+
+                    {% if is_radiologist %}
+                    <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                        <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Radiologist Specialty</h3>
+                        <p style="font-size: 0.88rem; color: var(--muted); margin: 0 0 0.75rem;">
+                            Sets the default modality filter in the feedback portal.
+                        </p>
+                        <form method="POST" action="{{ url_for('rad_set_specialty') }}"
+                              style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="specialty"
+                                    style="padding:0.5rem 0.75rem; background:var(--bg);
+                                           border:1px solid var(--border); border-radius:8px;
+                                           color:var(--text); font-family:inherit; font-size:0.9rem;">
+                                <option value="">— Not set —</option>
+                                {% for s in ['Neuroradiology','Musculoskeletal','Chest','Abdominal','Cardiovascular','General'] %}
+                                <option value="{{ s }}" {% if specialty == s %}selected{% endif %}>{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit"
+                                    style="padding:0.5rem 1.1rem; background:var(--mint); color:var(--bg);
+                                           border:1px solid transparent; border-radius:8px;
+                                           font-weight:600; cursor:pointer; font-size:0.9rem;
+                                           line-height:1; margin:0; -webkit-appearance:none;">
+                                Save
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                     {% else %}
                     <p>Please <a href="{{ url_for('login') }}" style="color: var(--mint);">log in</a> to view your
                         profile.</p>
@@ -193,7 +224,7 @@
             {% endif %}
 
             <!-- Admin Panel Link -->
-            {% if is_admin %}
+            {% if is_admin and not is_radiologist %}
             <div style="margin-top: 2rem; text-align: center;">
                 <a href="{{ url_for('feedback_admin') }}"
                     style="background: var(--mint); color: var(--bg); padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block;">

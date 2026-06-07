@@ -11,7 +11,7 @@ from typing import Optional
 from src import config
 
 
-DB_PATH = Path("data/patient_data.db")
+DB_PATH = Path(os.environ.get("DB_PATH", "data/patient_data.db"))
 
 _DB_ENCRYPTION_KEY = (os.environ.get("DB_ENCRYPTION_KEY") or "").strip()
 
@@ -116,7 +116,20 @@ def _format_timestamp(raw: Optional[str]) -> str:
 
 def init_db() -> None:
     """Create / migrate all tables idempotently."""
+    import logging as _logging
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # If the file exists but is corrupt (e.g. git line-ending mangling), delete
+    # it so sqlite3 creates a clean empty database on the next connect.
+    if DB_PATH.exists():
+        try:
+            _probe = sqlite3.connect(str(DB_PATH))
+            _probe.execute("SELECT 1")
+            _probe.close()
+        except sqlite3.DatabaseError:
+            _logging.warning("Corrupt database at %s — deleting and recreating", DB_PATH)
+            DB_PATH.unlink()
+
     conn = get_connection()
     cur = conn.cursor()
 

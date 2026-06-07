@@ -1,0 +1,750 @@
+{% extends "base.html" %}
+
+{% block title %}Radiologist Feedback · Inside Imaging{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+<style>
+    .rad-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 900px) {
+        .rad-grid { grid-template-columns: 1fr; }
+    }
+
+    .rad-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        transition: border-color 0.15s;
+    }
+
+    .rad-card:hover { border-color: var(--mint); }
+
+    .report-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.4rem;
+    }
+
+    .tag-chip {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.15rem 0.45rem;
+        font-size: 0.78rem;
+    }
+
+    .feedback-btn {
+        margin-top: 1rem;
+        background: none;
+        border: 1px solid var(--mint);
+        color: var(--mint);
+        padding: 0.5rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .feedback-btn:hover { background: var(--mint); color: var(--bg); }
+
+    /* General feedback form */
+    .form-field { margin-bottom: 0.9rem; }
+
+    .form-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    .label-hint { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.9rem;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-field textarea { resize: vertical; }
+
+    .submit-btn {
+        display: block;
+        width: 100%;
+        background: var(--mint);
+        color: var(--bg);
+        border: 1px solid transparent;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        box-sizing: border-box;
+    }
+
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .inline-confirm {
+        padding: 1rem 1.1rem;
+        background: color-mix(in srgb, var(--mint) 10%, var(--panel));
+        border: 1px solid var(--mint);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+
+    .inline-confirm strong { color: var(--mint); }
+
+    .submit-another {
+        display: inline-block;
+        margin-top: 0.55rem;
+        font-size: 0.85rem;
+        color: var(--mint);
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .form-error {
+        padding: 0.6rem 0.75rem;
+        background: color-mix(in srgb, #ef4444 10%, var(--panel));
+        border: 1px solid #ef4444;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        color: #ef4444;
+        margin-bottom: 0.75rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.55rem;
+        border-radius: 5px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-approved   { background: #22c55e; color: #000; }
+    .status-implemented { background: #3b82f6; color: #fff; }
+    .status-rejected   { background: #ef4444; color: #fff; }
+    .status-pending    { background: #f59e0b; color: #000; }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0 0 1.25rem 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--muted);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+
+    .search-row {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .search-row input {
+        flex: 1;
+        min-width: 160px;
+        padding: 0.45rem 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.88rem;
+        font-family: inherit;
+    }
+
+    .filter-pill {
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: none;
+        color: var(--muted);
+        line-height: 1;
+        margin: 0;
+        -webkit-appearance: none;
+        appearance: none;
+        transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+
+    .filter-pill.active, .filter-pill:hover {
+        border-color: var(--mint);
+        color: var(--mint);
+    }
+
+    .reviewed-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #22c55e;
+        background: color-mix(in srgb, #22c55e 12%, var(--panel));
+        border: 1px solid #22c55e;
+        border-radius: 4px;
+        padding: 0.15rem 0.45rem;
+    }
+
+    .mark-done-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 0.3rem 0.7rem;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        line-height: 1;
+        margin: 0;
+        -webkit-appearance: none;
+        appearance: none;
+        transition: border-color 0.12s, color 0.12s;
+        white-space: nowrap;
+    }
+
+    .mark-done-btn:hover { border-color: #22c55e; color: #22c55e; }
+    .mark-done-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .report-id {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 400;
+    }
+
+    .sensitive-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #fff;
+        background: #ef4444;
+        border-radius: 4px;
+        padding: 0.1rem 0.4rem;
+        letter-spacing: 0.02em;
+    }
+
+    .rad-card.is-sensitive {
+        border-left: 3px solid #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>Radiologist Feedback Portal</h1>
+    <p class="tagline">Review AI-generated reports and submit clinical feedback</p>
+
+    <div class="rad-grid" style="margin-top: 2rem;">
+
+        {# ══════════════════════════════════════════════════════════════════════
+           LEFT: Recent reports list
+           ══════════════════════════════════════════════════════════════════════ #}
+        <div>
+            <h2 class="section-title">Recent Reports</h2>
+
+            {% if recent_reports %}
+            <div class="search-row">
+                <input type="text" id="report-search" placeholder="Search by study, tags…"
+                       oninput="applyFilters()">
+            </div>
+            <div class="search-row" style="gap:0.4rem; margin-bottom:0.5rem;">
+                <span style="font-size:0.78rem; color:var(--muted); align-self:center;">Review:</span>
+                <button class="filter-pill {% if modality_filter == 'All' %}active{% endif %}" data-review="all" onclick="setReviewFilter('all',this)">All</button>
+                <button class="filter-pill" data-review="pending" onclick="setReviewFilter('pending',this)">Unreviewed</button>
+                <button class="filter-pill" data-review="done" onclick="setReviewFilter('done',this)">Reviewed</button>
+            </div>
+            <div class="search-row" style="gap:0.4rem;">
+                <span style="font-size:0.78rem; color:var(--muted); align-self:center;">Modality:</span>
+                {% for mod in ['All','MRI','CT','X-RAY','ULTRASOUND','PET','Other'] %}
+                <button class="filter-pill {% if modality_filter == mod %}active{% endif %}"
+                        data-modality-btn="{{ mod }}"
+                        onclick="setModalityFilter('{{ mod }}', this)">
+                    {{ mod }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <div id="report-list">
+                {% for report in recent_reports %}
+                {% set is_reviewed = report.id in reviewed_ids %}
+                <div class="rad-card report-item {% if report.is_sensitive %}is-sensitive{% endif %}"
+                     data-reviewed="{{ 'yes' if is_reviewed else 'no' }}"
+                     data-modality="{{ report.modality }}"
+                     data-sensitive="{{ 'yes' if report.is_sensitive else 'no' }}"
+                     data-search="{{ report.study }} {{ report.language }} {{ report.modality }} {% for t in report.disease_tags %}{{ t }} {% endfor %}"
+                     id="rcard-{{ report.id }}"
+                     style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                <strong>{{ report.study }}</strong>
+                                <span class="report-id">#{{ report.id }}</span>
+                                {% if report.is_sensitive %}
+                                <span class="sensitive-badge">⚠ Sensitive</span>
+                                {% endif %}
+                                {% if is_reviewed %}
+                                <span class="reviewed-badge" id="badge-{{ report.id }}">✓ Reviewed</span>
+                                {% else %}
+                                <span class="reviewed-badge" id="badge-{{ report.id }}" style="display:none;">✓ Reviewed</span>
+                                {% endif %}
+                            </div>
+                            <div class="report-meta">
+                                <span>{{ report.patient_name }}</span>
+                                <span>·</span>
+                                <span>{{ report.created_at }}</span>
+                                <span>·</span>
+                                <span>{{ report.language }}</span>
+                            </div>
+                            {% if report.disease_tags %}
+                            <div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                                {% for tag in report.disease_tags %}
+                                <span class="tag-chip">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('report_detail', report_id=report.id) }}"
+                           style="font-size: 0.8rem; color: var(--mint); white-space: nowrap; margin-left: 1rem;">
+                            View →
+                        </a>
+                    </div>
+
+                    <div style="display:flex; gap:0.6rem; align-items:center; margin-top:1rem; flex-wrap:wrap;">
+                        <a class="feedback-btn"
+                           href="{{ url_for('radiologist_feedback_report', report_id=report.id) }}"
+                           style="display:inline-block; text-decoration:none; margin-top:0;">
+                            + Add Feedback
+                        </a>
+                        {% if not is_reviewed %}
+                        <button class="mark-done-btn" id="done-btn-{{ report.id }}"
+                                onclick="markDone({{ report.id }}, '{{ report.study | e }}', this)">
+                            ✓ Mark as Done
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">No reports in the system yet.</div>
+            {% endif %}
+        </div>
+
+        {# ══════════════════════════════════════════════════════════════════════
+           RIGHT: My submissions + General feedback form
+           ══════════════════════════════════════════════════════════════════════ #}
+        <div>
+            <h2 class="section-title">My Submissions</h2>
+
+            {% if my_feedback %}
+                {% for fb in my_feedback %}
+                <div class="rad-card" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <strong style="font-size: 0.95rem;">{{ fb.subject }}</strong>
+                        <span class="status-badge status-{{ fb.status }}">{{ fb.status.upper() }}</span>
+                    </div>
+                    <div class="report-meta" style="margin-bottom: 0.6rem;">
+                        <span>{{ fb.feedback_type.replace('_', ' ').title() }}</span>
+                        <span>·</span>
+                        <span>{{ fb.created_at }}</span>
+                    </div>
+                    {% if fb.description %}
+                    <p style="font-size: 0.88rem; color: var(--muted); margin: 0.4rem 0 0 0;">{{ fb.description }}</p>
+                    {% endif %}
+                    {% if fb.admin_notes %}
+                    <div style="margin-top: 0.75rem; padding: 0.6rem 0.75rem; background: var(--bg);
+                                border-left: 3px solid var(--mint); border-radius: 4px; font-size: 0.85rem;">
+                        <strong style="color: var(--mint);">Response:</strong> {{ fb.admin_notes }}
+                    </div>
+                    {% endif %}
+                    {% if fb.status == 'pending' %}
+                    <div style="margin-top: 0.75rem;">
+                        <a href="{{ url_for('edit_feedback', feedback_id=fb.id) }}"
+                           style="font-size: 0.8rem; color: var(--mint); text-decoration: none; font-weight: 600;">
+                            Edit →
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">You haven't submitted any feedback yet.</div>
+            {% endif %}
+
+            {# ── General feedback form — items 6, 7, 9 ── #}
+            <div style="margin-top: 2rem;">
+                <h2 class="section-title">General Feedback</h2>
+                <div class="rad-card">
+                    <p style="font-size: 0.9rem; color: var(--muted); margin: 0 0 1rem 0;">
+                        System suggestions, workflow improvements, or clinical corrections not tied to a specific report.
+                    </p>
+
+                    <div id="gen-body">
+                        <div class="form-error" id="gen-err" style="display:none;"></div>
+                        <form id="gen-form" novalidate>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="next" value="radiologist_feedback">
+
+                            <div class="form-field">
+                                <label for="gen-type">Feedback Type</label>
+                                <select name="feedback_type" id="gen-type" required>
+                                    <option value="general">General</option>
+                                    <option value="feature_request">Feature Request</option>
+                                    <option value="ui_bug">UI Bug</option>
+                                    <option value="clinical_accuracy">Clinical Accuracy</option>
+                                    <option value="translation_error">Translation Error</option>
+                                    <option value="format_issue">Format / Structure Issue</option>
+                                    <option value="missing_finding">Missing Finding</option>
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="gen-subject">Subject</label>
+                                <input type="text" name="subject" id="gen-subject"
+                                       required maxlength="200" placeholder="Brief summary...">
+                            </div>
+
+                            {# Item 6: text areas shown only for clinical types #}
+                            <div id="gen-clinical-fields" style="display:none;">
+                                <div class="form-field">
+                                    <label for="gen-original">Original text</label>
+                                    <textarea name="original_text" id="gen-original" rows="2"
+                                              placeholder="Paste the problematic AI output..."></textarea>
+                                </div>
+                                <div class="form-field">
+                                    <label for="gen-corrected">Corrected text</label>
+                                    <textarea name="corrected_text" id="gen-corrected" rows="2"
+                                              placeholder="What it should say..."></textarea>
+                                </div>
+                            </div>
+
+                            {# Item 7: Details always visible; required for non-clinical types #}
+                            <div class="form-field">
+                                <label for="gen-desc">
+                                    Details <span class="label-hint" id="gen-desc-hint">(required)</span>
+                                </label>
+                                <textarea name="description" id="gen-desc" rows="4"
+                                          required placeholder="Describe your feedback in detail..."></textarea>
+                            </div>
+
+                            <button type="submit" class="submit-btn">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 2.5rem; text-align: center;">
+        <a href="{{ url_for('feedback_admin') }}"
+           style="color: var(--mint); text-decoration: none; font-weight: 600;">
+            View All Feedback (Admin) →
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var CSRF_TOKEN = '{{ csrf_token() }}';
+
+// ── Report list: search + review filter + modality filter + mark-done ────────
+var _reviewFilter   = 'all';
+var _modalityFilter = '{{ modality_filter }}';
+
+function applyFilters() {
+    var q = (document.getElementById('report-search').value || '').trim().toLowerCase();
+    document.querySelectorAll('.report-item').forEach(function (card) {
+        var text     = (card.dataset.search || '').toLowerCase();
+        var done     = card.dataset.reviewed === 'yes';
+        var modality = (card.dataset.modality || '').toUpperCase();
+
+        var matchSearch   = !q || text.indexOf(q) !== -1;
+        var matchReview   = _reviewFilter === 'all' ||
+                            (_reviewFilter === 'done'    && done) ||
+                            (_reviewFilter === 'pending' && !done);
+        var matchModality = _modalityFilter === 'All' ||
+                            modality === _modalityFilter.toUpperCase() ||
+                            (_modalityFilter === 'Other' && !['MRI','CT','X-RAY','ULTRASOUND','PET','MAMMOGRAM'].includes(modality));
+
+        card.style.display = (matchSearch && matchReview && matchModality) ? '' : 'none';
+    });
+}
+
+function setReviewFilter(type, btn) {
+    _reviewFilter = type;
+    document.querySelectorAll('[data-review]').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+    });
+    applyFilters();
+}
+
+function setModalityFilter(mod, btn) {
+    _modalityFilter = mod;
+    document.querySelectorAll('[data-modality-btn]').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+    });
+    applyFilters();
+    // Persist in server session
+    fetch('{{ url_for("rad_set_filter") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json',
+                   'X-Requested-With': 'XMLHttpRequest',
+                   'X-CSRFToken': '{{ csrf_token() }}' },
+        body: JSON.stringify({ modality: mod }),
+    }).catch(function () {});
+}
+
+function markDone(reportId, study, btn) {
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    var fd = new FormData();
+    fd.append('csrf_token', CSRF_TOKEN);
+    fd.append('feedback_type', 'no_changes');
+    fd.append('subject', 'Report #' + reportId + ': No changes needed — ' + study);
+    fd.append('description', 'AI output reviewed by radiologist. No corrections required.');
+    fd.append('modality', study);
+    fd.append('report_id', reportId);
+    fd.append('next', 'radiologist_feedback');
+
+    fetch('{{ url_for("submit_feedback") }}', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd,
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (data.ok) {
+            var badge = document.getElementById('badge-' + reportId);
+            var card  = document.getElementById('rcard-' + reportId);
+            if (badge) badge.style.display = '';
+            if (card)  card.dataset.reviewed = 'yes';
+            btn.remove();
+            applyFilters();
+
+            showUndoToast('✓ Marked as done — ' + study, data.feedback_id, function () {
+                // Restore badge and re-add button on undo
+                if (badge) badge.style.display = 'none';
+                if (card)  {
+                    card.dataset.reviewed = 'no';
+                    var newBtn = document.createElement('button');
+                    newBtn.className = 'mark-done-btn';
+                    newBtn.id = 'done-btn-' + reportId;
+                    newBtn.textContent = '✓ Mark as Done';
+                    newBtn.onclick = function () { markDone(reportId, study, newBtn); };
+                    var actionsRow = card.querySelector('[style*="gap:0.6rem"]');
+                    if (actionsRow) actionsRow.appendChild(newBtn);
+                }
+                applyFilters();
+            });
+        } else {
+            btn.disabled = false;
+            btn.textContent = '✓ Mark as Done';
+            alert(data.error || 'Could not save. Please try again.');
+        }
+    })
+    .catch(function () {
+        btn.disabled = false;
+        btn.textContent = '✓ Mark as Done';
+    });
+}
+
+// ── Undo toast (floating snackbar) ───────────────────────────────────────────
+function showUndoToast(message, feedbackId, onUndo) {
+    var existing = document.getElementById('undo-toast');
+    if (existing) existing.remove();
+
+    var toast = document.createElement('div');
+    toast.id = 'undo-toast';
+    toast.style.cssText =
+        'position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%);' +
+        'background:var(--panel); border:1px solid var(--mint); border-radius:10px;' +
+        'padding:0.7rem 1rem; display:flex; align-items:center; gap:0.85rem;' +
+        'box-shadow:0 4px 20px rgba(0,0,0,0.35); z-index:9999; font-size:0.88rem;' +
+        'white-space:nowrap; max-width:calc(100vw - 2rem);';
+    toast.innerHTML =
+        '<span>' + message + '</span>' +
+        '<button id="toast-undo-btn" style="background:none; border:1px solid var(--mint);' +
+        'color:var(--mint); padding:0.3rem 0.65rem; border-radius:6px; font-size:0.8rem;' +
+        'font-weight:600; cursor:pointer; white-space:nowrap;">Undo</button>' +
+        '<button id="toast-close-btn" style="background:none; border:none; color:var(--muted);' +
+        'font-size:1rem; cursor:pointer; padding:0; line-height:1;">✕</button>';
+    document.body.appendChild(toast);
+
+    document.getElementById('toast-close-btn').addEventListener('click', function () { toast.remove(); });
+
+    document.getElementById('toast-undo-btn').addEventListener('click', function () {
+        var undoBtn = this;
+        undoBtn.disabled = true;
+        undoBtn.textContent = 'Undoing…';
+        fetch('/feedback/undo/' + feedbackId, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF_TOKEN },
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.ok) { toast.remove(); if (onUndo) onUndo(); }
+            else { undoBtn.textContent = 'Cannot undo'; setTimeout(function () { toast.remove(); }, 3000); }
+        })
+        .catch(function () { undoBtn.textContent = 'Error'; setTimeout(function () { toast.remove(); }, 3000); });
+    });
+}
+
+(function () {
+    'use strict';
+
+    var SUBMIT_URL   = '{{ url_for("submit_feedback") }}';
+    var CLINICAL     = new Set(['clinical_accuracy', 'translation_error', 'format_issue', 'missing_finding']);
+    var genBodyEl    = document.getElementById('gen-body');
+    var genBodyCache = genBodyEl ? genBodyEl.innerHTML : null;
+
+    function esc(s) {
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function ajaxSubmit(form, errEl, onSuccess) {
+        var btn = form.querySelector('button[type="submit"]');
+        var origText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+        errEl.style.display = 'none';
+
+        fetch(SUBMIT_URL, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: new FormData(form),
+        })
+        .then(function (res) {
+            return res.json().then(function (j) { return { ok: res.ok, body: j }; });
+        })
+        .then(function (r) {
+            if (r.ok) {
+                onSuccess(r.body);
+            } else {
+                errEl.textContent = (r.body && r.body.error) || 'Submission failed. Please try again.';
+                errEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = origText;
+            }
+        })
+        .catch(function () {
+            errEl.textContent = 'Network error. Please check your connection and try again.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = origText;
+        });
+    }
+
+    function applyGenType(value) {
+        var fields   = document.getElementById('gen-clinical-fields');
+        var hint     = document.getElementById('gen-desc-hint');
+        var descField = document.getElementById('gen-desc');
+        if (!fields) return;
+        if (CLINICAL.has(value)) {
+            fields.style.display = 'block';
+            hint.textContent = '(optional)';
+            descField.removeAttribute('required');
+        } else {
+            fields.style.display = 'none';
+            hint.textContent = '(required)';
+            descField.setAttribute('required', '');
+        }
+    }
+
+    function wireGenForm() {
+        var form   = document.getElementById('gen-form');
+        var errEl  = document.getElementById('gen-err');
+        var typeEl = document.getElementById('gen-type');
+        if (!form) return;
+        if (typeEl) {
+            applyGenType(typeEl.value);
+            typeEl.addEventListener('change', function () { applyGenType(this.value); });
+        }
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            ajaxSubmit(form, errEl, function (data) {
+                var fbId = data.feedback_id;
+                genBodyEl.innerHTML =
+                    '<div class="inline-confirm">' +
+                        '<strong>Feedback submitted ✓</strong><br>' +
+                        '<small style="color:var(--muted);">Subject: ' + esc(data.subject || '') + '</small><br>' +
+                        '<button class="submit-another" onclick="resetGenForm();">Submit more feedback</button>' +
+                        (fbId ? ' &nbsp;<button class="submit-another" id="undo-gen-btn" onclick="undoGen(' + fbId + ')">Undo</button>' : '') +
+                    '</div>';
+            });
+        });
+    }
+
+    window.resetGenForm = function () {
+        if (genBodyEl && genBodyCache) {
+            genBodyEl.innerHTML = genBodyCache;
+            wireGenForm();
+        }
+    };
+
+    window.undoGen = function (feedbackId) {
+        var btn = document.getElementById('undo-gen-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Undoing…'; }
+        fetch('/feedback/undo/' + feedbackId, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF_TOKEN },
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.ok) { window.resetGenForm(); }
+            else if (btn) { btn.disabled = false; btn.textContent = 'Cannot undo'; }
+        })
+        .catch(function () { if (btn) btn.textContent = 'Error'; });
+    };
+
+    wireGenForm();
+}());
+
+// Apply initial filter state from server session on page load
+(function () {
+    if (_modalityFilter && _modalityFilter !== 'All') {
+        applyFilters();
+    }
+}());
+</script>
+{% endblock %}

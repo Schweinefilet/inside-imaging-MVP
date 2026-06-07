@@ -31,7 +31,9 @@
   }
   .dicom-upload-row button {
     padding: 10px 20px; background: var(--mint); color: var(--bg);
-    border: 0; border-radius: 8px; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; border-radius: 8px; font-weight: 600;
+    cursor: pointer; line-height: 1; margin: 0;
+    -webkit-appearance: none; appearance: none;
   }
   .dicom-upload-row button:disabled { opacity: 0.5; cursor: not-allowed; }
   .dicom-status { margin-top: 12px; font-size: 0.9rem; color: var(--muted); min-height: 1.2em; }

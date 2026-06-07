@@ -315,6 +315,12 @@
             structured.highlights_positive|default(report_stats.highlights_positive, true) }}</span>
           <span class="badge negative">Highlighted negative: {{
             structured.highlights_negative|default(report_stats.highlights_negative, true) }}</span>
+          {% if is_admin and model_used %}
+          <span class="badge" title="LLM model used to generate this report"
+                style="background: color-mix(in srgb, var(--mint) 15%, var(--panel)); border: 1px solid var(--mint); color: var(--mint); font-family: monospace; font-size: 0.78rem;">
+            model: {{ model_used }}
+          </span>
+          {% endif %}
         </div>
       </section>
 
@@ -332,7 +338,7 @@
               btn.textContent = 'Generating PDF\u2026';
               fetch('{{ url_for("download_pdf") }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
                 body: JSON.stringify({ structured: structured, patient: patient })
               })
                 .then(function (resp) {

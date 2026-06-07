@@ -118,3 +118,32 @@ def enable_totp(username: str) -> None:
 
 def disable_totp(username: str) -> None:
     execute("UPDATE users SET totp_enabled = 0, totp_secret = NULL WHERE username = ?", (username,))
+
+
+# --- Radiologist specialty ---------------------------------------------------
+
+VALID_SPECIALTIES = (
+    "Neuroradiology", "Musculoskeletal", "Chest",
+    "Abdominal", "Cardiovascular", "General",
+)
+
+# Maps specialty → default modality filter in the portal.
+SPECIALTY_DEFAULT_MODALITY = {
+    "Neuroradiology": "MRI",
+    "Musculoskeletal": "MRI",
+    "Chest": "CT",
+    "Abdominal": "CT",
+    "Cardiovascular": "CT",
+    "General": "All",
+}
+
+
+def get_user_specialty(username: str) -> str:
+    row = fetch_one("SELECT specialty FROM users WHERE username = ?", (username,))
+    return str(row[0]) if row and row[0] else ""
+
+
+def set_user_specialty(username: str, specialty: str) -> None:
+    if specialty not in VALID_SPECIALTIES and specialty != "":
+        raise ValueError(f"Invalid specialty: {specialty!r}")
+    execute("UPDATE users SET specialty = ? WHERE username = ?", (specialty or None, username))

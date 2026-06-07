@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback Metrics · Inside Imaging{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}?v=7">
+<style>
+    .page-back {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        color: var(--muted); text-decoration: none; font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+    .page-back:hover { color: var(--text); }
+
+    .metrics-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+    }
+
+    .metrics-table th {
+        text-align: left;
+        padding: 0.6rem 0.9rem;
+        border-bottom: 2px solid var(--border);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        white-space: nowrap;
+    }
+
+    .metrics-table td {
+        padding: 0.65rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+    }
+
+    .metrics-table tr:last-child td { border-bottom: none; }
+    .metrics-table tr:hover td {
+        background: color-mix(in srgb, var(--panel) 80%, var(--bg) 20%);
+    }
+
+    .table-wrap {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        overflow-x: auto;
+    }
+
+    .rate-bar {
+        display: inline-block;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--mint);
+        vertical-align: middle;
+        margin-left: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <a class="page-back" href="{{ url_for('radiologist_feedback') }}">← Back to Portal</a>
+
+    <h1 style="margin-bottom: 0.3rem;">Feedback Metrics</h1>
+    <p class="tagline">Quality signals by modality and feedback type — superseded corrections excluded.</p>
+
+    {% if metrics %}
+    <div class="table-wrap" style="margin-top: 1.75rem;">
+        <table class="metrics-table">
+            <thead>
+                <tr>
+                    <th>Modality</th>
+                    <th>Feedback Type</th>
+                    <th>Total Reviews</th>
+                    <th>✓ Good</th>
+                    <th>✎ Corrections</th>
+                    <th>Correction Rate</th>
+                    <th>Avg Days to Review</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in metrics %}
+                <tr>
+                    <td><strong>{{ row.modality }}</strong></td>
+                    <td>{{ row.feedback_type }}</td>
+                    <td>{{ row.total_reviews }}</td>
+                    <td style="color:#22c55e;">{{ row.good_count }}</td>
+                    <td style="color:#f59e0b;">{{ row.correction_count }}</td>
+                    <td>
+                        {{ "%.1f"|format(row.correction_rate * 100) }}%
+                        <span class="rate-bar"
+                              style="width:{{ [row.correction_rate * 60, 60]|min }}px;"></span>
+                    </td>
+                    <td>
+                        {% if row.avg_days_to_review is not none %}
+                            {{ row.avg_days_to_review }} days
+                        {% else %}
+                            <span style="color:var(--muted);">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">No feedback data yet.</div>
+    {% endif %}
+
+    {% if is_admin %}
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="{{ url_for('feedback_admin') }}"
+           style="color:var(--mint); text-decoration:none; font-weight:600;">
+            Review pending feedback →
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

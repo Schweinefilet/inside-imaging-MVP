@@ -23,6 +23,9 @@ from src.db.patients import (
     get_report_brief,
     get_report_detail,
     get_user_reports,
+    get_recent_reports,
+    get_all_reports_admin,
+    delete_patient_record,
 )
 from src.db.stats import (
     get_stats,
@@ -44,6 +47,10 @@ from src.db.users import (
     set_totp_secret,
     enable_totp,
     disable_totp,
+    get_user_specialty,
+    set_user_specialty,
+    VALID_SPECIALTIES,
+    SPECIALTY_DEFAULT_MODALITY,
 )
 from src.db.tenants import (
     get_user_tenant,
@@ -75,9 +82,18 @@ from src.db.integration import (
 )
 from src.db.feedback import (
     submit_feedback,
+    delete_feedback,
+    get_feedback_by_id,
+    update_feedback,
     get_all_feedback,
     update_feedback_status,
     get_user_feedback,
+    get_few_shot_examples,
+    get_reviewed_report_ids,
+    get_feedback_metrics,
+)
+from src.db.embeddings import (
+    embed_approved_feedback,
 )
 from src.db.backup import backup_db
 
@@ -87,7 +103,8 @@ __all__ = [
     # patients / analytics
     "truncate_name", "normalize_study_name", "detect_disease_tags",
     "add_patient_record", "store_report_event",
-    "get_report_brief", "get_report_detail", "get_user_reports",
+    "get_report_brief", "get_report_detail", "get_user_reports", "get_recent_reports",
+    "get_all_reports_admin", "delete_patient_record",
     # stats
     "get_stats",
     # users
@@ -98,6 +115,8 @@ __all__ = [
     "assign_role", "remove_role", "get_user_roles", "has_any_role",
     # mfa
     "get_totp_secret", "is_totp_enabled", "set_totp_secret", "enable_totp", "disable_totp",
+    # specialty
+    "get_user_specialty", "set_user_specialty", "VALID_SPECIALTIES", "SPECIALTY_DEFAULT_MODALITY",
     # tenants
     "get_user_tenant", "get_tenant", "create_tenant",
     "update_tenant_integration", "get_tenant_integration",
@@ -111,8 +130,10 @@ __all__ = [
     "create_api_key", "lookup_api_key", "revoke_api_key",
     "insert_integration_report", "update_integration_report", "get_integration_report",
     # feedback
-    "submit_feedback", "get_all_feedback",
-    "update_feedback_status", "get_user_feedback",
+    "submit_feedback", "delete_feedback", "get_feedback_by_id", "update_feedback",
+    "get_all_feedback", "update_feedback_status", "get_user_feedback",
+    "get_few_shot_examples", "embed_approved_feedback",
+    "get_reviewed_report_ids", "get_feedback_metrics",
     # backup
     "backup_db",
 ]

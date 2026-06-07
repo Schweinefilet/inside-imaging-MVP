@@ -31,6 +31,7 @@ def _get_sqlcipher():
 
 def get_connection() -> sqlite3.Connection:
     """Return a new database connection (foreign keys enabled, Row factory)."""
+    import logging as _log
     if _DB_ENCRYPTION_KEY:
         sc = _get_sqlcipher()
         conn = sc.connect(str(DB_PATH))
@@ -49,8 +50,24 @@ def get_connection() -> sqlite3.Connection:
     else:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
+
+    try:
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+    except sqlite3.DatabaseError:
+        # File exists but is not a valid SQLite database (e.g. git line-ending
+        # corruption or a leftover placeholder).  Delete it and open a fresh one.
+        conn.close()
+        _log.warning("Corrupt DB file at %s — deleting and starting fresh", DB_PATH)
+        try:
+            DB_PATH.unlink()
+        except OSError:
+            pass
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+
     return conn
 
 
@@ -118,18 +135,7 @@ def init_db() -> None:
     """Create / migrate all tables idempotently."""
     import logging as _logging
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-    # If the file exists but is corrupt (e.g. git line-ending mangling), delete
-    # it so sqlite3 creates a clean empty database on the next connect.
-    if DB_PATH.exists():
-        try:
-            _probe = sqlite3.connect(str(DB_PATH))
-            _probe.execute("SELECT 1")
-            _probe.close()
-        except sqlite3.DatabaseError:
-            _logging.warning("Corrupt database at %s — deleting and recreating", DB_PATH)
-            DB_PATH.unlink()
-
+    _logging.info("DB_PATH = %s (exists: %s)", DB_PATH.resolve(), DB_PATH.exists())
     conn = get_connection()
     cur = conn.cursor()
 

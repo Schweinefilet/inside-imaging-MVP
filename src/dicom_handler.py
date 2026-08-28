@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 import numpy as np
 import pydicom
+from pydicom.multival import MultiValue
 from PIL import Image
 
 from src import db
@@ -89,6 +90,19 @@ def _int_tag(ds: "pydicom.Dataset", tag: str, default: int = 0) -> int:
         return default
 
 
+def _float_tag(ds: "pydicom.Dataset", tag: str) -> "float | None":
+    """Return a numeric DICOM tag as a float, taking the first entry if multi-valued."""
+    value = getattr(ds, tag, None)
+    if isinstance(value, MultiValue):
+        value = value[0] if len(value) else None
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def parse_dicom_metadata(dcm_bytes: bytes) -> Dict[str, Any]:
     ds = pydicom.dcmread(io.BytesIO(dcm_bytes), force=True, stop_before_pixels=True)
 
@@ -141,14 +155,10 @@ def extract_frame_as_png(dcm_bytes: bytes) -> bytes:
             norm = norm / peak
     else:
         arr = arr.astype(np.float32)
-        center = getattr(ds, "WindowCenter", None)
-        width = getattr(ds, "WindowWidth", None)
-        if isinstance(center, pydicom.multival.MultiValue):
-            center = float(center[0])
-        if isinstance(width, pydicom.multival.MultiValue):
-            width = float(width[0])
-        if center is not None and width is not None and float(width) > 0:
-            norm = _apply_window(arr, float(center), float(width))
+        center = _float_tag(ds, "WindowCenter")
+        width = _float_tag(ds, "WindowWidth")
+        if center is not None and width is not None and width > 0:
+            norm = _apply_window(arr, center, width)
         else:
             lo, hi = np.percentile(arr, [2, 98])
             if hi <= lo:

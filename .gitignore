@@ -8,6 +8,11 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+.venv-*/
+venv/
+ENV/
+env/
+.pytest_cache/
 # OS/editor
 .DS_Store
 Thumbs.db
@@ -18,9 +23,13 @@ Thumbs.db
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-.env
-.venv/
-.venv-*/
-venv/
-ENV/
-env/
+
+# logs & run artifacts
+*.log
+server_out.txt
+
+# SQLite transient files
+*.db-shm
+*.db-wal
+*.db.backup-shm
+*.db.backup-wal

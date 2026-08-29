@@ -1,10 +1,14 @@
+"""One-off maintenance: recompute disease_tags and infer missing study names.
 
-import sqlite3
+Run from the project root:
+    python scripts/fix_tags.py
+"""
+
 import sys
-import os
+from pathlib import Path
 
-# Ensure we can import from src
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+# Ensure project root is on sys.path regardless of where the script is invoked from.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.db import get_connection, detect_disease_tags
 

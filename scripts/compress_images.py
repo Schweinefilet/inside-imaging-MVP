@@ -2,11 +2,18 @@
 """
 Compress and resize marquee images to web-friendly sizes
 Target: max width/height of 720px, quality 85%, under 500KB
+
+Run from the project root:
+    python scripts/compress_images.py
+
+Rewrites the JPEGs in static/images/marquee/ in place.
 """
 import os
+from pathlib import Path
+
 from PIL import Image
 
-MARQUEE_DIR = "static/images/marquee"
+MARQUEE_DIR = Path(__file__).resolve().parent.parent / "static" / "images" / "marquee"
 MAX_SIZE = 720  # Max width or height in pixels
 QUALITY = 85    # JPEG quality (1-100)
 

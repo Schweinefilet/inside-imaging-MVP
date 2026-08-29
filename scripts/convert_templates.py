@@ -9,7 +9,7 @@ For each standalone template, rewrite it to extend base.html:
   - wrap remaining page-bottom scripts into {% block extra_js %}
 
 Run from repo root:
-    python3 tools/convert_templates.py
+    python3 scripts/convert_templates.py
 """
 
 from __future__ import annotations

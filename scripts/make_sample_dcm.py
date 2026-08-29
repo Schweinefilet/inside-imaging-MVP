@@ -1,10 +1,22 @@
-import pydicom
-from pydicom.dataset import Dataset, FileDataset, FileMetaDataset
-from pydicom.uid import generate_uid, UID, ExplicitVRLittleEndian
-import numpy as np
-import datetime
+"""Generate the synthetic DICOM fixture used by the test suite.
 
-ds = FileDataset("sample.dcm", {}, is_implicit_VR=False, is_little_endian=True)
+Run from the project root:
+    python scripts/make_sample_dcm.py
+
+Writes tests/fixtures/sample.dcm.
+"""
+
+import datetime
+from pathlib import Path
+
+import numpy as np
+import pydicom
+from pydicom.dataset import FileDataset, FileMetaDataset
+from pydicom.uid import generate_uid, UID, ExplicitVRLittleEndian
+
+OUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "sample.dcm"
+
+ds = FileDataset(str(OUT_PATH), {}, is_implicit_VR=False, is_little_endian=True)
 
 # Required DICOM meta
 ds.file_meta = FileMetaDataset()
@@ -36,5 +48,6 @@ ds.SamplesPerPixel      = 1
 ds.PhotometricInterpretation = 'MONOCHROME2'
 ds.PixelData            = np.zeros((512, 512), dtype=np.int16).tobytes()
 
-pydicom.dcmwrite('sample.dcm', ds, write_like_original=False)
-print('Wrote sample.dcm')
+OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+pydicom.dcmwrite(str(OUT_PATH), ds, write_like_original=False)
+print(f'Wrote {OUT_PATH}')

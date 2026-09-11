@@ -22,6 +22,7 @@ import re
 import time
 import random
 import argparse
+from typing import Optional
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 
@@ -304,7 +305,7 @@ def text_safe(node) -> str:
             return ""
 
 
-def norm_img_url(u: str):
+def norm_img_url(u: Optional[str]) -> Optional[str]:
     if not u:
         return None
     if u.startswith("//"):
@@ -314,7 +315,7 @@ def norm_img_url(u: str):
     return u
 
 
-def push_img(store: list, u: str):
+def push_img(store: list, u: Optional[str]) -> None:
     u = norm_img_url(u)
     if not u:
         return
@@ -376,7 +377,7 @@ def collect_case_caption_images(html: str, limit: int, session) -> list:
         soup = BeautifulSoup(html, "html.parser")
         case_links = []
         for a in soup.find_all("a", href=True):
-            href = a["href"]
+            href = str(a["href"])
             if "/cases/" in href:
                 url = href if href.startswith("http") else (BASE + href)
                 if url not in case_links:
@@ -410,16 +411,16 @@ def try_articles(session, slugs, max_images):
     return None, []
 
 
-def ddg_first_rp(session, query: str):
+def ddg_first_rp(session, query: str) -> Optional[str]:
     u = f"https://duckduckgo.com/html/?q={quote_plus('site:radiopaedia.org ' + query)}"
     r = fetch(session, u, warm=False)
     if not r or r.status_code != 200:
         return None
     soup = BeautifulSoup(r.text, "html.parser")
-    best = None
+    best: Optional[str] = None
     # prefer case pages
     for a in soup.select("a.result__a"):
-        href = a.get("href", "")
+        href = str(a.get("href", ""))
         if "radiopaedia.org" in href and "/cases/" in href:
             return href
         if "radiopaedia.org" in href and best is None:

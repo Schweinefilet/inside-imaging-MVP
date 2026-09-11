@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import re
+import stat
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
@@ -98,7 +100,17 @@ class LocalFileStorage(Storage):
 
     def put(self, key: str, body: bytes, content_type: str = "application/octet-stream") -> str:
         path = self._path(key)
-        with open(path, "wb") as fh:
+        # Explicit 0600 rather than relying on the process umask: this
+        # directory holds unencrypted PHI (DICOM files) when
+        # STORAGE_BACKEND=local, so it must not default to group/world
+        # readable on a shared host.
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        try:
+            fh = os.fdopen(fd, "wb")
+        except Exception:
+            os.close(fd)
+            raise
+        with fh:
             fh.write(body)
         return key
 
@@ -144,5 +156,27 @@ def reset_storage_singleton() -> None:
     _storage_singleton = None
 
 
+_SAFE_KEY_SEGMENT_RX = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+def _safe_key_segment(name: str, value: str) -> str:
+    """Validate a value that becomes one path segment of a storage key.
+
+    study_uid/series_uid/sop_uid come straight from an uploaded DICOM file's
+    tags with no format check upstream — a crafted UID containing "/" or ".."
+    wouldn't escape the storage root (LocalFileStorage._path already blocks
+    that), but could still land the file under a DIFFERENT tenant's own
+    subtree within that same root (tenant path confusion). Real DICOM UIDs
+    are dot-separated digits; reject anything else outright.
+    """
+    if not value or not _SAFE_KEY_SEGMENT_RX.match(value):
+        raise ValueError(f"Invalid {name} for storage key: {value!r}")
+    return value
+
+
 def dicom_key(tenant_id: str, study_uid: str, series_uid: str, sop_uid: str) -> str:
+    tenant_id = _safe_key_segment("tenant_id", tenant_id)
+    study_uid = _safe_key_segment("study_uid", study_uid)
+    series_uid = _safe_key_segment("series_uid", series_uid)
+    sop_uid = _safe_key_segment("sop_uid", sop_uid)
     return f"tenants/{tenant_id}/dicom/{study_uid}/{series_uid}/{sop_uid}.dcm"

@@ -24,12 +24,16 @@ Thumbs.db
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-# logs & run artifacts
+# logs & run artifacts — can contain clinical text and infra details, never commit
 *.log
 server_out.txt
+deployment_error.log
 
 # SQLite transient files
 *.db-shm
 *.db-wal
 *.db.backup-shm
 *.db.backup-wal
+
+# Local backups of the patient database
+data/*.bak

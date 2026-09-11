@@ -200,6 +200,13 @@ def _split_tags(raw: Optional[str]) -> List[str]:
 
 
 def get_report_brief(report_id: int) -> Optional[Dict[str, Any]]:
+    """Fetch a report summary by bare ID — no ownership/tenant filter.
+
+    `id` is a sequential AUTOINCREMENT primary key, so callers MUST verify
+    the caller is actually entitled to this report (owner or admin) before
+    returning it or its contents to a client. See report_detail() in app.py
+    for the expected pattern.
+    """
     row = fetch_one(
         "SELECT id, study, language, created_at, disease_tags FROM patients WHERE id = ?",
         (report_id,),
@@ -216,6 +223,13 @@ def get_report_brief(report_id: int) -> Optional[Dict[str, Any]]:
 
 
 def get_report_detail(report_id: int) -> Optional[Dict[str, Any]]:
+    """Fetch full report detail (findings/conclusion/patient info) by bare ID.
+
+    No ownership/tenant filter — `id` is sequential and trivially enumerable.
+    The returned dict's "username" field MUST be checked against the
+    requesting user before the caller exposes anything else in it (see
+    report_detail() in app.py, which returns 403 on mismatch).
+    """
     row = fetch_one(
         """
         SELECT id, truncated_name, age, sex, date, hospital, study,

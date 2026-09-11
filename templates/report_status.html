@@ -119,7 +119,10 @@
           <article class="analytics-panel hover-card">
             <h2>Recent Activity</h2>
             <ul class="recent-list">
-              {% for item in stats.recent %}
+              {% if not session.get('username') %}
+              <li><a href="{{ url_for('login') }}">Log in</a> to see your recent reports.</li>
+              {% else %}
+              {% for item in recent_reports %}
               <li>
                 <div class="recent-head">
                   <div class="recent-primary">
@@ -136,6 +139,7 @@
               {% else %}
               <li>No reports logged yet.</li>
               {% endfor %}
+              {% endif %}
             </ul>
           </article>
         </div>

@@ -27,13 +27,13 @@ def get_tenant(tenant_id: str) -> Optional[Dict[str, Any]]:
         "tenant_id": row[0],
         "display_name": row[1] or "",
         "region": row[2] or "",
-        "phi_mode": row[3] or "passthrough",
+        "phi_mode": row[3] or "pseudonymize",
         "created_at": _format_timestamp(row[4]),
     }
 
 
 def create_tenant(tenant_id: str, display_name: str = "",
-                  region: str = "", phi_mode: str = "passthrough",
+                  region: str = "", phi_mode: str = "pseudonymize",
                   hl7_sending_facility: str = "") -> None:
     execute(
         "INSERT OR IGNORE INTO tenants (tenant_id, display_name, region, phi_mode, hl7_sending_facility)"
@@ -93,7 +93,7 @@ def get_tenant_integration(tenant_id: str) -> Optional[Dict[str, Any]]:
         "our_ae_title": row[6] or "INSIDEIMG",
         "return_path": row[7] or "webhook",
         "hospital_branding": row[8] or "",
-        "phi_mode": row[9] or "passthrough",
+        "phi_mode": row[9] or "pseudonymize",
         "ip_allowlist": row[10] or "",
         "hl7_sending_facility": row[11] or "",
     }
@@ -116,7 +116,7 @@ def get_tenant_by_sending_facility(sending_facility: str) -> Optional[Dict[str, 
                 "tenant_id": row[0],
                 "display_name": row[1] or "",
                 "region": row[2] or "",
-                "phi_mode": row[3] or "passthrough",
+                "phi_mode": row[3] or "pseudonymize",
                 "hl7_sending_facility": row[4] or "",
             }
 
@@ -132,7 +132,7 @@ def get_tenant_by_sending_facility(sending_facility: str) -> Optional[Dict[str, 
                 "tenant_id": row[0],
                 "display_name": row[1] or "",
                 "region": row[2] or "",
-                "phi_mode": row[3] or "passthrough",
+                "phi_mode": row[3] or "pseudonymize",
                 "hl7_sending_facility": row[4] or "",
             }
     return None
@@ -148,7 +148,7 @@ def list_tenants() -> List[Dict[str, Any]]:
             "tenant_id": r[0],
             "display_name": r[1] or "",
             "region": r[2] or "",
-            "phi_mode": r[3] or "passthrough",
+            "phi_mode": r[3] or "pseudonymize",
             "return_path": r[4] or "webhook",
             "created_at": _format_timestamp(r[5]),
         }

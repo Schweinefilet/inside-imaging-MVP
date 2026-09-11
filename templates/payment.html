@@ -53,16 +53,16 @@
             <!-- Card fields -->
             <div id="card-fields" style="display: none;">
               <label for="card-number">Card Number</label>
-              <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+              <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
 
               <div class="form-row">
                 <div class="form-group">
                   <label for="expiry">Expiry Date</label>
-                  <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                  <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
                 </div>
                 <div class="form-group">
                   <label for="cvv">CVV</label>
-                  <input type="text" id="cvv" placeholder="123" maxlength="4">
+                  <input type="text" id="cvv" placeholder="123" maxlength="4" autocomplete="off">
                 </div>
               </div>
 

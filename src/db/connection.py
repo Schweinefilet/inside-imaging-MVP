@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import sqlite3
 from datetime import datetime
@@ -14,6 +15,24 @@ from src import config
 DB_PATH = Path(os.environ.get("DB_PATH", "data/patient_data.db"))
 
 _DB_ENCRYPTION_KEY = (os.environ.get("DB_ENCRYPTION_KEY") or "").strip()
+
+# Mirrors app.py's production detection: fail loudly rather than silently
+# storing PHI unencrypted at rest with no operational signal.
+_ENV = (os.environ.get("INSIDEIMAGING_ENV") or os.environ.get("FLASK_ENV") or "development").lower()
+_IS_PRODUCTION = _ENV in ("production", "prod")
+
+if not _DB_ENCRYPTION_KEY:
+    if _IS_PRODUCTION:
+        raise SystemExit(
+            "FATAL: DB_ENCRYPTION_KEY is required in production. Refusing to start — "
+            "without it, the SQLite database stores PHI unencrypted at rest.\n"
+            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\"\n"
+            "Then migrate the existing database with: python scripts/encrypt_db.py"
+        )
+    logging.getLogger(__name__).warning(
+        "DB_ENCRYPTION_KEY not set — the database will be stored UNENCRYPTED at rest. "
+        "Set DB_ENCRYPTION_KEY in production."
+    )
 
 
 def _get_sqlcipher():

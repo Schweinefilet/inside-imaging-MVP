@@ -13,8 +13,35 @@ from typing import Dict, List
 import requests
 
 
-def _validate_webhook_url(url: str) -> None:
-    """Raise ValueError if the URL targets a private/reserved address (SSRF prevention)."""
+def _is_public_addr(addr_str: str) -> bool:
+    try:
+        addr = ipaddress.ip_address(addr_str)
+    except ValueError:
+        return False
+    return not (addr.is_loopback or addr.is_private or addr.is_link_local
+                or addr.is_reserved or addr.is_unspecified)
+
+
+def _resolve_public_addrs(host: str) -> set:
+    """Resolve `host` and return only its public addresses. Raises ValueError
+    if resolution fails or every address is private/reserved."""
+    try:
+        resolved = {info[4][0] for info in socket.getaddrinfo(host, None)}
+    except socket.gaierror as exc:
+        raise ValueError(f"Webhook hostname could not be resolved: {host!r}") from exc
+
+    public = {a for a in resolved if _is_public_addr(a)}
+    if not public:
+        raise ValueError(
+            f"Webhook URL resolves only to private/reserved addresses ({resolved}). "
+            "Only public endpoints are permitted."
+        )
+    return public
+
+
+def _validate_webhook_url(url: str) -> str:
+    """Raise ValueError if the URL targets a private/reserved address (SSRF
+    prevention). Returns one validated public IP for the hostname."""
     try:
         parsed = urllib.parse.urlparse(url)
     except Exception as exc:
@@ -29,33 +56,79 @@ def _validate_webhook_url(url: str) -> None:
     if not host:
         raise ValueError("Webhook URL has no hostname")
 
-    try:
-        resolved = {info[4][0] for info in socket.getaddrinfo(host, None)}
-    except socket.gaierror as exc:
-        raise ValueError(f"Webhook hostname could not be resolved: {host!r}") from exc
+    return next(iter(_resolve_public_addrs(host)))
 
-    for addr_str in resolved:
-        try:
-            addr = ipaddress.ip_address(addr_str)
-        except ValueError:
-            continue
-        if (addr.is_loopback or addr.is_private or addr.is_link_local
-                or addr.is_reserved or addr.is_unspecified):
-            raise ValueError(
-                f"Webhook URL resolves to a private/reserved address ({addr_str}). "
-                "Only public endpoints are permitted."
-            )
+
+class _PinnedHostAdapter(requests.adapters.HTTPAdapter):
+    """Route every request through this adapter to a pre-resolved IP, while
+    still validating the TLS certificate (and setting SNI/Host) against the
+    original hostname.
+
+    Without this, `_validate_webhook_url` resolves the hostname once to check
+    it isn't private/internal, and then the plain `requests.post()` call
+    resolves it AGAIN independently to actually connect — a classic DNS
+    rebinding TOCTOU: an attacker controlling DNS for the configured webhook
+    domain can answer the first lookup with a public IP and the second with
+    an internal one. Pinning the connection to the address we already
+    validated means there is only ever one resolution in effect.
+    """
+
+    def __init__(self, pinned_ip: str, hostname: str):
+        self._pinned_ip = pinned_ip
+        self._hostname = hostname
+        super().__init__()
+
+    def build_connection_pool_key_attributes(self, request, verify, cert=None):
+        # requests >= 2.32 routes every connection through this hook (not the
+        # older get_connection(url, proxies) override point) — swap in the
+        # pre-validated IP for the actual TCP connection, but keep TLS
+        # verification (assert_hostname/server_hostname) pinned to the real
+        # hostname so certificate checking and SNI are unaffected.
+        host_params, pool_kwargs = super().build_connection_pool_key_attributes(request, verify, cert)
+        host_params["host"] = self._pinned_ip
+        if host_params.get("scheme") == "https":
+            pool_kwargs["assert_hostname"] = self._hostname
+            pool_kwargs["server_hostname"] = self._hostname
+        return host_params, pool_kwargs
+
+    def get_connection(self, url, proxies=None):
+        # Fallback for requests < 2.32, which never calls
+        # build_connection_pool_key_attributes and routes through here instead.
+        parsed = urllib.parse.urlparse(url)
+        scheme = parsed.scheme
+        port = parsed.port or (443 if scheme == "https" else 80)
+        pool_kwargs = {"assert_hostname": self._hostname, "server_hostname": self._hostname} if scheme == "https" else {}
+        return self.poolmanager.connection_from_host(
+            self._pinned_ip, port=port, scheme=scheme, pool_kwargs=pool_kwargs
+        )
 
 
 def deliver_webhook(webhook_url: str, pdf_bytes: bytes, metadata: Dict[str, str]) -> Dict:
     if not webhook_url:
         raise ValueError("webhook_url is empty")
-    _validate_webhook_url(webhook_url)
+    pinned_ip = _validate_webhook_url(webhook_url)
+    hostname = urllib.parse.urlparse(webhook_url).hostname
 
     files = {"pdf": ("patient_copy.pdf", pdf_bytes, "application/pdf")}
     data = {k: str(v or "") for k, v in metadata.items()}
 
-    resp = requests.post(webhook_url, files=files, data=data, timeout=20)
+    session = requests.Session()
+    session.mount("http://", _PinnedHostAdapter(pinned_ip, hostname))
+    session.mount("https://", _PinnedHostAdapter(pinned_ip, hostname))
+    try:
+        # allow_redirects=False: a redirect target is unvalidated — following
+        # it would let a webhook we already checked hand the PHI PDF off to
+        # an arbitrary, unvalidated internal address.
+        #
+        # Host header: http.client derives it from the *actual* connection
+        # (our pinned IP) unless told otherwise, since we never changed the
+        # request URL itself — set it explicitly back to the real hostname.
+        resp = session.post(
+            webhook_url, files=files, data=data, timeout=20, allow_redirects=False,
+            headers={"Host": urllib.parse.urlparse(webhook_url).netloc},
+        )
+    finally:
+        session.close()
     return {
         "status_code": resp.status_code,
         "ok": resp.ok,

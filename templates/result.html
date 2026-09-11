@@ -330,16 +330,13 @@
           /* jshint esnext: false */
           /* eslint-disable no-unused-vars, no-undef */
           (function () {
-            var structured = {{ structured|tojson }};
-            var patient = {{ patient|tojson }};
             document.getElementById('download-pdf-btn').addEventListener('click', function () {
               var btn = this;
               btn.disabled = true;
               btn.textContent = 'Generating PDF\u2026';
               fetch('{{ url_for("download_pdf") }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
-                body: JSON.stringify({ structured: structured, patient: patient })
+                headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
               })
                 .then(function (resp) {
                   if (!resp.ok) {

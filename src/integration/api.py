@@ -28,11 +28,19 @@ _INTEGRATION_RATE_LIMIT = os.getenv("INTEGRATION_RATE_LIMIT", "120 per minute")
 
 def _rate_limit(view):
     """Apply the shared Flask-Limiter from app.py if it's available.
-    Imported lazily to avoid the circular import api.py <- app.py <- api.py."""
+    Imported lazily to avoid the circular import api.py <- app.py <- api.py.
+
+    Keys by client IP, never by the raw X-API-Key header: this decorator runs
+    BEFORE _require_api_key validates the key, so keying by the header value
+    would let an attacker get a fresh quota bucket on every request just by
+    sending a different (bogus) key each time — defeating the limit while
+    still forcing a DB lookup per request via _require_api_key downstream.
+    """
     _lim = int_ext.limiter
     if _lim is None:
+        logging.warning("Integration API: rate limiter not initialized — requests are unthrottled")
         return view
-    return _lim.limit(_INTEGRATION_RATE_LIMIT, key_func=lambda: request.headers.get("X-API-Key") or _client_ip())(view)
+    return _lim.limit(_INTEGRATION_RATE_LIMIT, key_func=_client_ip)(view)
 
 
 def _client_ip() -> str:
@@ -208,7 +216,7 @@ def receive_report():
     is_flagged = sensitivity.get("flagged", False)
 
     tenant_integration = db.get_tenant_integration(tenant_id) or {}
-    phi_mode = int_phi.normalize_mode(tenant_integration.get("phi_mode", "passthrough"))
+    phi_mode = int_phi.normalize_mode(tenant_integration.get("phi_mode", "pseudonymize"))
 
     # Scrub identifiers + report text per tenant's PHI mode (before any persistence or LLM call).
     if phi_mode != "passthrough":
@@ -326,6 +334,7 @@ def receive_report():
 
 
 @integration_bp.route("/reports/<int:report_id>", methods=["GET"])
+@_rate_limit
 @_require_api_key
 def get_report(report_id):
     record = db.get_integration_report(report_id)

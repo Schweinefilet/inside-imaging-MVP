@@ -3,6 +3,7 @@ import os
 import io
 import re
 import json
+import html
 import logging
 import time
 import click
@@ -134,6 +135,9 @@ app.config.update(
 )
 
 # Phase 0.5: CSRF protection (Flask-WTF CSRFProtect, no WTForms dependency required)
+# Fails loudly in production (like SECRET_KEY above) instead of silently running
+# with CSRF protection off — an inconsistent fail-open here would undermine every
+# state-changing route's CSRF defense with zero operational signal.
 try:
     from flask_wtf.csrf import CSRFProtect, CSRFError
     csrf = CSRFProtect(app)
@@ -143,10 +147,17 @@ try:
         logging.warning("CSRF rejected: %s ip=%s ep=%s", e.description, request.remote_addr, request.endpoint)
         return jsonify({"error": "CSRF token missing or invalid"}), 400
 except Exception:
+    if _IS_PRODUCTION:
+        raise SystemExit(
+            "FATAL: Flask-WTF is required in production for CSRF protection. Refusing to start. "
+            "Install it with: pip install Flask-WTF"
+        )
     logging.exception("Flask-WTF not available; CSRF protection NOT active. Install Flask-WTF.")
     csrf = None
 
-# Phase 1.1: rate limiting (login, integration endpoints)
+# Phase 1.1: rate limiting (login, integration endpoints) — same fail-closed
+# rule as CSRF above: brute-force throttling silently vanishing in production
+# is a security regression, not a degraded-but-functional state.
 try:
     from flask_limiter import Limiter
     from flask_limiter.util import get_remote_address
@@ -158,6 +169,11 @@ try:
         strategy="fixed-window",
     )
 except Exception:
+    if _IS_PRODUCTION:
+        raise SystemExit(
+            "FATAL: Flask-Limiter is required in production for rate limiting. Refusing to start. "
+            "Install it with: pip install Flask-Limiter"
+        )
     logging.exception("Flask-Limiter not available; rate limiting NOT active. Install Flask-Limiter.")
     limiter = None
 
@@ -772,6 +788,9 @@ def upload():
 
     # PHI handling: extract the full name from raw text BEFORE build_structured strips it,
     # then keep it ONLY in session (never sent to OpenAI). Display-only on result page.
+    # (The free-text report sections themselves are separately best-effort PHI-scrubbed
+    # before the LLM call — see src/translate/pipeline.py:_scrub_secs_for_llm — but that
+    # scrub is regex-based and not a certified de-identification guarantee.)
     full_patient_name = ""
     if parse_metadata:
         try:
@@ -809,7 +828,7 @@ def upload():
     )
 
     if context:
-        structured["reason"] = f"<strong>Patient context:</strong> {context}<br><br>" + (structured.get("reason") or "")
+        structured["reason"] = f"<strong>Patient context:</strong> {html.escape(context)}<br><br>" + (structured.get("reason") or "")
 
     return render_template(
         "result.html",
@@ -835,7 +854,7 @@ def report_detail(report_id: int):
         abort(404)
         return  # unreachable; narrows type past here
     owner = record["username"]
-    if owner and owner != session["username"]:
+    if owner != session["username"]:
         abort(403)
 
     structured = dict(record.get("structured") or {})
@@ -883,23 +902,15 @@ def report_detail(report_id: int):
 
 @app.route("/download-pdf", methods=["GET", "POST"])
 def download_pdf():
-    try:
-        if request.method == "POST":
-            if request.is_json:
-                body = request.get_json(silent=True) or {}
-                structured = body["structured"] if "structured" in body else session.get("structured", {}) or {}
-                patient = body["patient"] if "patient" in body else session.get("patient", {}) or {}
-            else:
-                structured_raw = request.form.get("structured")
-                patient_raw = request.form.get("patient")
-                structured = json.loads(structured_raw) if structured_raw else session.get("structured", {}) or {}
-                patient = json.loads(patient_raw) if patient_raw else session.get("patient", {}) or {}
-        else:
-            structured = session.get("structured", {}) or {}
-            patient = session.get("patient", {}) or {}
-    except Exception:
-        logging.exception("Failed to parse form JSON")
-        return jsonify({"error": "bad form JSON"}), 400
+    # Always source from the session, never from the request body: structured/patient
+    # can contain HTML rendered `|safe` by pdf_report.html, and WeasyPrint fetches
+    # any URLs referenced in that markup server-side. Trusting client-supplied
+    # structured/patient here would let an unauthenticated caller make the server
+    # issue arbitrary outbound requests (SSRF).
+    structured = session.get("structured", {}) or {}
+    patient = session.get("patient", {}) or {}
+    if not structured:
+        return jsonify({"error": "no_report_in_session"}), 400
 
     html_str = render_template("pdf_report.html", structured=structured, patient=patient)
 
@@ -1009,7 +1020,13 @@ def blogs():
 @app.route("/report_status")
 def report_status():
     stats = db.get_stats()
-    
+
+    # "Recent activity" must never show other users'/tenants' reports on this
+    # public analytics page — scope it to the signed-in user's own history,
+    # and show nothing at all when signed out.
+    username = session.get("username")
+    recent_reports = db.get_user_reports(username, limit=6) if username else []
+
     # Prepare JSON-safe data for JavaScript
     stats_json = {
         "reportsTimeSeries": stats.get("time_series", []),
@@ -1024,7 +1041,7 @@ def report_status():
         "findingsData": [{"label": entry["label"].capitalize(), "value": entry["count"]} for entry in stats.get("diseases", [])]
     }
     
-    return render_template("report_status.html", stats=stats, stats_json=stats_json)
+    return render_template("report_status.html", stats=stats, stats_json=stats_json, recent_reports=recent_reports)
 
 
 @app.route("/payment")
@@ -1465,10 +1482,15 @@ def contact_support():
 
 _LOGIN_RATE_LIMIT = os.getenv("LOGIN_RATE_LIMIT", "10 per 15 minutes")
 _LOGIN_DUMMY_HASH = generate_password_hash("placeholder-do-not-use-as-credential")
+_MFA_RATE_LIMIT = os.getenv("MFA_RATE_LIMIT", "10 per 15 minutes")
 
 
 def _login_rate_limit_decorator(view):
     return limiter.limit(_LOGIN_RATE_LIMIT, methods=["POST"])(view) if limiter else view
+
+
+def _mfa_rate_limit_decorator(view):
+    return limiter.limit(_MFA_RATE_LIMIT, methods=["POST"])(view) if limiter else view
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -1544,7 +1566,13 @@ def authorize():
     if not user:
         abort(500)
     session.clear()  # rotate session to prevent fixation
+    if db.is_totp_enabled(user["username"]):
+        session["_mfa_pending"] = user["username"]
+        session.permanent = True
+        return redirect(url_for("mfa_verify"))
     session["username"] = user["username"]
+    session["_last_active"] = time.time()
+    session.permanent = True
     flash("Logged in with Google successfully.", "success")
     return redirect(url_for("dashboard"))
 
@@ -1613,6 +1641,7 @@ def logout():
 # --- MFA routes ----------------------------------------------------------
 
 @app.route("/mfa/verify", methods=["GET", "POST"])
+@_mfa_rate_limit_decorator
 def mfa_verify():
     import pyotp
     pending_username = session.get("_mfa_pending")
@@ -1680,6 +1709,14 @@ def mfa_disable():
     username = session.get("username")
     if not username:
         return redirect(url_for("login"))
+    # Step-up auth: disabling MFA is sensitive, so require the current password
+    # again rather than trusting the session alone (e.g. against a hijacked
+    # session or a stray cross-site request).
+    password = request.form.get("password", "")
+    user = db.get_user_by_username(username)
+    if not user or not user["password_hash"] or not check_password_hash(user["password_hash"], password):
+        flash("Incorrect password. Two-factor authentication was not disabled.", "error")
+        return redirect(url_for("profile"))
     db.disable_totp(username)
     flash("Two-factor authentication disabled.", "success")
     return redirect(url_for("profile"))
@@ -1815,7 +1852,7 @@ def dicom_upload():
     username = session["username"]
     tenant_id = db.get_user_tenant(username)
     tenant_cfg = db.get_tenant_integration(tenant_id) or {}
-    phi_mode = (tenant_cfg.get("phi_mode") or "passthrough").lower()
+    phi_mode = (tenant_cfg.get("phi_mode") or "pseudonymize").lower()
     files = request.files.getlist("files")
     uploaded = 0
     skipped = 0

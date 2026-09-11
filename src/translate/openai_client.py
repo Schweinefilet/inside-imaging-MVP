@@ -94,6 +94,9 @@ def _call_gpt5(messages: List[dict]) -> str:
             return ""
         raw = "".join(out_text).strip()
     if raw:
+        # This is patient-facing clinical summary content derived from the
+        # report — log it only at DEBUG (off by default) so it doesn't land
+        # in production logs outside the app's normal PHI-handling path.
         preview = raw if len(raw) <= 4000 else raw[:4000] + "…[truncated]"
-        logger.info("GPT-5 raw output:%s\n%s", " (truncated)" if len(raw) > 4000 else "", preview)
+        logger.debug("GPT-5 raw output:%s\n%s", " (truncated)" if len(raw) > 4000 else "", preview)
     return raw

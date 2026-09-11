@@ -6,8 +6,8 @@ from collections import Counter
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from src.db.connection import _format_timestamp, fetch_all, fetch_one
-from src.db.patients import _format_tags_display, _parse_age, normalize_study_name
+from src.db.connection import fetch_all, fetch_one
+from src.db.patients import normalize_study_name
 
 
 def _gender_bucket(label: str) -> str:
@@ -84,22 +84,6 @@ def get_stats() -> Dict[str, Any]:
         disease_counter.update(t.strip() for t in raw.split(",") if t.strip())
     disease_mix = [{"label": k, "count": v} for k, v in disease_counter.most_common()]
 
-    recent = [
-        {
-            "id": row[0],
-            "study": row[1] or "Unknown",
-            "language": row[2] or "",
-            "created_at": _format_timestamp(row[3]),
-            "disease_tags": _format_tags_display(
-                [t for t in (row[4] or "").split(",") if t]
-            ),
-        }
-        for row in fetch_all(
-            "SELECT id, study, language, created_at, disease_tags FROM patients"
-            " ORDER BY datetime(created_at) DESC LIMIT 6"
-        )
-    ]
-
     series_raw = {
         row[0]: row[1]
         for row in fetch_all(
@@ -128,6 +112,5 @@ def get_stats() -> Dict[str, Any]:
         "languages": language_mix,
         "studies": study_mix,
         "diseases": disease_mix,
-        "recent": recent,
         "time_series": time_series,
     }

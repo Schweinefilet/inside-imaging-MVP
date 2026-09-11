@@ -10,15 +10,39 @@ _NEGATION_RE = re.compile(
     re.IGNORECASE,
 )
 
+# "not benign" / "non-benign" is a hedge toward malignancy, not a negation of it —
+# without this, "benign" in the negation list above would wrongly cancel out a
+# nearby cancer term in phrasing like "atypical, not benign; malignancy suspected".
+_NOT_BENIGN_RE = re.compile(r"\b(?:not|non)[\s-]+benign\b", re.IGNORECASE)
+
+# Negation words must apply within the same sentence/list item as the match —
+# otherwise a negation earlier in a numbered impression list (e.g. "1. No
+# fracture. 2. New mass, suspicious for malignancy.") can wrongly be treated as
+# negating an unrelated, unnegated finding later in the report.
+_CLAUSE_BREAK_RE = re.compile(r"[.!?;\n]|(?<=\s)\d{1,2}[.)](?=\s)")
+
+
+def _clause_start(text: str, pos: int) -> int:
+    """Index where the sentence/clause containing pos begins."""
+    start = 0
+    for m in _CLAUSE_BREAK_RE.finditer(text, 0, pos):
+        start = m.end()
+    return start
+
 
 def _is_negated(text: str, match_start: int) -> bool:
-    """True if a negation term appears within the 6 words before match_start."""
-    pre = text[:match_start]
+    """True if a negation term applies to the match: within the same
+    sentence/clause and within the 6 words before match_start."""
+    clause_start = _clause_start(text, match_start)
+    pre = text[clause_start:match_start]
     tokens = list(re.finditer(r"\b\w+\b", pre))
     if not tokens:
         return False
-    window_start = tokens[-6].start() if len(tokens) >= 6 else tokens[0].start()
-    return bool(_NEGATION_RE.search(pre[window_start:]))
+    window_start = tokens[-6].start() if len(tokens) >= 6 else 0
+    window = pre[window_start:]
+    if _NOT_BENIGN_RE.search(window):
+        return False
+    return bool(_NEGATION_RE.search(window))
 
 
 def _has_unnegated(pattern: re.Pattern, text: str) -> bool:

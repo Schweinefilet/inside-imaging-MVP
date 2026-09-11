@@ -6,22 +6,24 @@ click==8.3.0
 blinker==1.9.0
 MarkupSafe==3.0.3
 
-# API & auth
-Flask-Cors>=3.0.0
-Flask-WTF>=1.2.0
-Flask-Limiter>=3.5.0
-authlib
-python-dotenv
+# API & auth — pinned exactly: these gate authentication/session/CORS, so an
+# unpinned or floor-only version could silently pull in a breaking or
+# vulnerable release.
+Flask-Cors==6.0.2
+Flask-WTF==1.3.0
+Flask-Limiter==4.1.1
+authlib==1.7.2
+python-dotenv==1.2.2
 
 # Data & AI
-openai
+openai==2.3.0
 numpy>=1.26.0
 pydicom>=2.4
 pynetdicom>=2.0
 hl7apy>=1.3.4
 
 # PDF & documents
-weasyprint
+weasyprint==68.1
 pdfminer.six
 pydyf>=0.10.0
 tinyhtml5>=2.0.0b1
@@ -29,22 +31,22 @@ tinycss2>=1.3.0
 cssselect2>=0.8.0
 Pyphen>=0.9.1
 fonttools>=4.0.0
-python-docx
+python-docx==1.2.0
 cffi>=0.6
 
 # Images
-Pillow>=9.1.0
+Pillow==12.2.0
 pillow-heif
-pytesseract
+pytesseract==0.3.13
 
 # AWS
-boto3
-botocore
+boto3==1.42.14
+botocore==1.42.14
 watchtower>=3.0.0
 
 # Server
-gunicorn
-requests
+gunicorn==26.0.0
+requests==2.34.2
 
 # Security & HIPAA
 sqlcipher3

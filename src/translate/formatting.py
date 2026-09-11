@@ -7,9 +7,10 @@ import re
 from typing import List
 
 
-# Accept ASCII '-' OR bullet '•' as bullet markers (regex tightened later in the
-# original file to ASCII only; keep both spellings as in the legacy source).
-_DASH_LINE_RX = re.compile(r"^\s*-\s+(.+?)\s*$")
+# Accept ASCII '-' OR bullet '•' as bullet markers — OCR output commonly uses
+# '•' for list items, and without this a bulleted findings list would
+# silently collapse into one unbulleted paragraph.
+_DASH_LINE_RX = re.compile(r"^\s*[-•]\s+(.+?)\s*$")
 
 
 def _dashes_to_ul(text: str) -> str:
@@ -83,7 +84,10 @@ def _simplify_for_layperson(text: str) -> str:
         (r"\blesions\b", "abnormal spots"),
         (r"\blesion\b", "abnormal spot"),
         (r"\bmass(es)?\b", "lump"),
-        (r"\bneoplasm(s)?\b", "cancer"),
+        # "neoplasm" is not necessarily cancer (many are benign) — map it to a
+        # neutral term so "benign neoplasm" doesn't become "non-cancer cancer"
+        # once the "benign" -> "non-cancer" replacement below also applies.
+        (r"\bneoplasm(s)?\b", "growth"),
         # Organs
         (r"\bhepatic\b", "liver"),
         (r"\brenal\b", "kidney"),

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import os
 from typing import Any, Dict
 
 import numpy as np
@@ -25,6 +26,13 @@ _PHI_TAGS_TO_REMOVE = [
     "PerformingPhysicianName", "OperatorsName", "RequestingPhysician", "PhysiciansOfRecord",
     "InstitutionAddress", "StationName",
     "StudyComments", "AdmissionID", "IssuerOfPatientID", "AccessionNumber",
+    # Dates/times and institution/device identifiers are also Safe Harbor
+    # identifiers — a date tied to a specific patient re-identifies them just
+    # as surely as a name does, and device/institution IDs can pin down which
+    # facility (and often which patient roster) a study came from.
+    "StudyDate", "SeriesDate", "AcquisitionDate", "ContentDate", "OverlayDate",
+    "StudyTime", "SeriesTime", "AcquisitionTime", "ContentTime", "OverlayTime",
+    "InstitutionName", "InstitutionalDepartmentName", "DeviceSerialNumber",
 ]
 
 
@@ -131,7 +139,20 @@ def _apply_window(arr: np.ndarray, center: float, width: float) -> np.ndarray:
     return (clipped - low) / max(high - low, 1.0)
 
 
+# Generous ceiling for any real radiology frame (~46 megapixels); guards
+# against a crafted DICOM with huge Rows/Columns (or an expansive compressed
+# transfer syntax) triggering a decompression-bomb-style memory/CPU spike
+# when pydicom decodes ds.pixel_array.
+_MAX_FRAME_PIXELS = int(os.getenv("DICOM_MAX_FRAME_PIXELS", str(8192 * 5632)))
+
+
 def extract_frame_as_png(dcm_bytes: bytes) -> bytes:
+    meta_ds = pydicom.dcmread(io.BytesIO(dcm_bytes), force=True, stop_before_pixels=True)
+    rows = _int_tag(meta_ds, "Rows")
+    columns = _int_tag(meta_ds, "Columns")
+    if rows and columns and rows * columns > _MAX_FRAME_PIXELS:
+        raise ValueError(f"Image dimensions too large to render ({rows}x{columns})")
+
     ds = pydicom.dcmread(io.BytesIO(dcm_bytes), force=True)
 
     try:

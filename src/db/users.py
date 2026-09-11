@@ -41,20 +41,32 @@ def is_account_locked(username: str) -> bool:
 
 def record_failed_login(username: str, max_attempts: int = 5,
                         lock_minutes: int = 15) -> Dict[str, Any]:
-    """Increment counter, lock at max_attempts. Returns {'locked': bool, 'attempts': int}."""
+    """Increment counter, lock at max_attempts. Returns {'locked': bool, 'attempts': int}.
+
+    The increment happens inside the UPDATE itself (failed_login_attempts =
+    failed_login_attempts + 1) rather than via a separate read-then-write —
+    two connections each reading the same stale count before either writes
+    back would otherwise understate the true attempt total under concurrent
+    failed logins (e.g. a scripted credential-stuffing burst), delaying
+    lockout.
+    """
     if not username:
         return {"locked": False, "attempts": 0}
-    row = fetch_one("SELECT failed_login_attempts FROM users WHERE username = ?", (username,))
+    lock_until_iso = (datetime.now() + timedelta(minutes=lock_minutes)).isoformat()
+    execute(
+        """
+        UPDATE users
+        SET failed_login_attempts = failed_login_attempts + 1,
+            locked_until = CASE WHEN failed_login_attempts + 1 >= ? THEN ? ELSE locked_until END
+        WHERE username = ?
+        """,
+        (max_attempts, lock_until_iso, username),
+    )
+    row = fetch_one("SELECT failed_login_attempts, locked_until FROM users WHERE username = ?", (username,))
     if not row:
         return {"locked": False, "attempts": 0}
-    attempts = (row[0] or 0) + 1
-    locked = attempts >= max_attempts
-    locked_until = (datetime.now() + timedelta(minutes=lock_minutes)).isoformat() if locked else None
-    execute(
-        "UPDATE users SET failed_login_attempts = ?, locked_until = ? WHERE username = ?",
-        (attempts, locked_until, username),
-    )
-    return {"locked": locked, "attempts": attempts}
+    attempts = row[0] or 0
+    return {"locked": attempts >= max_attempts, "attempts": attempts}
 
 
 def record_successful_login(username: str) -> None:

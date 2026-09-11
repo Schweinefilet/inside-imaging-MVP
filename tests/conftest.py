@@ -13,7 +13,13 @@ os.environ.setdefault("WTF_CSRF_ENABLED", "false")
 
 
 @pytest.fixture(scope="session")
-def flask_app():
+def flask_app(tmp_path_factory):
+    # Redirect DB_PATH to a throwaway file BEFORE importing app: app.py calls
+    # db.init_db() at import time, which would otherwise run schema
+    # initialization against the real data/patient_data.db on every test run.
+    import src.db.connection as conn_mod
+    conn_mod.DB_PATH = tmp_path_factory.mktemp("session-db") / "test.db"
+
     import app as application
     application.app.config["TESTING"] = True
     application.app.config["WTF_CSRF_ENABLED"] = False

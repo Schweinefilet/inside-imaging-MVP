@@ -9,6 +9,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+from src import config
+from src.integration.phi import scrub_text as _scrub_phi_text
 from src.parse import parse_metadata, sections_from_text
 from src.translate.formatting import (
     _dashes_to_ul,
@@ -43,6 +45,17 @@ def _as_bullets_text(v: Any) -> str:
         return "\n".join(("- " + s if not s.startswith("- ") else s)
                          for s in (str(x or "").strip() for x in v) if s)
     return str(v or "").strip()
+
+
+def _scrub_secs_for_llm(secs: Dict[str, str]) -> Dict[str, str]:
+    """Best-effort PHI scrub applied only to the copy of the report sent to
+    the external LLM API. Free-text sections routinely contain inline names,
+    DOBs, MRNs, phone numbers, or emails (e.g. a "Patient Name: ..." header
+    embedded in the body) even though structured metadata is handled
+    separately — never skip this before the report text leaves the process.
+    The unscrubbed `secs` is still used for the local-only heuristic
+    fallback/backfill paths, which don't call out to a third party."""
+    return {k: _scrub_phi_text(v, config.PHI_MODE) for k, v in secs.items()}
 
 
 def _simplify_then_translate(text: str, language: str) -> str:
@@ -256,7 +269,9 @@ def build_structured(
     except Exception:
         logger.exception("Few-shot retrieval failed; continuing without examples")
 
-    raw = _gpt_with_retry(_compose_prompt(meta, secs, language, few_shot_examples=few_shot or None))
+    raw = _gpt_with_retry(_compose_prompt(
+        meta, _scrub_secs_for_llm(secs), language, few_shot_examples=few_shot or None,
+    ))
 
     # ── No LLM output: fall back entirely to local heuristics ───────────
     if not raw:

@@ -96,6 +96,19 @@ def _norm(s: str) -> str:
     s = re.sub(r"\s+\n", "\n", s)
     return s.strip()
 
+# Every section heading this module knows how to recognize. Used both as
+# start_keys (per call) and as the universal stop boundary in _get_block: a
+# block for one heading must stop at the NEXT heading of any kind, not just
+# the ones a particular caller happened to list as its own start_keys —
+# otherwise, e.g., a "TECHNIQUE" block (which only knows to stop at
+# IMPRESSION/CONCLUSION/etc.) would swallow the entire FINDINGS section too.
+_ALL_SECTION_HEADINGS = (
+    "CLINICAL INFORMATION", "INDICATION", "HISTORY", "TECHNIQUE",
+    "FINDINGS", "FINDING", "IMPRESSION", "CONCLUSION",
+    "REPORT", "RESULTS", "DISCUSSION", "NOTE", "SUMMARY",
+)
+
+
 def _get_block(text: str, start_keys: Tuple[str, ...]) -> str:
     """Extract the block of text following any of the provided start keys.
 
@@ -109,14 +122,16 @@ def _get_block(text: str, start_keys: Tuple[str, ...]) -> str:
         # Search for the section header (case-insensitive)
         m = re.search(rf"(?is)\b{k}\b\s*[:\-]?\s*(.*)", t)
         if m:
-            # Slice the text from this header onward
+            # Slice the text from this header onward, then drop the header itself.
             rest = t[m.start():]
-            # Look for the next all-caps header indicating the next section
-            stop = re.search(r"(?m)^(?:IMPRESSION|CONCLUSION|REPORT|RESULTS|DISCUSSION|NOTE|SUMMARY)\b", rest)
-            block = rest if not stop else rest[:stop.start()]
-            # Remove the header itself
-            block = re.sub(rf"(?is)^{k}\s*[:\-]?\s*", "", block).strip()
-            return block
+            after_header = re.sub(rf"(?is)^{k}\s*[:\-]?\s*", "", rest, count=1)
+            # Stop at the next known heading — excluding every synonym in
+            # start_keys, since those all name this same logical section.
+            start_keys_upper = {sk.upper() for sk in start_keys}
+            other_headings = "|".join(h for h in _ALL_SECTION_HEADINGS if h.upper() not in start_keys_upper)
+            stop = re.search(rf"(?im)^(?:{other_headings})\b", after_header)
+            block = after_header if not stop else after_header[:stop.start()]
+            return block.strip()
     return ""
 
 def parse_metadata(text: str) -> Dict[str, str]:

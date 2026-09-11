@@ -122,15 +122,35 @@ def _forward_to_api(parsed: dict, target_url: str, api_key: str) -> Tuple[int, s
         return 0, str(exc)
 
 
+_MAX_MESSAGE_BYTES = int(os.getenv("HL7_MAX_MESSAGE_BYTES", str(5 * 1024 * 1024)))  # 5 MiB
+_SOCKET_TIMEOUT_SECONDS = int(os.getenv("HL7_SOCKET_TIMEOUT_SECONDS", "60"))
+
+
 def _build_handler_class(target_url: str, api_key: str):
     class MLLPHandler(socketserver.StreamRequestHandler):
         def handle(self) -> None:
+            # Without a timeout and a size cap, a client that opens a
+            # connection and either never sends an MLLP end block or trickles
+            # bytes indefinitely ties up this thread forever and grows
+            # `buffer` without bound — a straightforward memory/thread
+            # exhaustion DoS against a listener with no connection cap.
+            self.request.settimeout(_SOCKET_TIMEOUT_SECONDS)
             buffer = b""
             while True:
-                chunk = self.request.recv(4096)
+                try:
+                    chunk = self.request.recv(4096)
+                except socket.timeout:
+                    logging.warning("HL7 connection from %s idle-timed-out", self.client_address)
+                    break
                 if not chunk:
                     break
                 buffer += chunk
+                if len(buffer) > _MAX_MESSAGE_BYTES:
+                    logging.warning(
+                        "HL7 connection from %s exceeded max message size (%d bytes); closing",
+                        self.client_address, len(buffer),
+                    )
+                    break
                 while SB in buffer and EB + CR in buffer:
                     start = buffer.index(SB)
                     end = buffer.index(EB + CR, start)
@@ -208,11 +228,25 @@ def serve_forever(host: Optional[str] = None, port: Optional[int] = None,
     handler = _build_handler_class(target_url, api_key)
     ssl_ctx = _build_ssl_context()
 
+    is_production = os.getenv("INSIDEIMAGING_ENV", "").lower() in ("production", "prod")
+
     if ssl_ctx is not None:
+        has_mtls = bool(os.getenv("HL7_TLS_CLIENT_CA"))
+        if is_production and not has_mtls:
+            # TLS alone only protects transport confidentiality — it does not
+            # tell us who's connecting. Any network-reachable client that can
+            # complete a TLS handshake could otherwise submit fabricated
+            # patient data that flows straight into translation and delivery.
+            raise RuntimeError(
+                "HL7 listener refusing to start: production environment requires mutual TLS "
+                "(client certificate auth), not just server-side TLS. Set HL7_TLS_CLIENT_CA to "
+                "the CA that issues the hospital system's client certificate, or run with "
+                "INSIDEIMAGING_ENV=development."
+            )
         server = TLSThreadingTCPServer((host, port), handler, ssl_context=ssl_ctx)
-        mode = "MLLP/TLS (mTLS)" if os.getenv("HL7_TLS_CLIENT_CA") else "MLLP/TLS"
+        mode = "MLLP/TLS (mTLS)" if has_mtls else "MLLP/TLS"
     else:
-        if os.getenv("INSIDEIMAGING_ENV", "").lower() in ("production", "prod"):
+        if is_production:
             raise RuntimeError(
                 "HL7 listener refusing to start: production environment but no TLS configured. "
                 "Set HL7_TLS_CERT and HL7_TLS_KEY env vars, or run with INSIDEIMAGING_ENV=development."

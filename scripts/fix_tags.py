@@ -1,9 +1,12 @@
 """One-off maintenance: recompute disease_tags and infer missing study names.
 
-Run from the project root:
+Run from the project root (dry run by default; add --apply to actually write,
+which backs up the database first):
     python scripts/fix_tags.py
+    python scripts/fix_tags.py --apply
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -11,8 +14,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.db import get_connection, detect_disease_tags
+from src.db.backup import backup_db
 
-def fix_all_tags():
+def fix_all_tags(apply: bool = False):
+    if apply:
+        backup_path = backup_db(label="pre_fix_tags")
+        if backup_path:
+            print(f"Backed up database to {backup_path} before applying changes.")
+        else:
+            print("WARNING: could not create a backup (database may not exist yet); continuing anyway.")
+    else:
+        print("DRY RUN — no changes will be written. Re-run with --apply to write them.")
+
     conn = get_connection()
     cur = conn.cursor()
     
@@ -37,7 +50,9 @@ def fix_all_tags():
         
         # Update tags if changed
         if set(new_tags_list) != set(filter(None, old_tags_str.split(","))):
-            cur.execute("UPDATE patients SET disease_tags = ? WHERE id = ?", (new_tags_str, pid))
+            print(f"{'Would update' if not apply else 'Updating'} tags for ID {pid}: '{old_tags_str}' -> '{new_tags_str}'")
+            if apply:
+                cur.execute("UPDATE patients SET disease_tags = ? WHERE id = ?", (new_tags_str, pid))
             updated_count += 1
 
         # Infer study type if unknown
@@ -76,13 +91,23 @@ def fix_all_tags():
                     new_study = "Ultrasound"
                 
             if new_study:
-                print(f"Updating Study ID {pid}: '{current_study}' -> '{new_study}'")
-                cur.execute("UPDATE patients SET study = ? WHERE id = ?", (new_study, pid))
+                print(f"{'Would update' if not apply else 'Updating'} Study ID {pid}: '{current_study}' -> '{new_study}'")
+                if apply:
+                    cur.execute("UPDATE patients SET study = ? WHERE id = ?", (new_study, pid))
                 study_updated_count += 1
-            
-    conn.commit()
+
+    if apply:
+        conn.commit()
     conn.close()
-    print(f"Done. Updated {updated_count} tags and {study_updated_count} studies.")
+    verb = "Updated" if apply else "Would update"
+    print(f"Done. {verb} {updated_count} tags and {study_updated_count} studies.")
+    if not apply:
+        print("This was a dry run — re-run with --apply to actually write these changes.")
 
 if __name__ == "__main__":
-    fix_all_tags()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--apply", action="store_true",
+                        help="Actually write changes (default is dry-run only). "
+                             "Backs up the database first.")
+    args = parser.parse_args()
+    fix_all_tags(apply=args.apply)

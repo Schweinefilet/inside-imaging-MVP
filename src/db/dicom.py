@@ -9,7 +9,31 @@ from src.db.connection import _format_timestamp, execute, execute_many, fetch_al
 from src.db.patients import truncate_name
 
 
+class DicomTenantConflict(ValueError):
+    """A DICOM UID already belongs to a different tenant.
+
+    DICOM UIDs are supposed to be globally unique by spec, so a genuine
+    cross-tenant collision almost always means misconfigured/reused test UIDs
+    or a hostile submission — not two hospitals legitimately sharing a study.
+    We must not let `INSERT OR IGNORE` silently swallow this: that would
+    either drop the new tenant's study/series with zero signal, or (for
+    series/instances, whose FK is on the UID alone) let one tenant's rows
+    attach underneath another tenant's study header.
+    """
+
+
 def upsert_dicom_study(data: Dict[str, Any]) -> str:
+    study_uid = data.get("study_uid", "")
+    tenant_id = data.get("tenant_id", config.DEFAULT_TENANT_ID)
+
+    existing = fetch_one(
+        "SELECT tenant_id FROM dicom_studies WHERE study_instance_uid = ?", (study_uid,)
+    )
+    if existing and existing[0] != tenant_id:
+        raise DicomTenantConflict(
+            f"StudyInstanceUID {study_uid!r} is already registered to a different tenant"
+        )
+
     # Truncate patient_id before storage — same contract as patient_name_truncated.
     raw_pid = data.get("patient_id") or data.get("patient_id_truncated") or ""
     patient_id_truncated = truncate_name(raw_pid) if raw_pid else ""
@@ -22,7 +46,7 @@ def upsert_dicom_study(data: Dict[str, Any]) -> str:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            data.get("study_uid", ""),
+            study_uid,
             data.get("patient_name_truncated", ""),
             patient_id_truncated,
             data.get("study_date", ""),
@@ -30,14 +54,24 @@ def upsert_dicom_study(data: Dict[str, Any]) -> str:
             data.get("study_description", ""),
             data.get("accession_number", ""),
             data.get("username", ""),
-            data.get("tenant_id", config.DEFAULT_TENANT_ID),
+            tenant_id,
         ),
     )
-    return str(data.get("study_uid", ""))
+    return str(study_uid)
 
 
 def upsert_dicom_series(data: Dict[str, Any]) -> str:
     series_uid = data.get("series_uid", "")
+    tenant_id = data.get("tenant_id", config.DEFAULT_TENANT_ID)
+
+    existing = fetch_one(
+        "SELECT tenant_id FROM dicom_series WHERE series_instance_uid = ?", (series_uid,)
+    )
+    if existing and existing[0] != tenant_id:
+        raise DicomTenantConflict(
+            f"SeriesInstanceUID {series_uid!r} is already registered to a different tenant"
+        )
+
     execute_many([
         (
             """
@@ -53,18 +87,30 @@ def upsert_dicom_series(data: Dict[str, Any]) -> str:
                 data.get("series_description", ""),
                 data.get("modality", ""),
                 0,
-                data.get("tenant_id", config.DEFAULT_TENANT_ID),
+                tenant_id,
             ),
         ),
         (
-            "UPDATE dicom_series SET num_instances = num_instances + 1 WHERE series_instance_uid = ?",
-            (series_uid,),
+            "UPDATE dicom_series SET num_instances = num_instances + 1"
+            " WHERE series_instance_uid = ? AND tenant_id = ?",
+            (series_uid, tenant_id),
         ),
     ])
     return str(series_uid)
 
 
 def insert_dicom_instance(data: Dict[str, Any]) -> int:
+    sop_uid = data.get("sop_uid", "")
+    tenant_id = data.get("tenant_id", config.DEFAULT_TENANT_ID)
+
+    existing = fetch_one(
+        "SELECT tenant_id FROM dicom_instances WHERE sop_instance_uid = ?", (sop_uid,)
+    )
+    if existing and existing[0] != tenant_id:
+        raise DicomTenantConflict(
+            f"SOPInstanceUID {sop_uid!r} is already registered to a different tenant"
+        )
+
     return execute(
         """
         INSERT INTO dicom_instances (
@@ -73,13 +119,13 @@ def insert_dicom_instance(data: Dict[str, Any]) -> int:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            data.get("sop_uid", ""),
+            sop_uid,
             data.get("series_uid", ""),
             data.get("instance_number", 0) or 0,
             data.get("rows", 0) or 0,
             data.get("columns", 0) or 0,
             data.get("s3_key", ""),
-            data.get("tenant_id", config.DEFAULT_TENANT_ID),
+            tenant_id,
             data.get("storage_backend", config.STORAGE_BACKEND),
         ),
     )

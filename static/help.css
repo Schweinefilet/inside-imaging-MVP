@@ -87,6 +87,19 @@
   color: var(--mint);
 }
 
+/* Light mode: explicitly lock in ink text color. html:not(.dark) button sets
+   color with !important (white, for filled mint buttons), which otherwise
+   wins regardless of selector specificity — unlike .user-menu-toggle's fix,
+   this can't rely on specificity alone since the values actually differ
+   (dark ink text needed here, not white), so !important is required too. */
+html:not(.dark) .faq-trigger {
+  color: var(--text) !important;
+}
+
+html:not(.dark) .faq-trigger[aria-expanded="true"] {
+  color: var(--mint) !important;
+}
+
 .faq-chevron {
   flex-shrink: 0;
   color: var(--muted);

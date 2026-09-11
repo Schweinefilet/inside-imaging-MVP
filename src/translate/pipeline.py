@@ -18,6 +18,7 @@ from src.translate.formatting import (
     _strip_html,
 )
 from src.translate.glossary import Glossary
+from src.translate.highlight import highlight_bullets_html, highlight_text
 from src.translate.kiswahili import _is_kiswahili, _to_kiswahili
 from src.translate.openai_client import _call_gpt5
 from src.translate.parsing import _salvage_json_like, _split_sections
@@ -323,6 +324,14 @@ def build_structured(
     # Pure-Kiswahili enforcement on the rendered HTML strings (belt-and-braces)
     if _is_kiswahili(language):
         fields = _enforce_kiswahili_html(fields)
+
+    # Highlight concerning (ii-neg) vs. reassuring/negated (ii-pos) terms.
+    # Must run last: it operates on plain text pulled back out of the
+    # already-escaped HTML, so anything downstream that re-escapes fields
+    # (e.g. the Kiswahili pass above) would otherwise corrupt the markup.
+    fields["findings"] = highlight_bullets_html(fields["findings"])
+    if _strip_html(fields["conclusion"]):
+        fields["conclusion"] = highlight_text(html.unescape(fields["conclusion"]))
 
     patient = {
         "hospital": meta.get("hospital", ""),

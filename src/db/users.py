@@ -13,9 +13,9 @@ def get_user_by_username(username: str) -> Optional[sqlite3.Row]:
     return fetch_one("SELECT * FROM users WHERE username = ?", (username,))
 
 
-def create_user(username: str, password_hash: str) -> None:
-    execute("INSERT INTO users (username, password_hash) VALUES (?, ?)",
-            (username, password_hash))
+def create_user(username: str, password_hash: str, email: Optional[str] = None) -> None:
+    execute("INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)",
+            (username, password_hash, email))
 
 
 def get_user_by_google_id(google_id: str) -> Optional[sqlite3.Row]:

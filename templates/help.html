@@ -200,7 +200,10 @@
                 </div>
             </section>
             <section class="contact-support">
-                <h2>Contact Support (Not in Operation Yet)</h2>
+                <h2>Contact Support</h2>
+                <p style="color:var(--muted); font-size:0.9rem; margin:0 0 1rem;">
+                    We're a small pilot team, so replies may take a few business days.
+                </p>
                 <div class="contact-grid">
                     <form class="support-form" method="post" action="{{ url_for('contact_support') }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -217,13 +220,6 @@
                             required></textarea>
                         <button type="submit" class="primary-btn">Send Message</button>
                     </form>
-                    <div class="contact-info">
-                        <h3>Contact Information</h3>
-                        <p>Address: Coming Soon</p>
-                        <p>Phone: Coming Soon</p>
-                        <p>Email: Coming Soon</p>
-                        <p><strong>Support Hours</strong><br>To be announced</p>
-                    </div>
                 </div>
             </section>
         </div>

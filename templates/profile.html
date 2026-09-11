@@ -41,6 +41,18 @@
             font-weight: 600;
             font-size: 0.8rem;
         }
+
+        /* Account Information is usually much shorter than Preferences —
+           the shared .dashboard-grid/.upload-section stretch (needed on the
+           Dashboard, where upload/reports panels should match) just leaves a
+           tall dead-space block here instead. Let each card size itself. */
+        #profile-summary-grid {
+            align-items: start;
+        }
+
+        #profile-summary-grid .upload-section {
+            align-self: start;
+        }
     </style>
 {% endblock %}
 
@@ -49,7 +61,7 @@
             <h1>Profile & Settings</h1>
             <p class="tagline">Manage your account and preferences</p>
 
-            <div class="dashboard-grid">
+            <div class="dashboard-grid" id="profile-summary-grid">
                 <section class="upload-section">
                     <h2>Account Information</h2>
                     {% if session.get('username') %}
@@ -108,8 +120,33 @@
                         <p style="font-size: 0.9rem; color: var(--muted);">Change language when uploading reports on the
                             Dashboard.</p>
 
-                        <h3 style="margin-top: 2rem;">Notifications</h3>
-                        <p style="font-size: 0.9rem; color: var(--muted);">Email notifications coming soon.</p>
+                        {% if session.get('username') %}
+                        <h3 style="margin-top: 2rem;">Security</h3>
+                        {% if mfa_enabled %}
+                        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem;">
+                            <span style="color: var(--mint); font-weight: 600;">&#10003; Two-factor authentication is enabled</span>
+                            on your account.
+                        </p>
+                        <form method="POST" action="{{ url_for('mfa_disable') }}"
+                              onsubmit="return confirm('Disable two-factor authentication for your account?');"
+                              style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="password" name="password" required placeholder="Current password"
+                                   style="padding:0.5rem 0.75rem; background:var(--bg); border:1px solid var(--border);
+                                          border-radius:8px; color:var(--text); font-family:inherit; font-size:0.9rem;">
+                            <button type="submit" class="btn btn-ghost" style="padding:0.5rem 1.1rem; font-size:0.9rem;">
+                                Disable 2FA
+                            </button>
+                        </form>
+                        {% else %}
+                        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem;">
+                            Add an authenticator app (Google Authenticator, Authy, etc.) as a second login step.
+                        </p>
+                        <a href="{{ url_for('mfa_setup') }}" class="btn btn-primary" style="text-decoration:none;">
+                            Enable Two-Factor Authentication
+                        </a>
+                        {% endif %}
+                        {% endif %}
                     </div>
                 </section>
             </div>

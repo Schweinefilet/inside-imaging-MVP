@@ -30,6 +30,11 @@
 .team-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    /* start, not the grid default (stretch): bios vary a lot in length, and
+       stretching every card to match the tallest leaves huge dead space at
+       the bottom of the shorter ones. Letting each card size to its own
+       content reads better than uniform-but-mostly-empty cards. */
+    align-items: start;
     gap: 1.5rem;
     margin-bottom: 2rem;
 }

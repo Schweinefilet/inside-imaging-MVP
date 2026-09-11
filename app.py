@@ -3,6 +3,7 @@ import os
 import io
 import re
 import json
+import sqlite3
 import html
 import logging
 import time
@@ -154,6 +155,17 @@ except Exception:
         )
     logging.exception("Flask-WTF not available; CSRF protection NOT active. Install Flask-WTF.")
     csrf = None
+
+
+@app.errorhandler(404)
+def _not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def _server_error(e):
+    logging.exception("Unhandled server error on %s", request.path)
+    return render_template("500.html"), 500
 
 # Phase 1.1: rate limiting (login, integration endpoints) — same fail-closed
 # rule as CSRF above: brute-force throttling silently vanishing in production
@@ -1609,6 +1621,7 @@ def signup():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+        email = request.form.get("email", "").strip() or None
 
         # Username constraints (length + charset)
         if not (3 <= len(username) <= 32) or not re.match(r"^[A-Za-z0-9_.\-]+$", username):
@@ -1621,11 +1634,19 @@ def signup():
             flash(pw_err, "error")
             return render_template("signup.html")
 
+        if email and not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+            flash("Please enter a valid email address, or leave it blank.", "error")
+            return render_template("signup.html")
+
         if db.get_user_by_username(username):
             flash("Username already exists. Please choose a different one.", "error")
         else:
             password_hash = generate_password_hash(password)
-            db.create_user(username, password_hash)
+            try:
+                db.create_user(username, password_hash, email=email)
+            except sqlite3.IntegrityError:
+                flash("That email address is already registered.", "error")
+                return render_template("signup.html")
             flash("Account created successfully. Please log in.", "success")
             return redirect(url_for("login"))
     return render_template("signup.html")

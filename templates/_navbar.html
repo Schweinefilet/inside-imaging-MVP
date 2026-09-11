@@ -68,8 +68,12 @@
         </div>
       </div>
     {% else %}
+      {% if ep != 'login' %}
       <a href="{{ url_for('login') }}"  class="btn btn-ghost login-button">Log In</a>
+      {% endif %}
+      {% if ep != 'signup' %}
       <a href="{{ url_for('signup') }}" class="btn btn-primary signup-button">Sign Up</a>
+      {% endif %}
     {% endif %}
   </div>
 
@@ -117,8 +121,12 @@
           {% endif %}
           <a href="{{ url_for('logout') }}"  class="btn btn-ghost">Log Out</a>
         {% else %}
+          {% if ep != 'login' %}
           <a href="{{ url_for('login') }}"  class="btn btn-ghost login-button">Log In</a>
+          {% endif %}
+          {% if ep != 'signup' %}
           <a href="{{ url_for('signup') }}" class="btn btn-primary signup-button">Sign Up</a>
+          {% endif %}
         {% endif %}
       </div>
     </div>

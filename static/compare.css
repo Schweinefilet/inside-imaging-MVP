@@ -221,3 +221,17 @@ html:not(.dark) .compare-handle::after {
     padding: 0.4rem 0.6rem;
   }
 }
+
+@media (max-width: 480px) {
+  /* The before/after images have real report text baked into the pixels —
+     shrinking the whole card down to phone width made that text illegible.
+     Reclaim the compact card's own padding and crop in tighter so whatever
+     is still shown stays readable, even though less of the page fits. */
+  .compare-container-compact {
+    padding: 0.5rem;
+  }
+
+  .compare-wrapper-fullwidth {
+    aspect-ratio: 1 / 1.3;
+  }
+}

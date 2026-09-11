@@ -22,14 +22,9 @@
     box-shadow: var(--shadow);
   }
   .dicom-upload-card h2 { color: var(--text); margin: 0 0 12px; font-size: 1.15rem; }
-  .dicom-upload-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .dicom-upload-row input[type="file"] {
-    flex: 1; min-width: 280px;
-    padding: 10px; background: var(--panel-2);
-    border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text);
-  }
+  .dicom-upload-row { display: flex; flex-direction: column; gap: 16px; }
   .dicom-upload-row button {
+    align-self: flex-start;
     padding: 10px 20px; background: var(--mint); color: var(--bg);
     border: 1px solid transparent; border-radius: 8px; font-weight: 600;
     cursor: pointer; line-height: 1; margin: 0;
@@ -75,7 +70,24 @@
     <h2>Upload DICOM files</h2>
     <form id="dicom-upload-form" data-csrf="{{ csrf_token() }}">
       <div class="dicom-upload-row">
-        <input type="file" id="dicom-files" name="files" accept=".dcm,application/dicom" multiple required>
+        <div class="file-upload-container">
+          <input type="file" id="dicom-files" name="files" accept=".dcm,application/dicom" multiple required class="file-input">
+          <label for="dicom-files" class="file-upload-label">
+            <div class="upload-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="upload-text">
+              <strong>Choose files</strong> or drag them here
+              <span>.dcm DICOM files (multiple allowed)</span>
+            </div>
+          </label>
+          <div id="dicom-file-name-display" class="file-name-display">No files selected</div>
+        </div>
         <button type="submit" id="dicom-submit">Upload</button>
       </div>
       <div class="dicom-status" id="dicom-status"></div>
@@ -120,6 +132,31 @@
   const fileInput = document.getElementById('dicom-files');
   const submitBtn = document.getElementById('dicom-submit');
   const status = document.getElementById('dicom-status');
+  const fileNameDisplay = document.getElementById('dicom-file-name-display');
+  const label = document.querySelector('.file-upload-label');
+
+  fileInput.addEventListener('change', function() {
+    const n = this.files ? this.files.length : 0;
+    if (n === 1) {
+      fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
+      fileNameDisplay.classList.add('selected');
+    } else if (n > 1) {
+      fileNameDisplay.textContent = `Selected: ${n} files`;
+      fileNameDisplay.classList.add('selected');
+    } else {
+      fileNameDisplay.textContent = 'No files selected';
+      fileNameDisplay.classList.remove('selected');
+    }
+  });
+
+  if (label) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      fileInput.addEventListener(eventName, () => label.classList.add('dragover'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      fileInput.addEventListener(eventName, () => label.classList.remove('dragover'), false);
+    });
+  }
 
   form.addEventListener('submit', async function(e) {
     e.preventDefault();

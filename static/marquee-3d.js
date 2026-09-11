@@ -58,7 +58,7 @@
                     <div class="marquee-3d-row" data-row="${rowIndex}">
                         ${duplicatedImages.map((img, i) => `
                             <div class="marquee-3d-item">
-                                <img src="${img}" alt="Showcase ${i + 1}" loading="lazy">
+                                <img src="${img}" alt="Showcase ${i + 1}" loading="eager" decoding="async">
                             </div>
                         `).join('')}
                     </div>
